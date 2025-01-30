@@ -1,0 +1,212 @@
+<form class="{{cssClass}} flexcol" autocomplete="off">
+    <header class="sheet-header">
+        <img src="systems/marvel-faserip/assets/marvel-logo.png" class="marvel-logo"/>
+        <h1 class="sheet-title">Character Information Sheet</h1>
+        
+        <div class="header-fields">
+            <div class="header-row">
+                <div class="field-group">
+                    <input type="text" name="system.biography.heroName" value="{{actor.system.biography.heroName}}"/>
+                    <label class="input-label">Hero's Name</label>
+                </div>
+                <div class="field-group">
+                    <input type="text" name="system.biography.playerName" value="{{actor.system.biography.playerName}}"/>
+                    <label class="input-label">Player Name</label>
+                </div>
+            </div>
+            
+            <div class="header-row">
+                <div class="field-group">
+                    <input type="text" name="system.biography.realName" value="{{actor.system.biography.realName}}"/>
+                    <label class="input-label">Hero's Identity</label>
+                </div>
+            </div>
+            
+            <div class="header-row">
+                <div class="field-group">
+                    <input type="text" name="system.biography.groupAffiliation" value="{{actor.system.biography.groupAffiliation}}"/>
+                    <label class="input-label">Group Affiliation</label>
+                </div>
+                <div class="field-group">
+                    <input type="text" name="system.biography.baseOfOperations" value="{{actor.system.biography.baseOfOperations}}"/>
+                    <label class="input-label">Base of Operations</label>
+                </div>
+            </div>
+            
+            <div class="header-row">
+                <div class="field-group identity-group">
+                    <label>Hero's Identity:</label>
+                    <div class="checkbox-group">
+                        <input type="radio" name="system.biography.identity" value="secret" {{checked actor.system.biography.identity "secret"}}>
+                        <label>Secret</label>
+                        <input type="radio" name="system.biography.identity" value="public" {{checked actor.system.biography.identity "public"}}>
+                        <label>Public</label>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <input type="text" name="system.biography.age" value="{{actor.system.biography.age}}"/>
+                    <label class="input-label">Age</label>
+                </div>
+                <div class="field-group">
+                    <input type="text" name="system.biography.origin" value="{{actor.system.biography.origin}}"/>
+                    <label class="input-label">Origin</label>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    {{!-- Main Body --}}
+    <section class="sheet-body">
+        <div class="abilities-section">
+            <div class="abilities-grid">
+                {{!-- Primary Abilities --}}
+                <div class="primary-abilities">
+                    <h2>Primary Abilities</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Init Roll</th>
+                                <th>Init Rnk</th>
+                                <th>Curr Rank</th>
+                                <th>Num</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each actor.system.primaryAbilities as |ability key|}}
+                            <tr class="ability-row" data-ability="{{key}}">
+                                <td class="ability-label">{{key}}</td>
+                                <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.{{key}}.initialRoll" value="{{ability.initialRoll}}" data-ability="{{key}}" maxlength="3"/></td>
+                                <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.{{key}}.initialRank" value="{{ability.initialRank}}" data-ability="{{key}}"/></td>
+                                <td>
+                                    <select name="system.primaryAbilities.{{key}}.rank" class="rank-select" data-ability="primaryAbilities.{{key}}">
+                                        {{#select ability.rank}}
+                                        <option value=""></option>
+                                        {{#each @root.config.ranks as |rank|}}
+                                        <option value="{{rank}}">{{rank}}</option>
+                                        {{/each}}
+                                        {{/select}}
+                                    </select>
+                                </td>
+                                <td class="ability-number">{{ability.number}}</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+
+                {{!-- Secondary Abilities --}}
+                <div class="secondary-abilities">
+                    <h2>Secondary Abilities</h2>
+                    <div class="secondary-grid">
+                        <div class="ability-block">
+                            <label>Health (F+A+S+E)</label>
+                            <div class="value-pair">
+                                <input type="number" name="system.secondaryAbilities.health.value" value="{{actor.system.secondaryAbilities.health.value}}"/>
+                                <span>/</span>
+                                <input type="number" name="system.secondaryAbilities.health.max" value="{{actor.system.secondaryAbilities.health.max}}" disabled/>
+                            </div>
+                        </div>
+                        
+                        <div class="ability-block">
+                            <label>Karma (R+I+P)</label>
+                            <div class="value-pair">
+                                <input type="number" name="system.secondaryAbilities.karma.value" value="{{actor.system.secondaryAbilities.karma.value}}"/>
+                                <span>/</span>
+                                <input type="number" name="system.secondaryAbilities.karma.max" value="{{actor.system.secondaryAbilities.karma.max}}" disabled/>
+                            </div>
+                        </div>
+
+                        <div class="ability-block">
+                            <label>Resources</label>
+                            <input type="number" name="system.secondaryAbilities.resources.number" value="{{actor.system.secondaryAbilities.resources.number}}"/>
+                        </div>
+
+                        <div class="ability-block">
+                            <label>Popularity</label>
+                            <input type="number" name="system.secondaryAbilities.popularity.number" value="{{actor.system.secondaryAbilities.popularity.number}}"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="powers-section">
+            <h2>Special Abilities</h2>
+            <div class="powers-list">
+                {{#each actor.system.powers.list as |power idx|}}
+                <div class="power-entry">
+                    <input type="text" 
+                           name="system.powers.list.{{idx}}.name" 
+                           value="{{power.name}}" 
+                           placeholder="Power"
+                           data-dtype="String"/>
+                    <select name="system.powers.list.{{idx}}.rank" 
+                            class="rank-select"
+                            data-dtype="String">
+                        {{#select power.rank}}
+                        <option value=""></option>
+                        {{#each @root.config.ranks as |rank|}}
+                        <option value="{{rank}}">{{rank}}</option>
+                        {{/each}}
+                        {{/select}}
+                    </select>
+                    <button type="button" class="item-delete" data-type="powers" data-id="{{idx}}"><i class="fas fa-trash"></i></button>
+                </div>
+                {{/each}}
+            </div>
+            <button type="button" class="add-power">Add Power</button>
+            <div class="power-limitation">
+                <label>Limitation:</label>
+                <input type="text" name="system.powers.limitation" value="{{actor.system.powers.limitation}}"/>
+            </div>
+        </div>
+
+        <div class="bottom-section">
+            <div class="talents-section">
+                <h2>Talents</h2>
+                <div class="talents-list">
+                    {{#each actor.system.talents.list as |talent idx|}}
+                    <div class="talent-entry">
+                        <input type="text" 
+                               name="system.talents.list.{{idx}}.name" 
+                               value="{{talent.name}}" 
+                               placeholder="Talent"
+                               data-dtype="String"/>
+                        <button type="button" class="item-delete" data-type="talents" data-id="{{idx}}"><i class="fas fa-trash"></i></button>
+                    </div>
+                    {{/each}}
+                </div>
+                <button type="button" class="add-talent">Add Talent</button>
+            </div>
+
+            <div class="karma-tracking">
+                <div class="karma-section">
+                    <h2>Advancement Fund</h2>
+                    <input type="number" class="advancement-fund-input" name="system.karmaTracking.advancementFund" value="{{actor.system.karmaTracking.advancementFund}}"/>
+                </div>
+                <div class="karma-section">
+                    <h2>Karma Pool</h2>
+                    <input type="number" class="karma-pool-input" name="system.karmaTracking.karmaPool" value="{{actor.system.karmaTracking.karmaPool}}"/>
+                </div>
+            </div>
+
+            <div class="contacts-section">
+                <h2>Contacts</h2>
+                <div class="contacts-list">
+                    {{#each actor.system.contacts.list as |contact idx|}}
+                    <div class="contact-entry">
+                        <input type="text" 
+                               name="system.contacts.list.{{idx}}.name" 
+                               value="{{contact.name}}" 
+                               placeholder="Contact"
+                               data-dtype="String"/>
+                        <button type="button" class="item-delete" data-type="contacts" data-id="{{idx}}"><i class="fas fa-trash"></i></button>
+                    </div>
+                    {{/each}}
+                </div>
+                <button type="button" class="add-contact">Add Contact</button>
+            </div>
+        </div>
+    </section>
+</form>

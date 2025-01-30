@@ -1,0 +1,8 @@
+# System and IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Foundry VTT specific
+packs/*

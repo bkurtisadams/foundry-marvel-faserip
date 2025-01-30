@@ -1,0 +1,71 @@
+ Volume in drive C is Windows
+ Volume Serial Number is 94F9-1583
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip
+
+01/29/2025  08:12 PM    <DIR>          .
+01/29/2025  09:20 PM    <DIR>          ..
+01/29/2025  07:18 PM    <DIR>          css
+01/29/2025  06:30 PM    <DIR>          lang
+01/30/2025  04:08 PM                 0 list.txt
+01/29/2025  08:40 PM    <DIR>          module
+01/29/2025  08:27 PM               765 system.json
+01/29/2025  08:28 PM             2,937 template.json
+01/29/2025  06:11 PM    <DIR>          templates
+               3 File(s)          3,702 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\css
+
+01/29/2025  07:18 PM    <DIR>          .
+01/29/2025  08:12 PM    <DIR>          ..
+01/29/2025  09:30 PM             6,498 marvel-faserip.css
+               1 File(s)          6,498 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\lang
+
+01/29/2025  06:30 PM    <DIR>          .
+01/29/2025  08:12 PM    <DIR>          ..
+01/29/2025  06:30 PM             1,590 en.json
+               1 File(s)          1,590 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module
+
+01/29/2025  08:40 PM    <DIR>          .
+01/29/2025  08:12 PM    <DIR>          ..
+01/29/2025  08:21 PM               974 config.js
+01/29/2025  08:42 PM    <DIR>          documents
+01/29/2025  08:46 PM               953 marvel-faserip.js
+01/29/2025  06:13 PM    <DIR>          sheets
+               2 File(s)          1,927 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\documents
+
+01/29/2025  08:42 PM    <DIR>          .
+01/29/2025  08:40 PM    <DIR>          ..
+01/29/2025  07:05 PM             4,769 MarvelActor.js
+               1 File(s)          4,769 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\sheets
+
+01/29/2025  06:13 PM    <DIR>          .
+01/29/2025  08:40 PM    <DIR>          ..
+01/29/2025  08:52 PM             4,721 MarvelActorSheet.js
+               1 File(s)          4,721 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\templates
+
+01/29/2025  06:11 PM    <DIR>          .
+01/29/2025  08:12 PM    <DIR>          ..
+01/29/2025  08:13 PM    <DIR>          actor
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\templates\actor
+
+01/29/2025  08:13 PM    <DIR>          .
+01/29/2025  06:11 PM    <DIR>          ..
+01/29/2025  09:27 PM            10,064 actor-sheet.html
+               1 File(s)         10,064 bytes
+
+     Total Files Listed:
+              10 File(s)         33,271 bytes
+              23 Dir(s)  288,839,004,160 bytes free

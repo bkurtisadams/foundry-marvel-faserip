@@ -1,0 +1,142 @@
+{
+  "Actor": {
+    "types": ["hero", "villain", "npc"],
+    "templates": {
+      "base": {
+        "biography": {
+          "playerName": "",
+          "heroName": "",
+          "realName": "",
+          "identity": "secret",
+          "groupAffiliation": "",
+          "baseOfOperations": "",
+          "age": "",
+          "origin": ""
+        },
+        "primaryAbilities": {
+          "fighting": {
+            "initialRoll": "",
+            "initialRank": "",
+            "rank": "",
+            "number": 0
+          },
+          "agility": {
+            "initialRoll": "",
+            "initialRank": "",
+            "rank": "",
+            "number": 0
+          },
+          "strength": {
+            "initialRoll": "",
+            "initialRank": "",
+            "rank": "",
+            "number": 0
+          },
+          "endurance": {
+            "initialRoll": "",
+            "initialRank": "",
+            "rank": "",
+            "number": 0
+          },
+          "reason": {
+            "initialRoll": "",
+            "initialRank": "",
+            "rank": "",
+            "number": 0
+          },
+          "intuition": {
+            "initialRoll": "",
+            "initialRank": "",
+            "rank": "",
+            "number": 0
+          },
+          "psyche": {
+            "initialRoll": "",
+            "initialRank": "",
+            "rank": "",
+            "number": 0
+          }
+        },
+        "secondaryAbilities": {
+          "health": {
+            "value": 0,
+            "max": 0
+          },
+          "karma": {
+            "value": 0,
+            "max": 0
+          },
+          "resources": {
+            "rank": "",
+            "number": 0
+          },
+          "popularity": {
+            "rank": "",
+            "number": 0
+          }
+        },
+        "karmaTracking": {
+          "karmaPool": 0,
+          "advancementFund": 0
+        }
+      },
+      "powers": {
+        "powers": {
+          "list": [],
+          "limitation": ""
+        }
+      },
+      "contacts": {
+        "contacts": {
+          "list": []
+        }
+      },
+      "talents": {
+        "talents": {
+          "list": []
+        }
+      }
+    },
+    "hero": {
+      "templates": ["base", "powers", "contacts", "talents"]
+    },
+    "villain": {
+      "templates": ["base", "powers"]
+    },
+    "npc": {
+      "templates": ["base"]
+    }
+  },
+  "Item": {
+    "types": ["power", "talent", "contact", "equipment"],
+    "templates": {
+      "base": {
+        "description": "",
+        "rules": ""
+      }
+    },
+    "power": {
+      "templates": ["base"],
+      "rank": "",
+      "number": 0,
+      "type": "",
+      "limitation": ""
+    },
+    "talent": {
+      "templates": ["base"]
+    },
+    "contact": {
+      "templates": ["base"],
+      "type": "",
+      "reliability": ""
+    },
+    "equipment": {
+      "templates": ["base"],
+      "rank": "",
+      "number": 0,
+      "type": "",
+      "durability": "",
+      "material": ""
+    }
+  }
+}

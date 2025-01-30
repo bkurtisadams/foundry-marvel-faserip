@@ -1,0 +1,47 @@
+{
+    "MARVEL.AbilityFighting": "Fighting",
+    "MARVEL.AbilityAgility": "Agility",
+    "MARVEL.AbilityStrength": "Strength",
+    "MARVEL.AbilityEndurance": "Endurance",
+    "MARVEL.AbilityReason": "Reason",
+    "MARVEL.AbilityIntuition": "Intuition",
+    "MARVEL.AbilityPsyche": "Psyche",
+    
+    "MARVEL.SecondaryHealth": "Health",
+    "MARVEL.SecondaryKarma": "Karma",
+    "MARVEL.SecondaryResources": "Resources",
+    "MARVEL.SecondaryPopularity": "Popularity",
+    
+    "MARVEL.TabAbilities": "Abilities",
+    "MARVEL.TabPowers": "Powers",
+    "MARVEL.TabTalents": "Talents",
+    "MARVEL.TabContacts": "Contacts",
+    
+    "MARVEL.AddPower": "Add Power",
+    "MARVEL.AddTalent": "Add Talent",
+    "MARVEL.AddContact": "Add Contact",
+    
+    "MARVEL.LabelLimitation": "Limitation",
+    "MARVEL.LabelIdentity": "Identity",
+    "MARVEL.LabelSecret": "Secret",
+    "MARVEL.LabelPublic": "Public",
+    
+    "MARVEL.RankShift0": "Shift 0",
+    "MARVEL.RankFeeble": "Feeble",
+    "MARVEL.RankPoor": "Poor",
+    "MARVEL.RankTypical": "Typical",
+    "MARVEL.RankGood": "Good",
+    "MARVEL.RankExcellent": "Excellent",
+    "MARVEL.RankRemarkable": "Remarkable",
+    "MARVEL.RankIncredible": "Incredible",
+    "MARVEL.RankAmazing": "Amazing",
+    "MARVEL.RankMonstrous": "Monstrous",
+    "MARVEL.RankUnearthly": "Unearthly",
+    "MARVEL.RankShiftX": "Shift X",
+    "MARVEL.RankShiftY": "Shift Y",
+    "MARVEL.RankShiftZ": "Shift Z",
+    "MARVEL.RankClass1000": "Class 1000",
+    "MARVEL.RankClass3000": "Class 3000",
+    "MARVEL.RankClass5000": "Class 5000",
+    "MARVEL.RankBeyond": "Beyond"
+}

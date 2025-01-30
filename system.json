@@ -1,0 +1,34 @@
+{
+  "id": "marvel-faserip",
+  "title": "Marvel Super Heroes FASERIP",
+  "description": "The Marvel Super Heroes RPG (FASERIP) system for Foundry VTT",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "12",
+    "verified": "12",
+    "maximum": "12"
+  },
+  "authors": [
+    {
+      "name": "Your Name",
+      "url": ""
+    }
+  ],
+  "esmodules": ["module/marvel-faserip.js"],
+  "styles": ["css/marvel-faserip.css"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "gridDistance": 1,
+  "gridUnits": "areas",
+  "primaryTokenAttribute": "secondaryAbilities.health",
+  "secondaryTokenAttribute": "secondaryAbilities.karma",
+  "url": "",
+  "manifest": "",
+  "download": "",
+  "license": "LICENSE.txt"
+}
