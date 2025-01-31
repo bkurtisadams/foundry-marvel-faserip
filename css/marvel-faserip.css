@@ -155,36 +155,32 @@
 }
 
 /* Special Abilities Section */
-.special-abilities-section {
+.special-abilities {
     margin-bottom: 20px;
 }
 
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.section-header span {
+.abilities-header {
     font-weight: bold;
+    margin-bottom: 5px;
 }
 
-.powers-list, .talents-list, .contacts-list {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+.add-ability-button {
+    width: 100%;
+    background: #e8e6e3;
+    padding: 5px;
+    margin-bottom: 10px;
+    cursor: pointer;
 }
 
-.power-entry, .talent-entry, .contact-entry {
+.power-row {
     display: flex;
     gap: 10px;
+    margin-bottom: 5px;
     align-items: center;
 }
 
-.power-entry input, .talent-entry input, .contact-entry input {
+.power-row input {
     flex: 1;
-    height: 24px;
 }
 
 .power-controls {
@@ -193,86 +189,91 @@
     align-items: center;
 }
 
-/* Buttons */
-.add-power, .add-talent, .add-contact {
+/* Bottom Section Layout */
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+/* Talents and Contacts Boxes */
+.talents-box, .contacts-box {
     background: #e8e6e3;
-    border: 1px solid #7a7971;
-    padding: 3px 8px;
     border-radius: 3px;
+}
+
+.list-header {
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.add-button {
     cursor: pointer;
-    font-size: 12px;
-    line-height: 16px;
 }
 
-.add-power:hover, .add-talent:hover, .add-contact:hover {
-    background: #d8d6d3;
+.talents-list, .contacts-list {
+    padding: 5px;
 }
 
+.list-row {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 5px;
+    align-items: center;
+}
+
+.list-row input {
+    flex: 1;
+    background: white;
+}
+
+/* Karma Section */
+.karma-box {
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+    background: white;
+    width: 200px;
+}
+
+.karma-box h2 {
+    color: #cd1821;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px 0;
+    border: none;
+}
+
+.karma-box input {
+    width: 100px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.karma-box input:last-child {
+    margin-bottom: 0;
+}
+
+/* Delete Buttons */
 .item-delete {
-    width: 24px;
-    height: 24px;
+    background: none;
+    border: none;
+    color: black;
     padding: 0;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #000;
 }
 
 .item-delete:hover {
     color: #666;
-}
-
-/* Karma Tracking */
-.karma-tracking {
-    border: 2px solid #000;
-    border-radius: 5px;
-    padding: 10px;
-    margin: 20px 0;
-    background: #f9f9f9;
-}
-
-.karma-section {
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-.karma-section:last-child {
-    margin-bottom: 0;
-}
-
-.karma-section h2 {
-    color: #cd1821;
-    margin-bottom: 5px;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.karma-section input {
-    width: 100px;
-    text-align: center;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-/* Form Elements */
-input[type="text"],
-input[type="number"],
-select {
-    height: 24px;
-    border: 1px solid #7a7971;
-    border-radius: 3px;
-    padding: 0 5px;
-    background: #fff;
-}
-
-input[type="text"]:focus,
-input[type="number"]:focus,
-select:focus {
-    border-color: #000;
-    outline: none;
 }
 
 /* Headers */
@@ -284,16 +285,22 @@ h2 {
     padding-bottom: 5px;
 }
 
-/* Bottom Section Layout */
-.bottom-section {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+/* General Input Styling */
+input[type="text"],
+input[type="number"],
+select {
+    height: 24px;
+    border: 1px solid #7a7971;
+    border-radius: 3px;
+    padding: 0 5px;
+    background: white;
 }
 
-.talents-section,
-.contacts-section {
-    margin-bottom: 20px;
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+    border-color: #000;
+    outline: none;
 }
 
 /* Utility Classes */
@@ -320,5 +327,9 @@ h2 {
     .header-row {
         flex-direction: column;
         gap: 10px;
+    }
+    
+    .bottom-grid {
+        grid-template-columns: 1fr;
     }
 }

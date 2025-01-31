@@ -52,7 +52,6 @@
 
     <section class="sheet-body">
         <div class="abilities-grid">
-            {{!-- Primary Abilities --}}
             <div class="primary-abilities">
                 <h2>Primary Abilities</h2>
                 <table>
@@ -88,7 +87,6 @@
                 </table>
             </div>
 
-            {{!-- Secondary Abilities --}}
             <div class="secondary-abilities">
                 <h2>Secondary Abilities</h2>
                 <div class="secondary-grid">
@@ -129,68 +127,70 @@
             </div>
         </div>
 
-        <div class="special-abilities-section">
-            <div class="section-header">
+        <div class="special-abilities">
+            <div class="abilities-header">
                 <span>Special Abilities (Powers/Equipment/Stunts)</span>
-                <button type="button" class="add-power">+ Add Special Ability</button>
             </div>
+            <button type="button" class="add-power add-ability-button">+ Add Special Ability</button>
             <div class="powers-list">
                 {{#each actor.system.powers.list as |power idx|}}
-                <div class="power-entry">
-                    <input type="text" name="system.powers.list.{{idx}}.name" value="{{power.name}}" placeholder="Power"/>
+                <div class="power-row">
+                    <input type="text" name="system.powers.list.{{idx}}.name" value="{{power.name}}"/>
                     <div class="power-controls">
                         <select name="system.powers.list.{{idx}}.rank" class="rank-select">
                             {{#select power.rank}}
-                            <option value=""></option>
                             {{#each @root.config.ranks as |rank|}}
                             <option value="{{rank}}">{{rank}}</option>
                             {{/each}}
                             {{/select}}
                         </select>
-                        <button type="button" class="item-delete" data-type="powers" data-id="{{idx}}"><i class="fas fa-trash"></i></button>
+                        <button type="button" class="item-delete" data-type="powers" data-id="{{idx}}">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </div>
                 {{/each}}
             </div>
         </div>
 
-        <div class="bottom-section">
-            <div class="talents-section">
-                <div class="section-header">
-                    <span>Talents</span>
-                    <button type="button" class="add-talent">+ Add Talent</button>
+        <div class="bottom-grid">
+            <div class="talents-box">
+                <div class="list-header">
+                    <button type="button" class="add-talent add-button">+ Add Talent</button>
                 </div>
                 <div class="talents-list">
                     {{#each actor.system.talents.list as |talent idx|}}
-                    <div class="talent-entry">
-                        <input type="text" name="system.talents.list.{{idx}}.name" value="{{talent.name}}" placeholder="Talent"/>
-                        <button type="button" class="item-delete" data-type="talents" data-id="{{idx}}"><i class="fas fa-trash"></i></button>
+                    <div class="list-row">
+                        <input type="text" name="system.talents.list.{{idx}}.name" value="{{talent.name}}"/>
+                        <button type="button" class="item-delete" data-type="talents" data-id="{{idx}}">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                     {{/each}}
                 </div>
             </div>
 
-            <div class="karma-tracking">
-                <div class="karma-section">
+            <div class="karma-section">
+                <div class="karma-box">
                     <h2>Advancement Fund</h2>
-                    <input type="number" class="advancement-fund-input" name="system.karmaTracking.advancementFund" value="{{actor.system.karmaTracking.advancementFund}}"/>
-                </div>
-                <div class="karma-section">
+                    <input type="number" name="system.karmaTracking.advancementFund" value="{{actor.system.karmaTracking.advancementFund}}"/>
+                    
                     <h2>Karma Pool</h2>
-                    <input type="number" class="karma-pool-input" name="system.karmaTracking.karmaPool" value="{{actor.system.karmaTracking.karmaPool}}"/>
+                    <input type="number" name="system.karmaTracking.karmaPool" value="{{actor.system.karmaTracking.karmaPool}}"/>
                 </div>
             </div>
 
-            <div class="contacts-section">
-                <div class="section-header">
-                    <span>Contacts</span>
-                    <button type="button" class="add-contact">+ Add Contact</button>
+            <div class="contacts-box">
+                <div class="list-header">
+                    <button type="button" class="add-contact add-button">+ Add Contact</button>
                 </div>
                 <div class="contacts-list">
                     {{#each actor.system.contacts.list as |contact idx|}}
-                    <div class="contact-entry">
-                        <input type="text" name="system.contacts.list.{{idx}}.name" value="{{contact.name}}" placeholder="Contact"/>
-                        <button type="button" class="item-delete" data-type="contacts" data-id="{{idx}}"><i class="fas fa-trash"></i></button>
+                    <div class="list-row">
+                        <input type="text" name="system.contacts.list.{{idx}}.name" value="{{contact.name}}"/>
+                        <button type="button" class="item-delete" data-type="contacts" data-id="{{idx}}">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                     {{/each}}
                 </div>
