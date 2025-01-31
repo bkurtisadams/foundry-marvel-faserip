@@ -71,8 +71,8 @@
             "number": 0
           },
           "popularity": {
-            "rank": "",
-            "number": 0
+            "hero": 0,
+            "secret": 0
           }
         },
         "karmaTracking": {
