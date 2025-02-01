@@ -1,22 +1,14 @@
 <form class="{{cssClass}} flexcol" autocomplete="off">
     <header class="sheet-header">
-        <img src="systems/marvel-faserip/assets/marvel-logo-bw.png" class="marvel-logo"/>
-        <h1 class="sheet-title">Character Information Sheet</h1>
-        
-        <div class="header-fields">
-            <div class="header-row">
+        <div class="header-flex-container">
+            <!-- Left Side -->
+            <div class="header-left">
+                <img src="systems/marvel-faserip/assets/marvel-logo-bw.png" class="marvel-logo"/>
                 <div class="field-group">
                     <label class="input-label">Hero's Name</label>
                     <input type="text" name="system.biography.heroName" value="{{actor.system.biography.heroName}}"/>
                 </div>
                 <div class="field-group">
-                    <label class="input-label">Player Name</label>
-                    <input type="text" name="system.biography.playerName" value="{{actor.system.biography.playerName}}"/>
-                </div>
-            </div>
-            
-            <div class="header-row">
-                <div class="field-group full-width">
                     <label class="input-label">Hero's Identity</label>
                     <input type="text" name="system.biography.realName" value="{{actor.system.biography.realName}}"/>
                     <div class="identity-controls">
@@ -25,8 +17,13 @@
                     </div>
                 </div>
             </div>
-            
-            <div class="header-row">
+
+            <!-- Right Side -->
+            <div class="header-right">
+                <div class="field-group">
+                    <label class="input-label">Player Name</label>
+                    <input type="text" name="system.biography.playerName" value="{{actor.system.biography.playerName}}"/>
+                </div>
                 <div class="field-group">
                     <label class="input-label">Group Affiliation</label>
                     <input type="text" name="system.biography.groupAffiliation" value="{{actor.system.biography.groupAffiliation}}"/>
@@ -35,16 +32,15 @@
                     <label class="input-label">Base of Operations</label>
                     <input type="text" name="system.biography.baseOfOperations" value="{{actor.system.biography.baseOfOperations}}"/>
                 </div>
-            </div>
-            
-            <div class="header-row">
-                <div class="field-group age-field">
-                    <label class="input-label">Age</label>
-                    <input type="text" name="system.biography.age" value="{{actor.system.biography.age}}"/>
-                </div>
-                <div class="field-group origin-field">
-                    <label class="input-label">Origin</label>
-                    <input type="text" name="system.biography.origin" value="{{actor.system.biography.origin}}"/>
+                <div class="header-bottom-row">
+                    <div class="field-group age-field">
+                        <label class="input-label">Age</label>
+                        <input type="text" name="system.biography.age" value="{{actor.system.biography.age}}"/>
+                    </div>
+                    <div class="field-group origin-field">
+                        <label class="input-label">Origin</label>
+                        <input type="text" name="system.biography.origin" value="{{actor.system.biography.origin}}"/>
+                    </div>
                 </div>
             </div>
         </div>

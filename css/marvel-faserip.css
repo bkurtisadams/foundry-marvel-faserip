@@ -10,9 +10,28 @@
     font-size: 13px;
 }
 
-/* Sheet Header */
+/* Header Layout */
 .sheet-header {
     margin-bottom: 20px;
+}
+
+.header-flex-container {
+    display: flex;
+    gap: 20px;
+}
+
+.header-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.header-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .marvel-logo {
@@ -20,23 +39,15 @@
     margin-bottom: 10px;
 }
 
-.header-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.header-row {
+.header-bottom-row {
     display: flex;
     gap: 20px;
 }
 
 .field-group {
-    flex: 1;
-}
-
-.field-group.full-width {
-    flex: 1 1 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .field-group input[type="text"] {
@@ -66,6 +77,11 @@
 
 .origin-field {
     flex: 1;
+}
+
+.input-label {
+    font-weight: bold;
+    color: #444;
 }
 
 /* Marvel Roll Styling */
