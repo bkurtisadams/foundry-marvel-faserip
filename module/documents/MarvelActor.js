@@ -154,4 +154,104 @@ async rollAbility(abilityId, options = {}) {
     await ChatMessage.create(messageData);
     return roll;
 }
+async rollPopularityFeat(popularityType, options = {}) {
+    const popularity = this.system.secondaryAbilities.popularity[popularityType];
+    const isNegative = popularity < 0;
+    const absolutePopularity = Math.abs(popularity);
+    let baseRank = this.getRankFromValue(absolutePopularity);
+    
+    // Calculate total column shift
+    let totalShift = 0;
+    
+    // If not negative popularity, apply disposition modifiers
+    if (!isNegative) {
+        switch(options.disposition) {
+            case "friendly":
+                // Green FEAT - no shift needed
+                break;
+            case "neutral":
+                totalShift -= 1; // Yellow FEAT
+                break;
+            case "unfriendly":
+                totalShift -= 2; // Red FEAT
+                break;
+            case "hostile":
+                // Impossible FEAT
+                await ChatMessage.create({
+                    speaker: ChatMessage.getSpeaker({ actor: this }),
+                    content: `<div class="marvel-roll">
+                        <h2>Popularity FEAT - IMPOSSIBLE</h2>
+                        <p>Hostile targets will not cooperate under normal circumstances.</p>
+                    </div>`
+                });
+                return;
+        }
+    }
+    
+    // Add circumstance modifiers
+    if (options.modifiers) {
+        totalShift += Object.values(options.modifiers).reduce((a, b) => a + b, 0);
+    }
+    
+    // Add any additional shift
+    if (options.additionalShift) {
+        totalShift += options.additionalShift;
+    }
+    
+    // Apply total shift to get final rank
+    const shiftedRank = this.applyColumnShift(baseRank, totalShift);
+    
+    // Roll the dice and add karma
+    const roll = await new Roll("1d100").evaluate();
+    const finalRoll = Math.min(100, roll.total + (options.karmaPoints || 0));
+    
+    // Get the color result
+    const color = this.getColorResult(finalRoll, shiftedRank);
+    
+    // Determine success/failure based on color and requirements
+    let success = false;
+    if (isNegative) {
+        // Negative popularity always needs yellow
+        success = ["yellow", "red"].includes(color);
+    } else {
+        switch(options.disposition) {
+            case "friendly":
+                success = ["green", "yellow", "red"].includes(color);
+                break;
+            case "neutral":
+                success = ["yellow", "red"].includes(color);
+                break;
+            case "unfriendly":
+                success = ["red"].includes(color);
+                break;
+        }
+    }
+    
+    // Create chat message content
+    const messageContent = `
+        <div class="marvel-roll">
+            <h2 style="color: #782e22; border-bottom: 2px solid #782e22; margin-bottom: 10px; padding-bottom: 3px;">
+                ${this.name} - ${popularityType.charAt(0).toUpperCase() + popularityType.slice(1)} Popularity FEAT
+            </h2>
+            <div class="roll-details" style="line-height: 1.4;">
+                <div style="margin-bottom: 5px;">Popularity: ${popularity} (${baseRank})</div>
+                <div style="margin-bottom: 5px;">Total Column Shift: ${totalShift} → ${shiftedRank}</div>
+                <div style="margin-bottom: 5px;">Disposition: ${options.disposition || "N/A"}</div>
+                <div style="margin-bottom: 10px;">Roll: ${roll.total}${options.karmaPoints ? ` + Karma: ${options.karmaPoints} = ${finalRoll}` : ''}</div>
+            </div>
+            <div style="text-align: center; font-weight: bold; padding: 5px; border: 1px solid black; background-color: ${color}; color: ${color === 'white' || color === 'yellow' ? 'black' : 'white'};">
+                ${success ? "SUCCESS" : "FAILURE"}
+            </div>
+        </div>`;
+    
+    // Create the chat message
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        content: messageContent,
+        rolls: [roll],
+        sound: CONFIG.sounds.dice
+    });
+    
+    return roll;
+}
 }

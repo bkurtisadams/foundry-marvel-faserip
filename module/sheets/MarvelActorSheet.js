@@ -47,6 +47,7 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.add-contact').click(this._onAddContact.bind(this));
             html.find('.rank-select').change(this._onRankChange.bind(this));
             html.find('.item-delete').click(this._onItemDelete.bind(this));
+            html.find('.clickable-popularity').click(this._onPopularityRoll.bind(this));
 
             // Add karma tracking handlers
             html.find('.karma-pool-input').change(this._onKarmaPoolChange.bind(this));
@@ -92,32 +93,33 @@ export class MarvelActorSheet extends ActorSheet {
         });
     }
 
-/** @override */
-async _updateObject(event, formData) {
-    // Ensure the lists are properly handled
-    const expandedData = foundry.utils.expandObject(formData);
-    
-    // Handle powers list
-    if (expandedData.system?.powers?.list) {
-        const powers = Object.values(expandedData.system.powers.list);
-        expandedData.system.powers.list = powers;
+    /** @override */
+    async _updateObject(event, formData) {
+        // Ensure the lists are properly handled
+        const expandedData = foundry.utils.expandObject(formData);
+        
+        // Handle powers list
+        if (expandedData.system?.powers?.list) {
+            const powers = Object.values(expandedData.system.powers.list);
+            expandedData.system.powers.list = powers;
+        }
+        
+        // Handle talents list
+        if (expandedData.system?.talents?.list) {
+            const talents = Object.values(expandedData.system.talents.list);
+            expandedData.system.talents.list = talents;
+        }
+        
+        // Handle contacts list
+        if (expandedData.system?.contacts?.list) {
+            const contacts = Object.values(expandedData.system.contacts.list);
+            expandedData.system.contacts.list = contacts;
+        }
+        
+        // Update the actor
+        return await super._updateObject(event, expandedData);
     }
-    
-    // Handle talents list
-    if (expandedData.system?.talents?.list) {
-        const talents = Object.values(expandedData.system.talents.list);
-        expandedData.system.talents.list = talents;
-    }
-    
-    // Handle contacts list
-    if (expandedData.system?.contacts?.list) {
-        const contacts = Object.values(expandedData.system.contacts.list);
-        expandedData.system.contacts.list = contacts;
-    }
-    
-    // Update the actor
-    return await super._updateObject(event, expandedData);
-}
+
     async _onAddTalent(event) {
         event.preventDefault();
         
@@ -186,6 +188,83 @@ async _updateObject(event, formData) {
         const value = Number(event.currentTarget.value);
         await this.actor.update({
             "system.karmaTracking.advancementFund": value
+        });
+    }
+
+    async _onPopularityRoll(event) {
+        event.preventDefault();
+        const element = event.currentTarget;
+        const popularityType = element.dataset.popularityType;
+        
+        // Get stored values
+        const stored = await game.user.getFlag("world", "marvelPopularityOptions") || {
+            disposition: "neutral",
+            benefits: false,
+            danger: false,
+            goodValue: false,
+            remarkableValue: false,
+            noReturn: false,
+            unique: false,
+            additionalShift: 0,
+            karmaPoints: 0
+        };
+        
+        // Render dialog with stored values
+        const html = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/popularity-roll.html",
+            { stored }
+        );
+        
+        return new Promise(resolve => {
+            const dialog = new Dialog({
+                title: "Popularity FEAT Roll",
+                content: html,
+                buttons: {
+                    roll: {
+                        label: "Roll",
+                        callback: async (html) => {
+                            const form = html[0].querySelector("form");
+                            const disposition = form.disposition.value;
+                            
+                            // Gather modifiers
+                            const modifiers = {};
+                            form.querySelectorAll('.modifiers-list input:checked').forEach(checkbox => {
+                                modifiers[checkbox.name] = parseInt(checkbox.value);
+                            });
+                            
+                            const options = {
+                                disposition: disposition,
+                                modifiers: modifiers,
+                                additionalShift: parseInt(form.additionalShift.value) || 0,
+                                karmaPoints: parseInt(form.karmaPoints.value) || 0
+                            };
+                            
+                            // Store values for next time
+                            const storedValues = {
+                                disposition: form.disposition.value,
+                                benefits: form.querySelector('input[name="benefits"]').checked,
+                                danger: form.querySelector('input[name="danger"]').checked,
+                                goodValue: form.querySelector('input[name="goodValue"]').checked,
+                                remarkableValue: form.querySelector('input[name="remarkableValue"]').checked,
+                                noReturn: form.querySelector('input[name="noReturn"]').checked,
+                                unique: form.querySelector('input[name="unique"]').checked,
+                                additionalShift: parseInt(form.additionalShift.value) || 0,
+                                karmaPoints: parseInt(form.karmaPoints.value) || 0
+                            };
+                            await game.user.setFlag("world", "marvelPopularityOptions", storedValues);
+                            
+                            // Perform the roll
+                            await this.actor.rollPopularityFeat(popularityType, options);
+                            resolve(true);
+                        }
+                    },
+                    cancel: {
+                        label: "Cancel",
+                        callback: () => resolve(false)
+                    }
+                },
+                default: "roll"
+            }).render(true);
         });
     }
 

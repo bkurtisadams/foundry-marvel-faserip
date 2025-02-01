@@ -1,0 +1,54 @@
+<form class="popularity-roll-dialog">
+    <div class="form-group">
+        <select name="disposition" style="width: 150px;">
+            <option value="friendly" {{#if (eq stored.disposition "friendly")}}selected{{/if}}>Friendly</option>
+            <option value="neutral" {{#if (eq stored.disposition "neutral")}}selected{{/if}}>Neutral</option>
+            <option value="unfriendly" {{#if (eq stored.disposition "unfriendly")}}selected{{/if}}>Unfriendly</option>
+            <option value="hostile" {{#if (eq stored.disposition "hostile")}}selected{{/if}}>Hostile (Impossible)</option>
+        </select>
+        <div class="disposition-info">
+            <div><strong>Friendly:</strong> Close friends, relatives, listed Contacts</div>
+            <div><strong>Neutral:</strong> People who have heard of the hero, other heroes</div>
+            <div><strong>Unfriendly:</strong> Strangers, opposite Popularity</div>
+            <div><strong>Hostile:</strong> Active opponents, sworn enemies</div>
+        </div>
+    </div>
+
+    <div class="modifiers-grid">
+        <div class="modifier-row">
+            <input type="checkbox" name="benefits" value="2" {{#if stored.benefits}}checked{{/if}}>
+            <span class="mod-label">Target benefits (+2CS)</span>
+        </div>
+        <div class="modifier-row">
+            <input type="checkbox" name="danger" value="-3" {{#if stored.danger}}checked{{/if}}>
+            <span class="mod-label">Target in danger (-3CS)</span>
+        </div>
+        <div class="modifier-row">
+            <input type="checkbox" name="goodValue" value="-1" {{#if stored.goodValue}}checked{{/if}}>
+            <span class="mod-label">Good value item (-1CS)</span>
+        </div>
+        <div class="modifier-row">
+            <input type="checkbox" name="remarkableValue" value="-2" {{#if stored.remarkableValue}}checked{{/if}}>
+            <span class="mod-label">Remarkable value (-2CS)</span>
+        </div>
+        <div class="modifier-row">
+            <input type="checkbox" name="noReturn" value="-2" {{#if stored.noReturn}}checked{{/if}}>
+            <span class="mod-label">Won't be returned (-2CS)</span>
+        </div>
+        <div class="modifier-row">
+            <input type="checkbox" name="unique" value="-3" {{#if stored.unique}}checked{{/if}}>
+            <span class="mod-label">Item is unique (-3CS)</span>
+        </div>
+    </div>
+
+    <div class="form-footer">
+        <div class="input-row">
+            <label>Column Shift:</label>
+            <input type="number" name="additionalShift" value="{{stored.additionalShift}}" style="width: 60px;">
+        </div>
+        <div class="input-row">
+            <label>Karma Points:</label>
+            <input type="number" name="karmaPoints" value="{{stored.karmaPoints}}" min="0" style="width: 60px;">
+        </div>
+    </div>
+</form>
