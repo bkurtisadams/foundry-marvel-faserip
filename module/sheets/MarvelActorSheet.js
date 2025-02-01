@@ -92,33 +92,32 @@ export class MarvelActorSheet extends ActorSheet {
         });
     }
 
-    /** @override */
-    async _updateObject(event, formData) {
-        // Ensure the lists are properly handled
-        const expandedData = expandObject(formData);
-        
-        // Handle powers list
-        if (expandedData.system?.powers?.list) {
-            const powers = Object.values(expandedData.system.powers.list);
-            expandedData.system.powers.list = powers;
-        }
-        
-        // Handle talents list
-        if (expandedData.system?.talents?.list) {
-            const talents = Object.values(expandedData.system.talents.list);
-            expandedData.system.talents.list = talents;
-        }
-        
-        // Handle contacts list
-        if (expandedData.system?.contacts?.list) {
-            const contacts = Object.values(expandedData.system.contacts.list);
-            expandedData.system.contacts.list = contacts;
-        }
-        
-        // Update the actor
-        return await super._updateObject(event, expandedData);
+/** @override */
+async _updateObject(event, formData) {
+    // Ensure the lists are properly handled
+    const expandedData = foundry.utils.expandObject(formData);
+    
+    // Handle powers list
+    if (expandedData.system?.powers?.list) {
+        const powers = Object.values(expandedData.system.powers.list);
+        expandedData.system.powers.list = powers;
     }
-
+    
+    // Handle talents list
+    if (expandedData.system?.talents?.list) {
+        const talents = Object.values(expandedData.system.talents.list);
+        expandedData.system.talents.list = talents;
+    }
+    
+    // Handle contacts list
+    if (expandedData.system?.contacts?.list) {
+        const contacts = Object.values(expandedData.system.contacts.list);
+        expandedData.system.contacts.list = contacts;
+    }
+    
+    // Update the actor
+    return await super._updateObject(event, expandedData);
+}
     async _onAddTalent(event) {
         event.preventDefault();
         

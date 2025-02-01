@@ -20,8 +20,8 @@
                     <label class="input-label">Hero's Identity</label>
                     <input type="text" name="system.biography.realName" value="{{actor.system.biography.realName}}"/>
                     <div class="identity-controls">
-                        <label><input type="radio" name="system.biography.identity" value="secret" {{checked actor.system.biography.identity "secret"}}> Secret</label>
-                        <label><input type="radio" name="system.biography.identity" value="public" {{checked actor.system.biography.identity "public"}}> Public</label>
+                        <label><input type="radio" name="system.biography.identity" value="secret" {{#if (eq actor.system.biography.identity "secret")}}checked{{/if}}> Secret</label>
+                        <label><input type="radio" name="system.biography.identity" value="public" {{#if (eq actor.system.biography.identity "public")}}checked{{/if}}> Public</label>
                     </div>
                 </div>
             </div>
@@ -71,22 +71,12 @@
                             <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.{{key}}.initialRoll" value="{{ability.initialRoll}}" data-ability="{{key}}" maxlength="3"/></td>
                             <td>
                                 <select class="initial-rank-select" name="system.primaryAbilities.{{key}}.initialRank" data-ability="{{key}}">
-                                    {{#select ability.initialRank}}
-                                    <option value=""></option>
-                                    {{#each @root.config.ranks as |rank|}}
-                                    <option value="{{rank}}">{{rank}}</option>
-                                    {{/each}}
-                                    {{/select}}
+                                    {{selectOptions @root.config.ranks selected=ability.initialRank blank=""}}
                                 </select>
                             </td>
                             <td>
                                 <select name="system.primaryAbilities.{{key}}.rank" class="rank-select" data-ability="primaryAbilities.{{key}}">
-                                    {{#select ability.rank}}
-                                    <option value=""></option>
-                                    {{#each @root.config.ranks as |rank|}}
-                                    <option value="{{rank}}">{{rank}}</option>
-                                    {{/each}}
-                                    {{/select}}
+                                    {{selectOptions @root.config.ranks selected=ability.rank blank=""}}
                                 </select>
                             </td>
                             <td><input type="number" class="ability-number" name="system.primaryAbilities.{{key}}.number" value="{{ability.number}}" /></td>
@@ -95,7 +85,7 @@
                     </tbody>
                 </table>
             </div>
-                        
+
             <div class="secondary-abilities">
                 <h2>Secondary Abilities</h2>
                 <div class="secondary-grid">
@@ -147,11 +137,7 @@
                     <input type="text" name="system.powers.list.{{idx}}.name" value="{{power.name}}"/>
                     <div class="power-controls">
                         <select name="system.powers.list.{{idx}}.rank" class="rank-select">
-                            {{#select power.rank}}
-                            {{#each @root.config.ranks as |rank|}}
-                            <option value="{{rank}}">{{rank}}</option>
-                            {{/each}}
-                            {{/select}}
+                            {{selectOptions @root.config.ranks selected=power.rank blank=""}}
                         </select>
                         <button type="button" class="item-delete" data-type="powers" data-id="{{idx}}">
                             <i class="fas fa-trash"></i>
