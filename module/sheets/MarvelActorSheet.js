@@ -195,30 +195,43 @@ async _updateObject(event, formData) {
         const abilityId = element.closest('.ability-row').dataset.ability;
         
         // Get stored values
-        const stored = await game.user.getFlag("world", "marvelRollOptions") || {};
+        const stored = await game.user.getFlag("world", "marvelRollOptions") || {
+            featType: "ability",
+            actionType: "BA",
+            columnShift: 0,
+            karmaPoints: 0
+        };
+        
+        // Prepare template data
+        const templateData = {
+            config: CONFIG.marvel,
+            defaultFeatType: stored.featType,
+            defaultAction: stored.actionType,
+            columnShift: stored.columnShift,
+            karmaPoints: stored.karmaPoints,
+            showActionSelect: stored.featType === "combat",
+            actionTypes: CONFIG.marvel.actionResults
+        };
         
         // Render dialog
         const html = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/ability-roll.html",
-            {
-                config: CONFIG.marvel,
-                defaultAction: stored.actionType || "BA",
-                columnShift: stored.columnShift || 0,
-                karmaPoints: stored.karmaPoints || 0
-            }
+            templateData
         );
         
         return new Promise(resolve => {
-            new Dialog({
-                title: "Ability Roll",
+            const dialog = new Dialog({
+                title: "FEAT Roll",
                 content: html,
                 buttons: {
                     roll: {
                         label: "Roll",
                         callback: async (html) => {
                             const form = html[0].querySelector("form");
+                            const featType = form.querySelector('input[name="featType"]:checked').value;
                             const options = {
-                                actionType: form.actionType.value,
+                                featType: featType,
+                                actionType: featType === "combat" ? form.actionType.value : null,
                                 columnShift: parseInt(form.columnShift.value) || 0,
                                 karmaPoints: parseInt(form.karmaPoints.value) || 0
                             };
@@ -236,7 +249,21 @@ async _updateObject(event, formData) {
                         callback: () => resolve(false)
                     }
                 },
-                default: "roll"
+                default: "roll",
+                render: (html) => {
+                    // Add listeners for feat type changes
+                    const radioButtons = html[0].querySelectorAll('input[name="featType"]');
+                    radioButtons.forEach(radio => {
+                        radio.addEventListener('change', (event) => {
+                            const actionSelect = html[0].querySelector('.action-select');
+                            if (event.currentTarget.value === "combat") {
+                                actionSelect.style.display = "";
+                            } else {
+                                actionSelect.style.display = "none";
+                            }
+                        });
+                    });
+                }
             }).render(true);
         });
     }

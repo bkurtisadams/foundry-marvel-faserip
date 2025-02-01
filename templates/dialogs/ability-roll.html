@@ -1,8 +1,21 @@
 <form class="ability-roll-dialog">
-    <div class="form-group">
-        <label>Action:</label>
+    <div class="form-group feat-type-selection">
+        <div class="feat-type-radio">
+            <label>
+                <input type="radio" name="featType" value="ability" data-action="change-feat-type" {{#if (eq defaultFeatType "ability")}}checked{{/if}}>
+                Ability FEAT
+            </label>
+            <label>
+                <input type="radio" name="featType" value="combat" data-action="change-feat-type" {{#if (eq defaultFeatType "combat")}}checked{{/if}}>
+                Combat FEAT
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group action-select" {{#unless showActionSelect}}style="display: none;"{{/unless}}>
+        <label>Combat Action:</label>
         <select name="actionType">
-            {{#each config.actionResults as |action id|}}
+            {{#each actionTypes as |action id|}}
             <option value="{{id}}" {{#if (eq id defaultAction)}}selected{{/if}}>
                 {{action.name}} ({{id}})
             </option>

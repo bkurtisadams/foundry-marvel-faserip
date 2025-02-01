@@ -132,3 +132,12 @@ export const ACTION_RESULTS = {
         results: { white: "En. Loss", green: "E/S", yellow: "No", red: "No" }
     }
 };
+
+export const FEAT_TYPES = {
+    "ability": {
+        name: "Ability FEAT"
+    },
+    "combat": {
+        name: "Combat FEAT"
+    }
+};

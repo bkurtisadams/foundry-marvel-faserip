@@ -98,49 +98,60 @@ export class MarvelActor extends Actor {
         return color;
     }
 
-    /**
+/**
      * Roll an ability check
      * @param {string} abilityId The ability ID (e.g., "fighting")
      * @param {Object} options Roll options with actionType, columnShift, and karmaPoints
      */
-    async rollAbility(abilityId, options = {}) {
-        const ability = this.system.primaryAbilities[abilityId];
-        const baseRank = this.getRankFromValue(ability.number);
-        const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
-        
-        // Roll the dice and add karma
-        const roll = await new Roll("1d100").evaluate({async: true});
-        const finalRoll = Math.min(100, roll.total + (options.karmaPoints || 0));
-        
-        // Get the color result and action outcome
-        const color = this.getColorResult(finalRoll, shiftedRank);
-        const action = CONFIG.marvel.actionResults[options.actionType || "BA"];
-        const outcome = action.results[color];
-        
-        // Create chat message content
-        const messageContent = `
-            <div class="marvel-roll">
-                <h3>${this.name} - ${action.name}</h3>
-                <div class="roll-details">
-                    <div>${abilityId}: ${ability.number} (${baseRank})</div>
-                    <div>Column Shift: ${options.columnShift || 0} → ${shiftedRank}</div>
-                    <div>Roll: ${roll.total}${options.karmaPoints ? ` + Karma: ${options.karmaPoints} = ${finalRoll}` : ''}</div>
-                </div>
-                <div class="roll-result ${color}">
-                    ${outcome}
-                </div>
-            </div>`;
-        
-        // Create the chat message
-        const messageData = {
-            speaker: ChatMessage.getSpeaker({ actor: this }),
-            flavor: `${action.name} Check`,
-            content: messageContent,
-            type: CONST.CHAT_MESSAGE_TYPES.ROLL,
-            roll: roll
-        };
-
-        await ChatMessage.create(messageData);
-        return roll;
+async rollAbility(abilityId, options = {}) {
+    const ability = this.system.primaryAbilities[abilityId];
+    const baseRank = this.getRankFromValue(ability.number);
+    const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
+    
+    // Roll the dice and add karma
+    const roll = await new Roll("1d100").evaluate();
+    const finalRoll = Math.min(100, roll.total + (options.karmaPoints || 0));
+    
+    // Get the color result and outcome
+    const color = this.getColorResult(finalRoll, shiftedRank);
+    
+    let resultText;
+    if (options.featType === "combat" && options.actionType) {
+        const action = CONFIG.marvel.actionResults[options.actionType];
+        resultText = action.results[color];
+    } else {
+        resultText = color.toUpperCase();
     }
+
+    // Format the ability name properly
+    const formattedAbility = abilityId.charAt(0).toUpperCase() + abilityId.slice(1);
+    
+    // Create chat message content
+    const messageContent = `
+        <div class="marvel-roll">
+            <h2 style="color: #782e22; border-bottom: 2px solid #782e22; margin-bottom: 10px; padding-bottom: 3px;">
+                ${this.name} - ${options.featType === "combat" ? CONFIG.marvel.actionResults[options.actionType].name : formattedAbility + " FEAT"}
+            </h2>
+            <div class="roll-details" style="line-height: 1.4;">
+                <div style="margin-bottom: 5px;">${formattedAbility}: ${ability.number} (${baseRank})</div>
+                <div style="margin-bottom: 5px;">Column Shift: ${options.columnShift || 0} → ${shiftedRank}</div>
+                <div style="margin-bottom: 10px;">Roll: ${roll.total}${options.karmaPoints ? ` + Karma: ${options.karmaPoints} = ${finalRoll}` : ''}</div>
+            </div>
+            <div style="text-align: center; font-weight: bold; padding: 5px; border: 1px solid black; background-color: ${color}; color: ${color === 'white' || color === 'yellow' ? 'black' : 'white'};">
+                ${resultText}
+            </div>
+        </div>`;
+    
+    // Create the chat message
+    const messageData = {
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        flavor: `${this.name} ${formattedAbility} ${options.featType === "combat" ? CONFIG.marvel.actionResults[options.actionType].name : "FEAT"} Check`,
+        content: messageContent,
+        rolls: [roll],
+        sound: CONFIG.sounds.dice
+    };
+
+    await ChatMessage.create(messageData);
+    return roll;
+}
 }
