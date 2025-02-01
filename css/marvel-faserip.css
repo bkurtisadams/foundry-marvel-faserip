@@ -86,48 +86,46 @@
 
 /* Marvel Roll Styling */
 .marvel-roll {
+    background: #f0f0e0;
+    border: 1px solid #782e22;
     padding: 5px;
+    margin: 3px 0;
 }
 
 .marvel-roll h3 {
-    border-bottom: 2px solid #782e22;
     color: #782e22;
-    font-size: 1.2em;
+    border-bottom: 2px solid #782e22;
     margin-bottom: 5px;
     padding-bottom: 3px;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.marvel-roll div[style*="background-color: white"] {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #000000;
+}
+
+.marvel-roll div[style*="background-color: green"] {
+    background-color: #4CAF50 !important;
+    color: #ffffff !important;
+}
+
+.marvel-roll div[style*="background-color: yellow"] {
+    background-color: #FFC107 !important;
+    color: #000000 !important;
+    border: 1px solid #000000;
+}
+
+.marvel-roll div[style*="background-color: red"] {
+    background-color: #F44336 !important;
+    color: #ffffff !important;
 }
 
 .marvel-roll .roll-details {
     margin: 5px 0;
     line-height: 1.4;
-}
-
-.marvel-roll .roll-result {
-    text-align: center;
-    font-weight: bold;
-    padding: 5px;
-    margin-top: 5px;
-    border: 1px solid black;
-}
-
-.marvel-roll .roll-result.white {
-    background-color: #ffffff;
-    color: #000000;
-}
-
-.marvel-roll .roll-result.green {
-    background-color: #4CAF50;
-    color: #ffffff;
-}
-
-.marvel-roll .roll-result.yellow {
-    background-color: #FFC107;
-    color: #000000;
-}
-
-.marvel-roll .roll-result.red {
-    background-color: #F44336;
-    color: #ffffff;
 }
 
 .ability-roll-dialog .feat-type-selection {

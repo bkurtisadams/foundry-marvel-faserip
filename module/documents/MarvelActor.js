@@ -117,8 +117,7 @@ async rollAbility(abilityId, options = {}) {
     
     let resultText;
     if (options.featType === "combat" && options.actionType) {
-        const action = CONFIG.marvel.actionResults[options.actionType];
-        resultText = action.results[color];
+        resultText = CONFIG.marvel.actionResults[options.actionType].results[color];
     } else {
         resultText = color.toUpperCase();
     }
@@ -129,15 +128,11 @@ async rollAbility(abilityId, options = {}) {
     // Create chat message content
     const messageContent = `
         <div class="marvel-roll">
-            <h2 style="color: #782e22; border-bottom: 2px solid #782e22; margin-bottom: 10px; padding-bottom: 3px;">
-                ${this.name} - ${options.featType === "combat" ? CONFIG.marvel.actionResults[options.actionType].name : formattedAbility + " FEAT"}
-            </h2>
-            <div class="roll-details" style="line-height: 1.4;">
-                <div style="margin-bottom: 5px;">${formattedAbility}: ${ability.number} (${baseRank})</div>
-                <div style="margin-bottom: 5px;">Column Shift: ${options.columnShift || 0} → ${shiftedRank}</div>
-                <div style="margin-bottom: 10px;">Roll: ${roll.total}${options.karmaPoints ? ` + Karma: ${options.karmaPoints} = ${finalRoll}` : ''}</div>
-            </div>
-            <div style="text-align: center; font-weight: bold; padding: 5px; border: 1px solid black; background-color: ${color}; color: ${color === 'white' || color === 'yellow' ? 'black' : 'white'};">
+            <h3>${this.name} - ${options.featType === "combat" ? CONFIG.marvel.actionResults[options.actionType].name : formattedAbility + " FEAT"}</h3>
+            ${formattedAbility}: ${ability.number} (${baseRank})<br>
+            Column Shift: ${options.columnShift || 0} → ${shiftedRank}<br>
+            Roll: ${roll.total}${options.karmaPoints ? ` + ${options.karmaPoints} = ${finalRoll}` : ''}<br>
+            <div style="text-align: center; font-weight: bold; padding: 5px; margin-top: 5px; background-color: ${color};">
                 ${resultText}
             </div>
         </div>`;
@@ -145,7 +140,6 @@ async rollAbility(abilityId, options = {}) {
     // Create the chat message
     const messageData = {
         speaker: ChatMessage.getSpeaker({ actor: this }),
-        flavor: `${this.name} ${formattedAbility} ${options.featType === "combat" ? CONFIG.marvel.actionResults[options.actionType].name : "FEAT"} Check`,
         content: messageContent,
         rolls: [roll],
         sound: CONFIG.sounds.dice
