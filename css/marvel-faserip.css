@@ -68,6 +68,52 @@
     flex: 1;
 }
 
+/* Marvel Roll Styling */
+.marvel-roll {
+    padding: 5px;
+}
+
+.marvel-roll h3 {
+    border-bottom: 2px solid #782e22;
+    color: #782e22;
+    font-size: 1.2em;
+    margin-bottom: 5px;
+    padding-bottom: 3px;
+}
+
+.marvel-roll .roll-details {
+    margin: 5px 0;
+    line-height: 1.4;
+}
+
+.marvel-roll .roll-result {
+    text-align: center;
+    font-weight: bold;
+    padding: 5px;
+    margin-top: 5px;
+    border: 1px solid black;
+}
+
+.marvel-roll .roll-result.white {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+.marvel-roll .roll-result.green {
+    background-color: #4CAF50;
+    color: #ffffff;
+}
+
+.marvel-roll .roll-result.yellow {
+    background-color: #FFC107;
+    color: #000000;
+}
+
+.marvel-roll .roll-result.red {
+    background-color: #F44336;
+    color: #ffffff;
+}
+
 /* Abilities Section */
 .abilities-grid {
     display: grid;

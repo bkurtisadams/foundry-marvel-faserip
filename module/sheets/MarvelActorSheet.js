@@ -193,6 +193,51 @@ async _updateObject(event, formData) {
         event.preventDefault();
         const element = event.currentTarget;
         const abilityId = element.closest('.ability-row').dataset.ability;
-        await this.actor.rollAbility(abilityId);
+        
+        // Get stored values
+        const stored = await game.user.getFlag("world", "marvelRollOptions") || {};
+        
+        // Render dialog
+        const html = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/ability-roll.html",
+            {
+                config: CONFIG.marvel,
+                defaultAction: stored.actionType || "BA",
+                columnShift: stored.columnShift || 0,
+                karmaPoints: stored.karmaPoints || 0
+            }
+        );
+        
+        return new Promise(resolve => {
+            new Dialog({
+                title: "Ability Roll",
+                content: html,
+                buttons: {
+                    roll: {
+                        label: "Roll",
+                        callback: async (html) => {
+                            const form = html[0].querySelector("form");
+                            const options = {
+                                actionType: form.actionType.value,
+                                columnShift: parseInt(form.columnShift.value) || 0,
+                                karmaPoints: parseInt(form.karmaPoints.value) || 0
+                            };
+                            
+                            // Store values for next time
+                            await game.user.setFlag("world", "marvelRollOptions", options);
+                            
+                            // Perform the roll
+                            await this.actor.rollAbility(abilityId, options);
+                            resolve(true);
+                        }
+                    },
+                    cancel: {
+                        label: "Cancel",
+                        callback: () => resolve(false)
+                    }
+                },
+                default: "roll"
+            }).render(true);
+        });
     }
 }

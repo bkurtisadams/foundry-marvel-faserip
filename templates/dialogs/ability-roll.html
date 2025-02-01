@@ -1,0 +1,28 @@
+<form class="ability-roll-dialog">
+    <div class="form-group">
+        <label>Action:</label>
+        <select name="actionType">
+            {{#each config.actionResults as |action id|}}
+            <option value="{{id}}" {{#if (eq id defaultAction)}}selected{{/if}}>
+                {{action.name}} ({{id}})
+            </option>
+            {{/each}}
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label>Column Shift:</label>
+        <div class="form-fields">
+            <input type="number" name="columnShift" value="{{columnShift}}" placeholder="0">
+            <p class="hint">(Positive for right shift, negative for left shift)</p>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label>Karma Points:</label>
+        <div class="form-fields">
+            <input type="number" name="karmaPoints" value="{{karmaPoints}}" min="0" placeholder="0">
+            <p class="hint">(Added to d100 roll)</p>
+        </div>
+    </div>
+</form>

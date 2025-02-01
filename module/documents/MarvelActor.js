@@ -4,7 +4,7 @@ export class MarvelActor extends Actor {
         super.prepareData();
 
         const actorData = this;
-        const data = actorData.system;  // For v10 compatibility
+        const data = actorData.system;
 
         // Make separate methods for each of these preparation steps
         this._calculateHealth(data);
@@ -50,85 +50,96 @@ export class MarvelActor extends Actor {
         }
     }
 
-    /** 
-     * Get the numeric value for a rank
-     * @param {string} rank The rank name
-     * @returns {number} The standard rank number
-     */
-    getRankNumber(rank) {
-        const rankDefinitions = {
-            'Shift 0': { range: [0, 0], standard: 0 },
-            'Feeble': { range: [1, 2], standard: 2 },
-            'Poor': { range: [3, 4], standard: 4 },
-            'Typical': { range: [5, 7], standard: 6 },
-            'Good': { range: [8, 15], standard: 10 },
-            'Excellent': { range: [16, 25], standard: 20 },
-            'Remarkable': { range: [26, 35], standard: 30 },
-            'Incredible': { range: [36, 45], standard: 40 },
-            'Amazing': { range: [46, 62], standard: 50 },
-            'Monstrous': { range: [63, 87], standard: 75 },
-            'Unearthly': { range: [88, 125], standard: 100 },
-            'Shift X': { range: [126, 175], standard: 150 },
-            'Shift Y': { range: [176, 350], standard: 200 },
-            'Shift Z': { range: [351, 999], standard: 500 },
-            'Class 1000': { range: [1000, 1000], standard: 1000 },
-            'Class 3000': { range: [3000, 3000], standard: 3000 },
-            'Class 5000': { range: [5000, 5000], standard: 5000 },
-            'Beyond': { range: [5001, Infinity], standard: Infinity }
-        };
-        return rankDefinitions[rank]?.standard || 0;
+    getRankFromValue(value) {
+        if (value <= 0) return "Shift 0";
+        if (value <= 2) return "Feeble";
+        if (value <= 4) return "Poor";
+        if (value <= 7) return "Typical";
+        if (value <= 15) return "Good";
+        if (value <= 25) return "Excellent";
+        if (value <= 36) return "Remarkable";
+        if (value <= 45) return "Incredible";
+        if (value <= 62) return "Amazing";
+        if (value <= 87) return "Monstrous";
+        if (value <= 125) return "Unearthly";
+        if (value <= 175) return "Shift X";
+        if (value <= 350) return "Shift Y";
+        if (value <= 999) return "Shift Z";
+        if (value <= 1000) return "Class 1000";
+        if (value <= 3000) return "Class 3000";
+        if (value <= 5000) return "Class 5000";
+        return "Beyond";
     }
 
-    /**
-     * Get the valid range for a rank
-     * @param {string} rank The rank name
-     * @returns {Array} The valid range [min, max]
-     */
-    getRankRange(rank) {
-        const rankDefinitions = this.constructor.RANK_DEFINITIONS;
-        return rankDefinitions[rank]?.range || [0, 0];
+    applyColumnShift(rank, shift) {
+        const ranks = [
+            "Shift 0", "Feeble", "Poor", "Typical", "Good", "Excellent", 
+            "Remarkable", "Incredible", "Amazing", "Monstrous", 
+            "Unearthly", "Shift X", "Shift Y", "Shift Z", 
+            "Class 1000", "Class 3000", "Class 5000", "Beyond"
+        ];
+        
+        const currentIndex = ranks.indexOf(rank);
+        const newIndex = Math.min(Math.max(currentIndex + shift, 0), ranks.length - 1);
+        return ranks[newIndex];
     }
 
-    /**
-     * Check if a number is within the valid range for a rank
-     * @param {string} rank The rank name
-     * @param {number} number The number to check
-     * @returns {boolean} Whether the number is valid for the rank
-     */
-    isValidRankNumber(rank, number) {
-        const range = this.getRankRange(rank);
-        return number >= range[0] && number <= range[1];
+    getColorResult(rollTotal, rank) {
+        const ranges = CONFIG.marvel.universalTableRanges[rank];
+        let color = "white"; // default
+
+        for (const [c, [min, max]] of Object.entries(ranges)) {
+            if (rollTotal >= min && rollTotal <= max) {
+                color = c;
+                break;
+            }
+        }
+
+        return color;
     }
 
     /**
      * Roll an ability check
      * @param {string} abilityId The ability ID (e.g., "fighting")
-     * @param {Object} options Roll options
+     * @param {Object} options Roll options with actionType, columnShift, and karmaPoints
      */
-    async rollAbility(abilityId, options={}) {
+    async rollAbility(abilityId, options = {}) {
         const ability = this.system.primaryAbilities[abilityId];
-        const label = game.i18n.localize(`MARVEL.Ability${abilityId.charAt(0).toUpperCase() + abilityId.slice(1)}`);
+        const baseRank = this.getRankFromValue(ability.number);
+        const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
         
-        const rollData = {
-            actor: this,
-            ability: ability
-        };
-
-        const formula = "1d100";
-        const roll = new Roll(formula, rollData);
-        await roll.evaluate();
-
+        // Roll the dice and add karma
+        const roll = await new Roll("1d100").evaluate({async: true});
+        const finalRoll = Math.min(100, roll.total + (options.karmaPoints || 0));
+        
+        // Get the color result and action outcome
+        const color = this.getColorResult(finalRoll, shiftedRank);
+        const action = CONFIG.marvel.actionResults[options.actionType || "BA"];
+        const outcome = action.results[color];
+        
+        // Create chat message content
+        const messageContent = `
+            <div class="marvel-roll">
+                <h3>${this.name} - ${action.name}</h3>
+                <div class="roll-details">
+                    <div>${abilityId}: ${ability.number} (${baseRank})</div>
+                    <div>Column Shift: ${options.columnShift || 0} → ${shiftedRank}</div>
+                    <div>Roll: ${roll.total}${options.karmaPoints ? ` + Karma: ${options.karmaPoints} = ${finalRoll}` : ''}</div>
+                </div>
+                <div class="roll-result ${color}">
+                    ${outcome}
+                </div>
+            </div>`;
+        
         // Create the chat message
         const messageData = {
             speaker: ChatMessage.getSpeaker({ actor: this }),
-            flavor: `${label} Check (${ability.rank})`,
-            roll: roll,
-            content: `<h2>${label} Check</h2>
-                     <p>Rank: ${ability.rank} (${ability.number})</p>
-                     <p>Result: ${roll.total}</p>`
+            flavor: `${action.name} Check`,
+            content: messageContent,
+            type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+            roll: roll
         };
 
-        // Send to chat
         await ChatMessage.create(messageData);
         return roll;
     }
