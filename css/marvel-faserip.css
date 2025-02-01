@@ -96,9 +96,13 @@
     text-transform: uppercase;
 }
 
-.initial-roll-input, .initial-rank-input {
-    width: 40px;
+.initial-roll-input {
+    width: 30px;
     text-align: center;
+}
+
+.initial-rank-select {
+    width: 90px;
 }
 
 .rank-select {
@@ -106,8 +110,10 @@
 }
 
 .ability-number {
-    text-align: center;
+    width: 60px;
+    text-align: right;
     font-weight: bold;
+    padding-right: 10px;
 }
 
 /* Secondary Abilities */

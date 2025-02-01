@@ -1,6 +1,6 @@
 <form class="{{cssClass}} flexcol" autocomplete="off">
     <header class="sheet-header">
-        <img src="systems/marvel-faserip/assets/marvel-logo.png" class="marvel-logo"/>
+        <img src="systems/marvel-faserip/assets/marvel-logo-bw.png" class="marvel-logo"/>
         <h1 class="sheet-title">Character Information Sheet</h1>
         
         <div class="header-fields">
@@ -59,8 +59,8 @@
                         <tr>
                             <th></th>
                             <th>Init Roll</th>
-                            <th>Init Rnk</th>
-                            <th>Curr Rank</th>
+                            <th>Init Rank</th>
+                            <th>Current Rank</th>
                             <th>Num</th>
                         </tr>
                     </thead>
@@ -69,7 +69,16 @@
                         <tr class="ability-row" data-ability="{{key}}">
                             <td class="ability-label">{{key}}</td>
                             <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.{{key}}.initialRoll" value="{{ability.initialRoll}}" data-ability="{{key}}" maxlength="3"/></td>
-                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.{{key}}.initialRank" value="{{ability.initialRank}}" data-ability="{{key}}"/></td>
+                            <td>
+                                <select class="initial-rank-select" name="system.primaryAbilities.{{key}}.initialRank" data-ability="{{key}}">
+                                    {{#select ability.initialRank}}
+                                    <option value=""></option>
+                                    {{#each @root.config.ranks as |rank|}}
+                                    <option value="{{rank}}">{{rank}}</option>
+                                    {{/each}}
+                                    {{/select}}
+                                </select>
+                            </td>
                             <td>
                                 <select name="system.primaryAbilities.{{key}}.rank" class="rank-select" data-ability="primaryAbilities.{{key}}">
                                     {{#select ability.rank}}
@@ -86,7 +95,7 @@
                     </tbody>
                 </table>
             </div>
-
+            
             <div class="secondary-abilities">
                 <h2>Secondary Abilities</h2>
                 <div class="secondary-grid">
