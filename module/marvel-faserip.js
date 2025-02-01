@@ -86,7 +86,8 @@ Hooks.once('init', async function() {
 
     // Load templates
     loadTemplates([
-        "systems/marvel-faserip/templates/dialogs/ability-roll.html"
+        "systems/marvel-faserip/templates/dialogs/ability-roll.html",
+        "systems/marvel-faserip/templates/dialogs/popularity-roll.html"
     ]);
 });
 

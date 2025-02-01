@@ -71,17 +71,17 @@
                                 </select>
                             </td>
                             <td>
-                                <select name="system.primaryAbilities.{{key}}.rank" class="rank-select" data-ability="primaryAbilities.{{key}}">
+                                <select name="system.primaryAbilities.{{key}}.rank" class="rank-select" data-ability="{{key}}">
                                     {{selectOptions @root.config.ranks selected=ability.rank blank=""}}
                                 </select>
                             </td>
-                            <td><input type="number" class="ability-number" name="system.primaryAbilities.{{key}}.number" value="{{ability.number}}" /></td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.{{key}}.number" value="{{ability.number}}" data-ability="{{key}}" /></td>
                         </tr>
                         {{/each}}
                     </tbody>
                 </table>
             </div>
-
+            
             <div class="secondary-abilities">
                 <h2>Secondary Abilities</h2>
                 <div class="secondary-grid">

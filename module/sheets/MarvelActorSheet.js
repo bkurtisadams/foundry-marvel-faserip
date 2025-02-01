@@ -17,7 +17,10 @@ export class MarvelActorSheet extends ActorSheet {
         
         // Add configuration
         context.config = {
-            ranks: Object.keys(MARVEL_RANKS)
+            ranks: Object.entries(CONFIG.marvel.ranks).reduce((obj, [key]) => {
+                obj[key] = game.i18n.localize(`MARVEL.Rank${key.replace(/\s+/g, '')}`);
+                return obj;
+            }, {})
         };
         
         // Ensure lists exist and are initialized properly
@@ -37,7 +40,7 @@ export class MarvelActorSheet extends ActorSheet {
         
         return context;
     }
-
+    
     activateListeners(html) {
         super.activateListeners(html);
 
@@ -45,6 +48,7 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.add-power').click(this._onAddPower.bind(this));
             html.find('.add-talent').click(this._onAddTalent.bind(this));
             html.find('.add-contact').click(this._onAddContact.bind(this));
+            html.find('.ability-number').change(this._onNumberChange.bind(this));
             html.find('.rank-select').change(this._onRankChange.bind(this));
             html.find('.item-delete').click(this._onItemDelete.bind(this));
             html.find('.clickable-popularity').click(this._onPopularityRoll.bind(this));
@@ -57,6 +61,25 @@ export class MarvelActorSheet extends ActorSheet {
         // Add ability roll handlers
         html.find('.ability-label').click(this._onAbilityRoll.bind(this));
     }
+    
+    async _onNumberChange(event) {
+        event.preventDefault();
+        const element = event.currentTarget;
+        const abilityPath = element.dataset.ability;
+        const newNumber = parseInt(element.value) || 0;
+        
+        // Strip the 'primaryAbilities.' prefix if present
+        const cleanPath = abilityPath.replace('primaryAbilities.', '');
+        
+        // Get the rank that corresponds to this number
+        const newRank = this.actor.getRankFromValue(newNumber);
+        
+        // Update both number and rank
+        await this.actor.update({
+            [`system.primaryAbilities.${cleanPath}.rank`]: newRank,
+            [`system.primaryAbilities.${cleanPath}.number`]: newNumber
+        });
+    }
 
     async _onRankChange(event) {
         event.preventDefault();
@@ -64,14 +87,27 @@ export class MarvelActorSheet extends ActorSheet {
         const abilityPath = element.dataset.ability;
         const newRank = element.value;
         
-        // Get the rank number
-        const rankNumber = MARVEL_RANKS[newRank]?.standard || 0;
+        // Strip the 'primaryAbilities.' prefix if present
+        const cleanPath = abilityPath.replace('primaryAbilities.', '');
         
-        // Update both rank and number
-        await this.actor.update({
-            [`system.${abilityPath}.rank`]: newRank,
-            [`system.${abilityPath}.number`]: rankNumber
-        });
+        // Get current values
+        const currentAbility = this.actor.system.primaryAbilities[cleanPath];
+        
+        // If changing initial rank, update initial rank and number
+        if (element.classList.contains('initial-rank-select')) {
+            await this.actor.update({
+                [`system.primaryAbilities.${cleanPath}.initialRank`]: newRank,
+                [`system.primaryAbilities.${cleanPath}.initialNumber`]: MARVEL_RANKS[newRank]?.standard || 0
+            });
+        }
+        // If changing current rank, update current rank and number
+        else {
+            const rankNumber = MARVEL_RANKS[newRank]?.standard || currentAbility.number || 0;
+            await this.actor.update({
+                [`system.primaryAbilities.${cleanPath}.rank`]: newRank,
+                [`system.primaryAbilities.${cleanPath}.number`]: rankNumber
+            });
+        }
     }
 
     async _onAddPower(event) {

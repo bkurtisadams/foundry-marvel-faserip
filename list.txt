@@ -33,3 +33,4 @@ C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\t
 C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\templates\dialogs
 C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\templates\actor\actor-sheet.html
 C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\templates\dialogs\ability-roll.html
+C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\templates\dialogs\popularity-roll.html
