@@ -113,7 +113,14 @@
     width: 60px;
     text-align: right;
     font-weight: bold;
-    padding-right: 10px;
+    padding-right: 5px;
+    -moz-appearance: textfield;
+}
+
+.ability-number::-webkit-outer-spin-button,
+.ability-number::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 /* Secondary Abilities */

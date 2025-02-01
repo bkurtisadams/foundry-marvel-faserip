@@ -89,13 +89,13 @@
                                     {{/select}}
                                 </select>
                             </td>
-                            <td class="ability-number">{{ability.number}}</td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.{{key}}.number" value="{{ability.number}}" /></td>
                         </tr>
                         {{/each}}
                     </tbody>
                 </table>
             </div>
-            
+                        
             <div class="secondary-abilities">
                 <h2>Secondary Abilities</h2>
                 <div class="secondary-grid">
