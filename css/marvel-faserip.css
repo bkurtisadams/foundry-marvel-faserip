@@ -34,9 +34,26 @@
     gap: 10px;
 }
 
+/* Header Portrait Layout */
+.header-top-row {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.profile-img {
+    width: 100px;
+    height: 100px;
+    border: 2px solid #782e22;
+    border-radius: 5px;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+/* Marvel logo */
 .marvel-logo {
     height: 60px;
-    margin-bottom: 10px;
 }
 
 .header-bottom-row {

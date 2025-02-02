@@ -3,7 +3,10 @@
         <div class="header-flex-container">
             <!-- Left Side -->
             <div class="header-left">
-                <img src="systems/marvel-faserip/assets/marvel-logo-bw.png" class="marvel-logo"/>
+                <div class="header-top-row">
+                    <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}"/>
+                    <img src="systems/marvel-faserip/assets/marvel-logo-bw.png" class="marvel-logo"/>
+                </div>
                 <div class="field-group">
                     <label class="input-label">Hero's Name</label>
                     <input type="text" name="system.biography.heroName" value="{{actor.system.biography.heroName}}"/>
