@@ -54,8 +54,8 @@
                     <thead>
                         <tr>
                             <th></th>
-                            <th>Init Roll</th>
-                            <th>Init Rank</th>
+                            <th class="init-column">Init Roll</th>
+                            <th class="init-column">Init Rank</th>
                             <th>Current Rank</th>
                             <th>Num</th>
                         </tr>
@@ -64,9 +64,9 @@
                         {{#each actor.system.primaryAbilities as |ability key|}}
                         <tr class="ability-row" data-ability="{{key}}">
                             <td class="ability-label">{{key}}</td>
-                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.{{key}}.initialRoll" value="{{ability.initialRoll}}" data-ability="{{key}}" maxlength="3"/></td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.{{key}}.initialRoll" value="{{ability.initialRoll}}" data-ability="{{key}}" maxlength="3" readonly/></td>
                             <td>
-                                <select class="initial-rank-select" name="system.primaryAbilities.{{key}}.initialRank" data-ability="{{key}}">
+                                <select class="initial-rank-select" name="system.primaryAbilities.{{key}}.initialRank" data-ability="{{key}}" disabled>
                                     {{selectOptions @root.config.ranks selected=ability.initialRank blank=""}}
                                 </select>
                             </td>

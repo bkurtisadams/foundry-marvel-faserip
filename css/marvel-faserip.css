@@ -173,6 +173,20 @@
     margin-bottom: 20px;
 }
 
+/* Initial Roll/Rank styling */
+.primary-abilities .initial-roll-input,
+.primary-abilities .initial-rank-select {
+    background-color: #e0e0e0;
+    color: #666;
+    border-color: #ccc;
+    cursor: default;
+}
+
+.primary-abilities th.init-column {
+    color: #666;
+    font-style: italic;
+}
+
 .primary-abilities table {
     width: 100%;
     border-collapse: collapse;
