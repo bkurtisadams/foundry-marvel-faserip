@@ -1,8 +1,18 @@
+import { MarvelAttackItemSheet } from "../../sheets/items/MarvelAttackItemSheet.js";
+
 /**
  * Extends the basic Item class for attack items.
  * @extends {Item}
  */
 export class MarvelAttackItem extends Item {
+    /**
+     * @override
+     * Create a new sheet for the item
+     */
+    _getSheetClass() {
+        return MarvelAttackItemSheet;
+    }
+
     /**
      * Roll the attack
      * @returns {Promise<Roll>} The roll result

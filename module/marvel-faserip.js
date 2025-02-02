@@ -1,8 +1,9 @@
 // Import required classes and configurations
 import { MARVEL_RANKS, UNIVERSAL_TABLE_RANGES, ACTION_RESULTS, COMBAT_TYPES, COMBAT_EFFECTS } from "./config.js";
 import { MarvelActor } from "./documents/MarvelActor.js";
-import { MarvelAttackItem } from "./documents/items/MarvelAttackItem.js";
 import { MarvelActorSheet } from "./sheets/MarvelActorSheet.js";
+import { MarvelAttackItem } from "./documents/items/MarvelAttackItem.js";
+import { MarvelAttackItemSheet } from "./sheets/items/MarvelAttackItemSheet.js";
 
 // Initialize system
 Hooks.once('init', async function() {
@@ -24,13 +25,21 @@ Hooks.once('init', async function() {
     // Register document classes
     CONFIG.Actor.documentClass = MarvelActor;
     CONFIG.Item.documentClass = MarvelAttackItem;
-    
-    Items.unregisterSheet("core", ItemSheet);
-    Items.registerSheet("marvel-faserip", MarvelAttackItem, { makeDefault: true });
 
     // Register sheets
     Actors.unregisterSheet("core", ActorSheet);
-    Actors.registerSheet("marvel-faserip", MarvelActorSheet, { makeDefault: true });
+    Items.unregisterSheet("core", ItemSheet);
+    
+    Items.registerSheet("marvel-faserip", MarvelAttackItemSheet, { 
+        types: ["attack"],
+        makeDefault: true,
+        label: "MARVEL.SheetAttack"
+    });
+
+    Actors.registerSheet("marvel-faserip", MarvelActorSheet, { 
+        makeDefault: true,
+        label: "MARVEL.SheetCharacter"
+    });
 
     // Load templates
     await loadTemplates([
@@ -39,7 +48,9 @@ Hooks.once('init', async function() {
         "systems/marvel-faserip/templates/items/attack-item.html",
         "systems/marvel-faserip/templates/dialogs/add-attack.html"
     ]);
-});
+});    // Register document classes
+    CONFIG.Actor.documentClass = MarvelActor;
+    CONFIG.Item.documentClass = MarvelAttackItem;
 
 // Handle new rounds
 Hooks.on("updateCombat", async (combat, changed, options, userId) => {

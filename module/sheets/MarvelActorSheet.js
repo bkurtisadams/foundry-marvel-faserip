@@ -57,12 +57,12 @@ export class MarvelActorSheet extends ActorSheet {
             
             // Item controls
             html.find('.item-edit').click(ev => {
-                const li = ev.currentTarget.closest(".attack-row");
-                const item = this.actor.items.get(li.dataset.itemId);
-                if (item) {
-                    const sheet = item.sheet;
-                    if (sheet) sheet.render(true);
-                }
+                ev.preventDefault();
+                const attackRow = ev.currentTarget.closest(".attack-row");
+                if (!attackRow) return;
+                const itemId = attackRow.dataset.itemId;
+                const item = this.actor.items.get(itemId);
+                if (item) item.sheet.render(true);
             });
             
             html.find('.item-delete').click(ev => {
