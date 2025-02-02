@@ -50,7 +50,7 @@
         <button type="button" class="add-attack">+ Add Attack</button>
         <div class="attacks-list">
             {{#each attacks as |attack id|}}
-            <div class="attack-row" data-item-id="{{attack._id}}">
+            <div class="attack-row item" data-item-id="{{attack._id}}" draggable="true">
                 <img src="{{attack.img}}" width="24" height="24"/>
                 <div class="attack-name item-name">{{attack.name}}</div>
                 <div class="attack-controls">

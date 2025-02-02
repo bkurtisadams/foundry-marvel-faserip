@@ -9,7 +9,7 @@ export class MarvelActorSheet extends ActorSheet {
             width: 600,
             height: 800,
             tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "abilities" }],
-            dragDrop: [{ dragSelector: ".item-list .item", dropSelector: null }]
+            dragDrop: [{ dragSelector: ".attack-row", dropSelector: null }]
         });
     }
 

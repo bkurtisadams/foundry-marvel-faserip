@@ -48,9 +48,7 @@ Hooks.once('init', async function() {
         "systems/marvel-faserip/templates/items/attack-item.html",
         "systems/marvel-faserip/templates/dialogs/add-attack.html"
     ]);
-});    // Register document classes
-    CONFIG.Actor.documentClass = MarvelActor;
-    CONFIG.Item.documentClass = MarvelAttackItem;
+});
 
 // Handle new rounds
 Hooks.on("updateCombat", async (combat, changed, options, userId) => {
@@ -120,31 +118,32 @@ Hooks.on("renderCombatTracker", (app, html, data) => {
 });
 
 // Handle Macro Creation
-Hooks.on("hotbarDrop", (bar, data, slot) => {
-    if (data.type === "Item" && data.itemType === "attack") {
-        createAttackMacro(data.data, slot);
-        return false;
-    }
-});
-
-// Create a Macro from an attack drop
-async function createAttackMacro(itemData, slot) {
-    // Create the macro command
-    const command = `const actor = game.actors.get("${itemData.actorId}");
-    const item = actor.items.get("${itemData.id}");
-    if (item) item.roll();`;
+Hooks.on("hotbarDrop", async (bar, data, slot) => {
+    if (data.type !== "Item") return;
     
-    // Create the macro
-    let macro = game.macros.find(m => (m.name === itemData.name) && (m.command === command));
+    // Get the item data
+    const actor = game.actors.get(data.actorId);
+    if (!actor) return;
+    const item = actor.items.get(data.itemId);
+    if (!item || item.type !== "attack") return;
+
+    // Create the macro command
+    const command = `const actor = game.actors.get("${data.actorId}");
+if (!actor) return ui.notifications.warn("Actor not found");
+const item = actor.items.get("${data.itemId}");
+if (!item) return ui.notifications.warn("Item not found");
+item.roll();`;
+
+    let macro = game.macros.find(m => (m.name === item.name) && (m.command === command));
     if (!macro) {
         macro = await Macro.create({
-            name: itemData.name,
+            name: item.name,
             type: "script",
-            img: itemData.img,
+            img: item.img,
             command: command,
             flags: { "marvel-faserip.attackMacro": true }
         });
     }
-    game.user.assignHotbarMacro(macro, slot);
+    await game.user.assignHotbarMacro(macro, slot);
     return false;
-}
+});
