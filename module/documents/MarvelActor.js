@@ -144,23 +144,37 @@ export class MarvelActor extends Actor {
         return roll;
     }
 
-    async rollAttack(combatType, attackType, options = {}) {
-        console.log("Rolling attack with:", { combatType, attackType, options });
+    // attack roll method
+    async rollAttack(ability, attackType, options = {}) {
+        console.log("Rolling attack with:", { ability, attackType, options });
         
-        // Get combat types from CONFIG
-        const combatTypes = CONFIG.marvel.combatTypes;
-        if (!combatTypes[combatType]) {
-            console.error(`Invalid combat type: ${combatType}`);
+        // Get the action results from CONFIG
+        const actionResult = CONFIG.marvel.actionResults[attackType];
+        if (!actionResult) {
+            const notification = `Invalid attack type: ${attackType}. Check your attack configuration.`;
+            ui.notifications.error(notification);
+            console.error(notification);
             return null;
         }
         
-        const abilityKey = combatTypes[combatType].ability;
-        if (!this.system.primaryAbilities[abilityKey]) {
-            console.error(`Actor does not have ability: ${abilityKey}`);
+        // Validate ability matches required ability for this attack type
+        const requiredAbility = actionResult.ability.toLowerCase();
+        if (ability !== requiredAbility) {
+            const notification = `This attack requires ${requiredAbility} (using it instead of ${ability})`;
+            ui.notifications.warn(notification);
+            console.warn(notification);
+            ability = requiredAbility;
+        }
+        
+        // Validate ability exists on actor
+        if (!this.system.primaryAbilities[ability]) {
+            const notification = `Actor does not have ability: ${ability}`;
+            ui.notifications.error(notification);
+            console.error(notification);
             return null;
         }
 
-        const abilityValue = this.system.primaryAbilities[abilityKey];
+        const abilityValue = this.system.primaryAbilities[ability];
         
         // Apply column shifts
         let finalRank = abilityValue.rank;
@@ -169,7 +183,7 @@ export class MarvelActor extends Actor {
         }
 
         // Roll d100
-        const roll = await new Roll("1d100").evaluate({async: true});
+        const roll = await new Roll("1d100").evaluate();
         
         // Add karma if used
         const finalRoll = Math.min(100, roll.total + (options.karma || 0));
@@ -177,29 +191,31 @@ export class MarvelActor extends Actor {
         // Get result color (white, green, yellow, red)
         const color = this.getColorResult(finalRoll, finalRank);
         
-        // Get combat results based on type
-        const results = combatTypes[combatType].types[attackType].results[color];
+        // Get result from action results
+        const result = actionResult.results[color];
         
-        // Calculate damage
+        // Calculate damage based on attack type and result
         let damage = 0;
-        if (results.damage === "strength") {
+        if (attackType === "BA" || attackType === "TB" || attackType === "Ch") {
+            // These attacks use Strength for damage
             damage = this.system.primaryAbilities.strength.number;
-        } else if (results.damage === "weapon" && options.weaponDamage) {
+        } else if (options.weaponDamage && ["EA", "Sh", "TE", "En", "Fo"].includes(attackType)) {
+            // These attacks use weapon damage
             damage = options.weaponDamage;
         }
 
         // Create chat message
         const messageContent = `
             <div class="marvel-roll combat-roll">
-                <h3>${this.name} - ${combatTypes[combatType].types[attackType].name}</h3>
+                <h3>${this.name} - ${actionResult.name}</h3>
                 <div class="roll-details">
                     <div>Roll: ${roll.total}</div>
-                    <div>Rank: ${finalRank}</div>
+                    <div>Ability: ${ability.charAt(0).toUpperCase() + ability.slice(1)} (${finalRank})</div>
                     ${options.karma ? `<div>Karma Used: ${options.karma}</div>` : ''}
                     ${options.columnShift ? `<div>Column Shift: ${options.columnShift}</div>` : ''}
                 </div>
                 <div class="roll-result" style="background-color: ${color};">
-                    Effect: ${results.effect}
+                    Effect: ${result}
                     ${damage ? `<br>Damage: ${damage}` : ''}
                 </div>
             </div>
@@ -212,9 +228,9 @@ export class MarvelActor extends Actor {
             roll: roll
         });
 
-        return { roll, effect: results.effect, damage, color };
+        return { roll, effect: result, damage, color };
     }
-
+    
     async rollPopularityFeat(popularityType, options = {}) {
         const popularity = this.system.secondaryAbilities.popularity[popularityType];
         const isNegative = popularity < 0;

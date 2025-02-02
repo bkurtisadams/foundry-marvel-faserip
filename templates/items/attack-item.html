@@ -1,50 +1,43 @@
-<form class="{{cssClass}}" autocomplete="off">
-    <header class="sheet-header">
-        <img src="{{item.img}}" data-edit="img" title="{{item.name}}" height="64" width="64"/>
-        <h1><input name="name" type="text" value="{{item.name}}" placeholder="Name"/></h1>
-    </header>
+<form class="add-attack-dialog">
+    <div class="form-group">
+        <label>Attack Name</label>
+        <input type="text" name="attackName" value="{{item.name}}" placeholder="e.g., Punch, Kick, Energy Blast"/>
+    </div>
 
     <div class="form-group">
         <label>Ability</label>
-        <select name="system.ability">
-            {{#select system.ability}}
-            <option value="fighting">Fighting</option>
-            <option value="agility">Agility</option>
-            <option value="strength">Strength</option>
-            <option value="endurance">Endurance</option>
-            {{/select}}
+        <select name="ability" id="abilitySelect">
+            {{#each abilities as |ability key|}}
+            <option value="{{key}}" {{#if (eq ../item.system.ability key)}}selected{{/if}}>{{ability.label}}</option>
+            {{/each}}
         </select>
     </div>
 
     <div class="form-group">
         <label>Attack Type</label>
-        <select name="system.attackType">
-            {{#select system.attackType}}
-            <option value="BLUNT">Blunt Attack</option>
-            <option value="EDGED">Edged Attack</option>
-            <option value="SHOOTING">Shooting</option>
-            <option value="THROWING">Throwing</option>
-            {{/select}}
+        <select name="attackType">
+            {{#each abilities as |ability key|}}
+            <optgroup label="{{ability.label}}">
+                {{#each ability.attacks as |label attackKey|}}
+                <option value="{{attackKey}}" {{#if (eq ../../item.system.attackType attackKey)}}selected{{/if}}>{{label}}</option>
+                {{/each}}
+            </optgroup>
+            {{/each}}
         </select>
     </div>
 
     <div class="form-group">
         <label>Weapon Damage</label>
-        <input type="number" name="system.weaponDamage" value="{{system.weaponDamage}}" data-dtype="Number"/>
+        <input type="number" name="weaponDamage" value="{{item.system.weaponDamage}}"/>
     </div>
 
     <div class="form-group">
         <label>Range (areas)</label>
-        <input type="number" name="system.range" value="{{system.range}}" data-dtype="Number"/>
+        <input type="number" name="range" value="{{item.system.range}}"/>
     </div>
 
     <div class="form-group">
         <label>Column Shift</label>
-        <input type="number" name="system.columnShift" value="{{system.columnShift}}" data-dtype="Number"/>
-    </div>
-
-    <div class="form-group">
-        <label>Description</label>
-        {{editor system.description target="system.description" button=true owner=owner editable=editable}}
+        <input type="number" name="columnShift" value="{{item.system.columnShift}}"/>
     </div>
 </form>

@@ -9,7 +9,7 @@
 01/31/2025  06:00 AM    <DIR>          assets
 02/01/2025  08:25 PM    <DIR>          css
 01/30/2025  09:13 PM    <DIR>          lang
-02/01/2025  09:09 PM                 0 list.txt
+02/02/2025  07:49 AM                 0 list.txt
 02/01/2025  08:25 PM    <DIR>          module
 01/30/2025  05:23 PM               674 README.md
 01/30/2025  05:45 PM               764 system.json
@@ -21,19 +21,19 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git
 
 02/01/2025  08:25 PM    <DIR>          ..
-02/01/2025  06:38 PM               357 COMMIT_EDITMSG
+02/02/2025  01:08 AM               463 COMMIT_EDITMSG
 01/30/2025  05:41 PM               330 config
 01/30/2025  05:17 PM                73 description
-02/01/2025  06:38 PM               114 FETCH_HEAD
+02/02/2025  01:08 AM               114 FETCH_HEAD
 01/30/2025  05:26 PM                21 HEAD
 01/30/2025  05:17 PM    <DIR>          hooks
-02/01/2025  08:25 PM             2,689 index
+02/02/2025  01:08 AM             3,195 index
 01/30/2025  05:17 PM    <DIR>          info
 01/30/2025  05:19 PM    <DIR>          logs
-02/01/2025  06:38 PM    <DIR>          objects
-02/01/2025  06:38 PM                41 ORIG_HEAD
+02/02/2025  01:08 AM    <DIR>          objects
+02/02/2025  01:08 AM                41 ORIG_HEAD
 01/30/2025  05:39 PM    <DIR>          refs
-               7 File(s)          3,625 bytes
+               7 File(s)          4,237 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\hooks
 
@@ -62,9 +62,9 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\logs
 
 01/30/2025  05:19 PM    <DIR>          .
-02/01/2025  06:38 PM             3,672 HEAD
+02/02/2025  01:08 AM             4,029 HEAD
 01/30/2025  05:39 PM    <DIR>          refs
-               1 File(s)          3,672 bytes
+               1 File(s)          4,029 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\logs\refs
 
@@ -78,8 +78,8 @@
 
 01/30/2025  05:26 PM    <DIR>          .
 01/30/2025  05:39 PM    <DIR>          ..
-02/01/2025  06:38 PM             3,294 main
-               1 File(s)          3,294 bytes
+02/02/2025  01:08 AM             3,651 main
+               1 File(s)          3,651 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\logs\refs\remotes
 
@@ -92,33 +92,37 @@
 
 01/30/2025  05:39 PM    <DIR>          .
 01/30/2025  05:39 PM    <DIR>          ..
-02/01/2025  06:38 PM             2,492 main
-               1 File(s)          2,492 bytes
+02/02/2025  01:08 AM             2,804 main
+               1 File(s)          2,804 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects
 
-02/01/2025  06:38 PM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          .
 01/31/2025  04:56 PM    <DIR>          02
+02/02/2025  12:50 AM    <DIR>          04
 01/30/2025  05:45 PM    <DIR>          05
 01/30/2025  05:19 PM    <DIR>          08
 02/01/2025  12:18 AM    <DIR>          0a
 01/31/2025  04:56 PM    <DIR>          0b
 01/31/2025  11:23 PM    <DIR>          0c
 01/31/2025  10:31 PM    <DIR>          0d
+02/02/2025  12:50 AM    <DIR>          0f
 01/30/2025  05:19 PM    <DIR>          10
 02/01/2025  06:02 PM    <DIR>          11
-02/01/2025  06:04 PM    <DIR>          13
+02/02/2025  12:50 AM    <DIR>          13
 01/30/2025  05:19 PM    <DIR>          14
 01/31/2025  04:56 PM    <DIR>          15
 02/01/2025  02:17 AM    <DIR>          16
 02/01/2025  04:33 PM    <DIR>          18
 01/31/2025  05:24 PM    <DIR>          1c
 02/01/2025  05:39 PM    <DIR>          1d
+02/02/2025  01:08 AM    <DIR>          20
 02/01/2025  04:33 PM    <DIR>          22
+02/02/2025  12:50 AM    <DIR>          23
 02/01/2025  04:33 PM    <DIR>          24
-02/01/2025  04:33 PM    <DIR>          25
+02/02/2025  12:50 AM    <DIR>          25
 02/01/2025  06:38 PM    <DIR>          2b
-02/01/2025  04:51 PM    <DIR>          2d
+02/02/2025  12:50 AM    <DIR>          2d
 01/31/2025  11:23 PM    <DIR>          2f
 02/01/2025  04:51 PM    <DIR>          30
 01/31/2025  04:56 PM    <DIR>          35
@@ -131,22 +135,27 @@
 02/01/2025  12:18 AM    <DIR>          40
 01/30/2025  05:19 PM    <DIR>          42
 02/01/2025  06:37 PM    <DIR>          48
-02/01/2025  04:51 PM    <DIR>          4c
+02/02/2025  12:50 AM    <DIR>          49
+02/02/2025  12:50 AM    <DIR>          4c
 02/01/2025  12:18 AM    <DIR>          4d
-02/01/2025  12:18 AM    <DIR>          51
+02/02/2025  12:50 AM    <DIR>          51
 01/31/2025  11:23 PM    <DIR>          52
 01/31/2025  11:23 PM    <DIR>          54
-01/31/2025  10:15 PM    <DIR>          55
+02/02/2025  12:50 AM    <DIR>          55
 02/01/2025  02:17 PM    <DIR>          56
-01/31/2025  04:56 PM    <DIR>          59
+02/02/2025  01:08 AM    <DIR>          59
+02/02/2025  12:50 AM    <DIR>          5a
 02/01/2025  04:33 PM    <DIR>          5b
+02/02/2025  12:50 AM    <DIR>          5e
 02/01/2025  02:17 PM    <DIR>          60
 02/01/2025  02:17 PM    <DIR>          61
-02/01/2025  02:18 PM    <DIR>          64
+02/02/2025  01:08 AM    <DIR>          63
+02/02/2025  12:50 AM    <DIR>          64
 01/31/2025  11:23 PM    <DIR>          67
 02/01/2025  06:02 PM    <DIR>          68
 02/01/2025  02:17 AM    <DIR>          71
 01/31/2025  11:23 PM    <DIR>          73
+02/02/2025  01:08 AM    <DIR>          74
 01/31/2025  04:56 PM    <DIR>          76
 01/31/2025  10:32 PM    <DIR>          78
 02/01/2025  04:33 PM    <DIR>          7b
@@ -164,22 +173,29 @@
 02/01/2025  05:39 PM    <DIR>          93
 02/01/2025  06:02 PM    <DIR>          99
 01/31/2025  10:31 PM    <DIR>          9a
+02/02/2025  01:08 AM    <DIR>          9b
 01/30/2025  05:45 PM    <DIR>          9c
 02/01/2025  06:02 PM    <DIR>          9d
 01/31/2025  04:56 PM    <DIR>          9e
 01/31/2025  10:31 PM    <DIR>          9f
 02/01/2025  12:18 AM    <DIR>          a0
+02/02/2025  12:50 AM    <DIR>          a1
+02/02/2025  01:08 AM    <DIR>          a2
 01/30/2025  05:19 PM    <DIR>          a3
 02/01/2025  04:33 PM    <DIR>          a4
+02/02/2025  12:50 AM    <DIR>          a5
 01/31/2025  11:23 PM    <DIR>          a6
 01/31/2025  10:47 PM    <DIR>          a7
 02/01/2025  02:17 PM    <DIR>          a9
 01/31/2025  11:24 PM    <DIR>          aa
 02/01/2025  02:17 AM    <DIR>          ae
+02/02/2025  12:50 AM    <DIR>          af
 02/01/2025  05:39 PM    <DIR>          b0
 01/30/2025  05:19 PM    <DIR>          b2
 02/01/2025  06:02 PM    <DIR>          b4
-01/31/2025  10:47 PM    <DIR>          b6
+02/02/2025  12:50 AM    <DIR>          b6
+02/02/2025  01:08 AM    <DIR>          bb
+02/02/2025  12:50 AM    <DIR>          bd
 02/01/2025  06:37 PM    <DIR>          be
 01/30/2025  05:19 PM    <DIR>          bf
 01/31/2025  04:56 PM    <DIR>          c0
@@ -196,6 +212,7 @@
 02/01/2025  06:37 PM    <DIR>          cd
 01/31/2025  11:23 PM    <DIR>          cf
 01/31/2025  05:24 PM    <DIR>          d2
+02/02/2025  01:08 AM    <DIR>          d3
 02/01/2025  04:33 PM    <DIR>          d4
 02/01/2025  04:33 PM    <DIR>          d7
 02/01/2025  02:17 PM    <DIR>          d9
@@ -205,16 +222,20 @@
 01/30/2025  05:19 PM    <DIR>          e4
 01/31/2025  10:31 PM    <DIR>          e5
 02/01/2025  12:18 AM    <DIR>          e7
+02/02/2025  12:50 AM    <DIR>          e8
 02/01/2025  04:51 PM    <DIR>          e9
-02/01/2025  12:18 AM    <DIR>          ea
+02/02/2025  01:08 AM    <DIR>          ea
 01/31/2025  10:47 PM    <DIR>          ec
+02/02/2025  12:50 AM    <DIR>          ed
 02/01/2025  04:33 PM    <DIR>          ee
-02/01/2025  06:37 PM    <DIR>          f0
+02/02/2025  01:08 AM    <DIR>          ef
+02/02/2025  12:50 AM    <DIR>          f0
 01/31/2025  11:23 PM    <DIR>          f1
 02/01/2025  06:37 PM    <DIR>          f5
 02/01/2025  04:51 PM    <DIR>          f6
 01/31/2025  11:23 PM    <DIR>          f8
 01/31/2025  04:56 PM    <DIR>          fc
+02/02/2025  01:08 AM    <DIR>          fd
 02/01/2025  04:33 PM    <DIR>          fe
 01/30/2025  05:17 PM    <DIR>          info
 01/30/2025  05:17 PM    <DIR>          pack
@@ -223,91 +244,106 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\02
 
 01/31/2025  04:56 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM             2,009 d4e30f03154c1252c9a311b2230a92a45f62b2
                1 File(s)          2,009 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\04
+
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM               374 b5de953f09beeeef92882fbea6ff6048275a44
+               1 File(s)            374 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\05
 
 01/30/2025  05:45 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/30/2025  05:45 PM               345 cc270ac248fafab4dbeb5b01271836857f4864
                1 File(s)            345 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\08
 
 01/30/2025  05:19 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM             1,548 099d407dc23a86ef5e38e96a4f7d3c681f8656
                1 File(s)          1,548 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\0a
 
 02/01/2025  12:18 AM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  12:18 AM             1,377 1c6eed9b32861ab50d38b0673a6393db63fd1b
                1 File(s)          1,377 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\0b
 
 01/31/2025  04:56 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM             1,290 6cef4b1542276294611c6eb02055f14499660d
                1 File(s)          1,290 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\0c
 
 01/31/2025  11:23 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  11:23 PM               393 15219e1d02afb5660f5e4f3dc0bfc740fc1008
                1 File(s)            393 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\0d
 
 01/31/2025  10:31 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  10:31 PM                61 6bd96eb0e64a33e6feda3fabc01bb39e7aeddf
                1 File(s)             61 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\0f
+
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM                90 c246a2c73eb6380f2ad5548b8bf0f23c6df20f
+               1 File(s)             90 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\10
 
 01/30/2025  05:19 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/30/2025  05:19 PM                47 1ebad2ef91b8cc85d45dbbd947074af08bbc04
                1 File(s)             47 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\11
 
 02/01/2025  06:02 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  06:02 PM               375 86c40b45693df3e2a057dd14a4b8beb4f2f38c
                1 File(s)            375 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\13
 
-02/01/2025  06:04 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  06:04 PM               178 4acac4539baad8a780cd29263409cf749d40b4
-               1 File(s)            178 bytes
+02/02/2025  12:50 AM                63 ba959a7f9a19769381de67cee65d86508f6f85
+               2 File(s)            241 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\14
 
 01/30/2025  05:19 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/30/2025  05:19 PM               156 ae42e0adcc48fb91a26ac6cc92f62b88ded7e4
                1 File(s)            156 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\15
 
 01/31/2025  04:56 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM            13,719 dfdd333f1c5185183e449f96cc4166ec562b47
                1 File(s)         13,719 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\16
 
 02/01/2025  02:17 AM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  10:15 PM             4,423 22fd628fcc165b2f52039dca131294771296e2
 02/01/2025  02:17 AM               375 7c8952de38882d393785b2bd43a16edfc213d6
                2 File(s)          4,798 bytes
@@ -315,7 +351,7 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\18
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:33 PM               375 6457390f178d5e5ecceae7276e2a05eda7475c
 01/31/2025  04:56 PM             8,745 7657b95be2073576758ac0c2dd934c38ebf0fc
 01/31/2025  05:25 PM               173 81f81126a73edbf29449a7cedd9376e4f897a0
@@ -325,73 +361,89 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\1c
 
 01/31/2025  05:24 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  05:24 PM                63 cb15ab256dd1b292e8aa3c8d53ae89702652b0
                1 File(s)             63 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\1d
 
 02/01/2025  05:39 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  05:39 PM               402 4ba40dd98c17705b1e0649aec59c3f3ab2fc5b
 01/31/2025  10:16 PM               174 4fd76d8c6c9dee0ac5b61523396d6610fca868
                2 File(s)            576 bytes
 
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\20
+
+02/02/2025  01:08 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  01:08 AM                90 9dcce174db164abb064811e10023b350eaaa19
+               1 File(s)             90 bytes
+
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\22
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:33 PM             2,372 71dc800b206535a607564a33a862a25b1c8ad4
                1 File(s)          2,372 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\23
+
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM                63 5268e79b6b8e6b76e57ca9947c7ac58f53ad08
+               1 File(s)             63 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\24
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:33 PM                62 172f1534b932379ffbd41582cc829789c343e8
 01/30/2025  05:46 PM               159 233df19c3a83ec9137b66a6293dd2523207907
                2 File(s)            221 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\25
 
-02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM                61 7ff9b4535be9d1da59238fdc7687d28dddd819
 02/01/2025  04:33 PM               756 be64c1b1fb2f206331726b1526af2ae6a18864
-               1 File(s)            756 bytes
+               2 File(s)            817 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\2b
 
 02/01/2025  06:38 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  05:24 PM             1,501 6aaab140d795e6b9b8752484800b79ae0bdea7
 02/01/2025  06:38 PM               180 749df6ac225d84b19651b344ae01ecc7e951f2
                2 File(s)          1,681 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\2d
 
-02/01/2025  04:51 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM               413 1825e3195d0d0aa5933dd229c6f4ff02e98d3a
 02/01/2025  04:51 PM               376 fa8ee9537e66441457b6b6f569a24e6f991089
-               1 File(s)            376 bytes
+               2 File(s)            789 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\2f
 
 01/31/2025  11:23 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  11:23 PM               640 5c3f726bca39fa007b35bab11bb4d9141203d3
                1 File(s)            640 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\30
 
 02/01/2025  04:51 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:51 PM             2,401 607fd46e0bc8d1840d136f917d4a5b2d33291e
                1 File(s)          2,401 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\35
 
 01/31/2025  04:56 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM               320 228560864ef47c8c8603f80ee9a6bd67c313d7
 01/31/2025  04:56 PM             1,889 ad942c6e6120333eabe25b60379413ee279b31
                2 File(s)          2,209 bytes
@@ -399,7 +451,7 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\36
 
 02/01/2025  06:37 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM            14,012 950df9a431c08b61fd39936de12b0050b7f5a4
 02/01/2025  06:37 PM             1,952 fb1d36e8a7da0d2555b720a2f7f5e659fd1248
                2 File(s)         15,964 bytes
@@ -407,7 +459,7 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\37
 
 02/01/2025  06:02 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  10:47 PM             1,896 2c4bea28a44d0d58540a5b8faa06e65f79ab62
 02/01/2025  06:02 PM                63 9ede27168dafde0b2f30203b788dc804524e62
                2 File(s)          1,959 bytes
@@ -415,35 +467,35 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\38
 
 01/30/2025  05:19 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/30/2025  05:19 PM               664 c369e40452fe7f79edf628a2fb4f6a9099ca6a
                1 File(s)            664 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\39
 
 02/01/2025  05:39 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  05:39 PM                77 2a2e3564b9ba451029d6f2323aa0f8e0a4ee93
                1 File(s)             77 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\3d
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:33 PM               176 d98be0714aac4d05958c3b6f6c08341d86e6cf
                1 File(s)            176 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\3e
 
 01/30/2025  05:45 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/30/2025  05:45 PM                47 70edd44738d16f179bd408a4c621f496b02f14
                1 File(s)             47 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\40
 
 02/01/2025  12:18 AM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM                61 61d8c62f6773ca63cf85b924328f78fe2c889c
 02/01/2025  12:18 AM                63 c11565d3384d3f2d2f095d728781988ddc95ca
                2 File(s)            124 bytes
@@ -451,120 +503,153 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\42
 
 01/30/2025  05:19 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/30/2025  05:19 PM               478 cce24e3d0b19452bc2f4f5e89e521ce54d4770
                1 File(s)            478 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\48
 
 02/01/2025  06:37 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  06:37 PM                79 64ecc4eb41ab050fb0f7997862780890bdce1c
                1 File(s)             79 bytes
 
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\49
+
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM                61 99641144a89e2831df9fbb4cb82ac4bd000050
+               1 File(s)             61 bytes
+
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\4c
 
-02/01/2025  04:51 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM             1,942 d3b7dc4b30b44352598cc2d69b0be8673d29be
 02/01/2025  04:51 PM               178 e4da5453a38af21161cd00981dd8adb2481f07
-               1 File(s)            178 bytes
+               2 File(s)          2,120 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\4d
 
 02/01/2025  12:18 AM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  12:18 AM             2,040 779f7b7ee1d00abc8f17179567e8cc7fa8b2e6
                1 File(s)          2,040 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\51
 
-02/01/2025  12:18 AM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM               171 73c73ce7346f1cef915283938cc002ce4d0af1
 02/01/2025  12:18 AM             1,909 795852bf994f5ad360e06276c4d925414457b9
-               1 File(s)          1,909 bytes
+               2 File(s)          2,080 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\52
 
 01/31/2025  11:23 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  11:23 PM                62 f8622ff9d13dd3206da378d1e70914ee673059
                1 File(s)             62 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\54
 
 01/31/2025  11:23 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  11:23 PM                59 d41a9b06412e0a4c95936f6671fd328a5f98ef
                1 File(s)             59 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\55
 
-01/31/2025  10:15 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  10:15 PM                48 0207a5c26960a3470abb450687f1438ff0fc41
-               1 File(s)             48 bytes
+02/02/2025  12:50 AM             3,534 760fe13e148bae03ee04beba9655348823557d
+               2 File(s)          3,582 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\56
 
 02/01/2025  02:17 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  02:17 PM             7,530 93ccd52decffa8609131af4187ecc28024a3d6
                1 File(s)          7,530 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\59
 
-01/31/2025  04:56 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  01:08 AM               375 53e86978737528d4659f480f8f578ec67c8eaa
 01/31/2025  04:56 PM               173 65246dbc7256ad4bae9ba41212bed8254c08c4
-               1 File(s)            173 bytes
+               2 File(s)            548 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\5a
+
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM               159 a718e8afe67ab493d90461261d79662ba08574
+               1 File(s)            159 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\5b
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:33 PM                79 f4c965a8475cd15ceed53d018342f5ad947a2f
                1 File(s)             79 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\5e
+
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM               693 5ff03d05029664cd39db96a357e838f8291100
+               1 File(s)            693 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\60
 
 02/01/2025  02:17 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  02:17 PM                63 d342a445db4f0d8aa16e3e374697f360bdec47
                1 File(s)             63 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\61
 
 02/01/2025  02:17 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  02:17 PM                61 02461c06fc51587fa9bfb132b34ee07d9af05c
                1 File(s)             61 bytes
 
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\63
+
+02/02/2025  01:08 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  01:08 AM               507 4811681eb67ff255ab62fbe5d770a373a09b0d
+               1 File(s)            507 bytes
+
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\64
 
-02/01/2025  02:18 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  10:47 PM               159 0dc4ba4b99a5d090cabba5f13cddeb7fdb31d5
+02/02/2025  12:50 AM             3,683 284874932d61bad66324ef02b61f618b001814
 02/01/2025  02:18 PM               169 3143a378e6792773484d3b170acbbbd79e7208
-               2 File(s)            328 bytes
+               3 File(s)          4,011 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\67
 
 01/31/2025  11:23 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  11:23 PM             1,753 c05944f08a0501431e9151da7641e0dacbbd01
                1 File(s)          1,753 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\68
 
 02/01/2025  06:02 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  06:02 PM                61 9594b101e679676399225ea510ae44f969d38a
                1 File(s)             61 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\71
 
 02/01/2025  02:17 AM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  10:31 PM                48 32362140baeb333ce103123ddd2a7dd9c32a38
 02/01/2025  02:17 AM               165 5762838e7b6bc5190f88fe5507ced42a7cf663
                2 File(s)            213 bytes
@@ -572,14 +657,21 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\73
 
 01/31/2025  11:23 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  11:23 PM                78 b995baa9ab51fe234e28f3a4eb00c6d43bdaba
                1 File(s)             78 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\74
+
+02/02/2025  01:08 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  01:08 AM               160 4fccb1cfa551325efc5a6c3dae5b98e4022ec1
+               1 File(s)            160 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\76
 
 01/31/2025  04:56 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM             6,361 32ae5b56c60eafeaa1d8743476b455f50a3b95
 01/31/2025  04:56 PM               646 d7401402f56db63c89828e80c6fc88d49c276a
                2 File(s)          7,007 bytes
@@ -587,14 +679,14 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\78
 
 01/31/2025  10:32 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  10:32 PM               174 d699a9565e2336b658a5c9b31755e2d608d63a
                1 File(s)            174 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\7b
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  12:18 AM               158 2b58b1527aca5167cc88ab5346d5e761f87fb1
 02/01/2025  04:33 PM             2,872 e88c6a883c484d702845e98b00d078fc25fea1
                2 File(s)          3,030 bytes
@@ -602,7 +694,7 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\7e
 
 01/30/2025  05:45 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/30/2025  05:45 PM               392 6424f367bca8939d0f5926492a5ff5cac39736
 01/31/2025  04:56 PM                52 655a3d9089f4c096de7168f90e4840fd8e10b3
                2 File(s)            444 bytes
@@ -610,21 +702,21 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\7f
 
 02/01/2025  05:39 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  05:39 PM             3,648 e1b47ebf3fcbc34518d477da006406a7f13d24
                1 File(s)          3,648 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\81
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:33 PM                61 50fdaa1f6b9d372eecb6c286a2929c086fe9b6
                1 File(s)             61 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\84
 
 01/31/2025  11:23 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM             1,503 7ecfb2e6cdab12fbfa2599db1630bfb0501163
 01/31/2025  11:23 PM             2,401 cc985ada8075b655cea3d9e69dcc8235319e2d
                2 File(s)          3,904 bytes
@@ -632,7 +724,7 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\85
 
 02/01/2025  05:39 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  05:39 PM               376 69efa7956f91bbeaa351f06f06cf7089293b53
 01/30/2025  05:19 PM               364 a50bf71d573ab83cfb604cd2817622113c88b6
                2 File(s)            740 bytes
@@ -640,28 +732,28 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\87
 
 01/30/2025  05:19 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/30/2025  05:19 PM               401 1ba8756570fcaeded18b2c1a62854cc6d6ce91
                1 File(s)            401 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\89
 
 02/01/2025  04:51 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:51 PM                59 69b2b016b4e065bbd880ea713ea4d818cd3f3b
                1 File(s)             59 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\8a
 
 02/01/2025  05:39 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  05:39 PM             2,571 a8032ce79743824d5a630394de619e506a3cab
                1 File(s)          2,571 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\8c
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM            18,105 9c806f1e222a35569b181a7853274a5101e87e
 02/01/2025  04:33 PM                58 fbc1dba93d66f3aec67e806851b9d771dba755
                2 File(s)         18,163 bytes
@@ -669,28 +761,28 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\8f
 
 01/31/2025  05:24 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  05:24 PM               375 ad46568d074c13fed010fc11cc0b9ef795c34e
                1 File(s)            375 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\91
 
 01/31/2025  04:56 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM               374 107cb89e56cc01dc074ea775f508980da67e01
                1 File(s)            374 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\93
 
 02/01/2025  05:39 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  05:39 PM                64 98a2bc598221d8f90d3f89b262dfefaccde703
                1 File(s)             64 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\99
 
 02/01/2025  06:02 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM               471 170636c2607dd54cba570899f56ca7ca1bd2cd
 01/31/2025  10:47 PM                63 5f357f7bbb98bd0cca20d329d3eeb7bd46ab7e
 02/01/2025  06:02 PM             1,930 e4e0815a05511759616eade656cbb6f7ab26e0
@@ -699,21 +791,29 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\9a
 
 01/31/2025  10:31 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  10:31 PM             1,984 2722a07fd3d0d584e26dbabb0caaa9e79606e8
                1 File(s)          1,984 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\9b
+
+02/02/2025  01:08 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM                64 8119d94900d3b1cf8942e41563712ce3e627e7
+02/02/2025  01:08 AM               171 9cc3009d69f3afdba77da7d500b4b26bff8018
+               2 File(s)            235 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\9c
 
 01/30/2025  05:45 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/30/2025  05:45 PM               404 775323e65fe99c27f88151ca37f920c7877109
                1 File(s)            404 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\9d
 
 02/01/2025  06:02 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  02:17 PM                78 1aba01472710d390cbc702a3186b783b35f05e
 02/01/2025  06:02 PM                79 89730e454c63c5f2de262ab89547af379300ba
                2 File(s)            157 bytes
@@ -721,107 +821,150 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\9e
 
 01/31/2025  04:56 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM             8,603 b6b872e4b2edaffdf604f31863a296905a4e62
                1 File(s)          8,603 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\9f
 
 01/31/2025  10:31 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  10:31 PM               373 cff844cf2ac6614fc8d1291c81bc40b91607c1
                1 File(s)            373 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\a0
 
 02/01/2025  12:18 AM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  12:18 AM               176 bf97ae492d1e98cc388a114372387c8dedf214
                1 File(s)            176 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\a1
+
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM               585 c83770e72f30dafb641d25a0b789b0f5627dfe
+               1 File(s)            585 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\a2
+
+02/02/2025  01:08 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  01:08 AM                64 2357cafb14a20f8bb7eac736b8963237acb716
+               1 File(s)             64 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\a3
 
 01/30/2025  05:19 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/30/2025  05:19 PM             1,995 5c67cfc553556c2b00f9b0f4a8b20764e5648e
                1 File(s)          1,995 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\a4
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:33 PM                94 adb5697d1df1e343feb55de2a06faed98bbfa6
                1 File(s)             94 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\a5
+
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM               740 fd00ce79e9a5bfc98a3d8b35739ceb5983aadc
+               1 File(s)            740 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\a6
 
 01/31/2025  11:23 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  11:23 PM                63 1f974bf09a0dfa502b94347c458d1e964364e1
                1 File(s)             63 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\a7
 
 01/31/2025  10:47 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  10:47 PM               172 87d1b4315ce59d972888c071fce40ff69e46c6
                1 File(s)            172 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\a9
 
 02/01/2025  02:17 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  02:17 PM               375 a22256ab92a59320ac736273655e94e3816112
                1 File(s)            375 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\aa
 
 01/31/2025  11:24 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  11:24 PM               182 fc2255de231d022482b57e77fdf213b76d99fe
                1 File(s)            182 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\ae
 
 02/01/2025  02:17 AM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  02:17 AM             1,921 3f2b773d5af65999b9d892c34c4e44e9777af8
 01/30/2025  05:19 PM               271 7094015486e070c24fc2cd21fe7f8486a36420
                2 File(s)          2,192 bytes
 
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\af
+
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM               108 daabdc4ae66a2d2093882fe83327bc4044bba6
+               1 File(s)            108 bytes
+
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\b0
 
 02/01/2025  05:39 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  05:39 PM                60 177064f5d644154d498bea07f478f475268200
                1 File(s)             60 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\b2
 
 01/30/2025  05:19 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/30/2025  05:19 PM               639 c97b65c8c619835b8594f57b640c0957709b18
                1 File(s)            639 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\b4
 
 02/01/2025  06:02 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  05:39 PM               180 611402151299f96b983b17c0f05f5f6270ca59
 02/01/2025  06:02 PM             2,415 de8f77532d75d42474bf3568d71d61e626cd1f
                2 File(s)          2,595 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\b6
 
-01/31/2025  10:47 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  10:47 PM               375 51417bc673042897fb0abb3c1f2cfbd83a1ca9
-               1 File(s)            375 bytes
+02/02/2025  12:50 AM             1,767 ffbc5cb79ea7ed92a374e7d06022632c762836
+               2 File(s)          2,142 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\bb
+
+02/02/2025  01:08 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  01:08 AM             2,008 6a65c44efd9016c1fc545acb533bca1d68b209
+               1 File(s)          2,008 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\bd
+
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM             2,234 b9e2a2d58332cb32e298c25e763fdeb7dfe671
+               1 File(s)          2,234 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\be
 
 02/01/2025  06:37 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  02:17 AM                63 191a969f5156223e1994c96894cf46c929e14a
 02/01/2025  04:51 PM             2,852 5c879b693d0a69c1f55f31b0a94fcd6ee6eb42
 01/31/2025  04:56 PM            62,440 703672c027aa09fad39db16bbe760f2e37f6d5
@@ -833,28 +976,28 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\bf
 
 01/30/2025  05:19 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM               158 34929bc70bd26f1fb07b574daccc0d85814070
                1 File(s)            158 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\c0
 
 01/31/2025  04:56 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM                47 53f58b9777d588015c781fb7197e5f3b7e3f82
                1 File(s)             47 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\c1
 
 02/01/2025  12:18 AM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  12:18 AM               549 52837ec6c6a427eda30d90793322dcb7aba052
                1 File(s)            549 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\c2
 
 02/01/2025  05:39 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  12:18 AM                64 1ca376a35ac677086c411408286656ea53f72c
 01/31/2025  10:15 PM             1,977 7b77f3e1579d28335886e6d35f5547961b3823
 02/01/2025  05:39 PM               159 cbbbebee8017df9803dc35e569cc942f35dcac
@@ -863,7 +1006,7 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\c3
 
 01/31/2025  10:31 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM               121 370c8fbeacfcb1f797d2ee4399f927b636e785
 01/31/2025  10:31 PM                63 89ae31df38b1ec493be041525b7ef97a7cf16e
                2 File(s)            184 bytes
@@ -871,21 +1014,21 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\c4
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:33 PM               393 93eb1d97938878697241d2c90682c6df05cb48
                1 File(s)            393 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\c5
 
 01/31/2025  04:56 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM                63 675e2b9796bd32834dedf0a7e175002bc8eb7a
                1 File(s)             63 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\c6
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:33 PM               159 3682e3b32990f95f5ebf88c215d4700c6263b5
 01/31/2025  11:23 PM               159 406314ee00e4fa1cdfd7b9eb5c01e802cc92ac
                2 File(s)            318 bytes
@@ -893,7 +1036,7 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\c8
 
 01/31/2025  04:56 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/30/2025  05:19 PM             1,883 0bdabb502354c32ea924be1939ca4f384d4950
 01/31/2025  04:56 PM            13,347 12a6cf67960c8ac50a76e7f3f0111c9c6de5f1
                2 File(s)         15,230 bytes
@@ -901,21 +1044,21 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\c9
 
 01/31/2025  05:24 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  05:24 PM                61 800725b5a4382c931709216aa6ea3bcfb05f6c
                1 File(s)             61 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\ca
 
 01/31/2025  10:15 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  10:15 PM                62 2181e912b15e1a2268a84171b03c4b3cadf97f
                1 File(s)             62 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\cb
 
 02/01/2025  05:39 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM            12,775 33f8ee1842db9eba7bbc94b185a7a9feb2228a
 01/30/2025  05:19 PM                61 47f04f2861ba525862556d59a779c3db4caa84
 02/01/2025  05:39 PM             1,953 7218266b625cab89650e6ab2021ebe1bb90513
@@ -924,64 +1067,71 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\cd
 
 02/01/2025  06:37 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  06:37 PM                61 949f1aaa10f710103d27cab4e6606a9111cbf9
                1 File(s)             61 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\cf
 
 01/31/2025  11:23 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  11:23 PM               376 8770b3e04f1ce8d0ccf0232875cf348a087580
                1 File(s)            376 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\d2
 
 01/31/2025  05:24 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  05:24 PM                47 0491038edb6bc17ff22c24cf45d08f45ab19c8
 01/31/2025  04:56 PM                64 3eefe7e08e007620796952490877ddb27a5ebe
                2 File(s)            111 bytes
 
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\d3
+
+02/02/2025  01:08 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  01:08 AM             3,541 81f06a839284770e12614d79108fe0e9430597
+               1 File(s)          3,541 bytes
+
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\d4
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:33 PM             1,957 fa6d0aad51c5ae4b68bfd3f1b3aac30dea6c34
                1 File(s)          1,957 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\d7
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:33 PM             3,211 1356e42a35aa45adce098e97803a8a8d0283d7
                1 File(s)          3,211 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\d9
 
 02/01/2025  02:17 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  02:17 PM             1,958 37b49e3bd71372f56d55f8594c1e883109a7d9
                1 File(s)          1,958 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\da
 
 02/01/2025  12:18 AM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  12:18 AM               374 48673fe8110334a860f8538aa8ce3615c722ee
                1 File(s)            374 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\e2
 
 01/30/2025  05:19 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/30/2025  05:45 PM               101 36f990798dd87eea91d1e993a4e2b1200c4c13
                1 File(s)            101 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\e3
 
 02/01/2025  02:17 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  02:17 AM             1,930 b2cc83ed3ec05a67452fe3b2e490e4e0bd46e1
 02/01/2025  02:17 PM             1,926 b4edcb6d7d722e29d07c939e869bfd103c00b3
                2 File(s)          3,856 bytes
@@ -989,14 +1139,14 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\e4
 
 01/30/2025  05:19 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM                58 555e254198bb5668fb73e63d05e9075e75fd21
                1 File(s)             58 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\e5
 
 01/31/2025  10:31 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  10:31 PM             1,586 52341c9cdbf5b78e18c46082819390c56e4998
 01/31/2025  05:24 PM             1,944 8795b969b88552e03144ddccfa1eb4b1e848f8
                2 File(s)          3,530 bytes
@@ -1004,68 +1154,91 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\e7
 
 02/01/2025  12:18 AM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  12:18 AM                59 9571520309e92b081087e79631076347d43785
 01/31/2025  10:15 PM               375 d77b67b6abd633b898eca30486c92bb9722fe2
                2 File(s)            434 bytes
 
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\e8
+
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM               129 1839af9acf4363a543edc72bc15dc546f507e3
+               1 File(s)            129 bytes
+
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\e9
 
 02/01/2025  04:51 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:51 PM                62 569c27f4da5fee8eb3adb6048d8b329ead593b
 02/01/2025  12:18 AM                62 84d88c3e32a0545d35d8cac1c0ed9379076506
                2 File(s)            124 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\ea
 
-02/01/2025  12:18 AM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  12:18 AM             2,728 b0c601e8f5373e270a508e08f93c12782e49a3
 02/01/2025  02:17 AM                78 b2415cd47d8b75984a1769e53d7a5828183da1
-               2 File(s)          2,806 bytes
+02/02/2025  01:08 AM                69 d1a8805268bc9eb36940dd52c5136734d5bf8c
+               3 File(s)          2,875 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\ec
 
 01/31/2025  10:47 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  10:47 PM                47 6e067c04d6b713fcf783d3a82b87eacbfe8ede
 01/31/2025  10:15 PM             1,519 beb647816281c4460a599f5211e03e82721e77
 01/31/2025  10:15 PM                61 e7eb52b6346a9400b14bbeaf5c9218bc78ebff
                3 File(s)          1,627 bytes
 
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\ed
+
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  12:50 AM            10,436 0f2df8da9170d0324d67dce343ec6e59ec0160
+               1 File(s)         10,436 bytes
+
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\ee
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:33 PM             2,556 5311cc2b4a5ce61420219e8edbb6e56cdd2292
                1 File(s)          2,556 bytes
 
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\ef
+
+02/02/2025  01:08 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  01:08 AM                95 ea939b978af94fd5759421bf234cb17a4cd60d
+               1 File(s)             95 bytes
+
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\f0
 
-02/01/2025  06:37 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  12:50 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  06:37 PM             2,500 5a6b694f2f20e690bf1675871999dd8da37689
-               1 File(s)          2,500 bytes
+02/02/2025  12:50 AM             2,889 5f9aad84e11987ff158e661645d6548dad0a94
+               2 File(s)          5,389 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\f1
 
 01/31/2025  11:23 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  11:23 PM             1,801 5b1f5a7858c196bf974d014ee78302996250d9
                1 File(s)          1,801 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\f5
 
 02/01/2025  06:37 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  06:37 PM                63 8434edf85433e0e47baae3f15423e23cd50ecf
                1 File(s)             63 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\f6
 
 02/01/2025  04:51 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:51 PM               159 92cdfb81a77c43e830e711cac92395f701b1e1
 01/30/2025  05:19 PM                63 d797c88201abcb78c114855654c5210566462c
                2 File(s)            222 bytes
@@ -1073,63 +1246,70 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\f8
 
 01/31/2025  11:23 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  11:23 PM                64 73c95370f2ed62d56134f3c12549b2026342f2
                1 File(s)             64 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\fc
 
 01/31/2025  04:56 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 01/31/2025  04:56 PM             3,605 caf9c5d617e7f51f4662322ce458442322e603
                1 File(s)          3,605 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\fd
+
+02/02/2025  01:08 AM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          ..
+02/02/2025  01:08 AM               822 3d106b46741ce06ed4d3109a3b3acfd0cba1f0
+               1 File(s)            822 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\fe
 
 02/01/2025  04:33 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
 02/01/2025  04:33 PM                64 26097d4fa5f1a93190cb2be1b3d1ff4dd66b4d
                1 File(s)             64 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\info
 
 01/30/2025  05:17 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
                0 File(s)              0 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\objects\pack
 
 01/30/2025  05:17 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          ..
+02/02/2025  01:08 AM    <DIR>          ..
                0 File(s)              0 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\refs
 
 01/30/2025  05:39 PM    <DIR>          .
-02/01/2025  06:38 PM    <DIR>          heads
+02/02/2025  01:08 AM    <DIR>          heads
 01/30/2025  05:39 PM    <DIR>          remotes
 01/30/2025  05:17 PM    <DIR>          tags
                0 File(s)              0 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\refs\heads
 
-02/01/2025  06:38 PM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          .
 01/30/2025  05:39 PM    <DIR>          ..
-02/01/2025  06:38 PM                41 main
+02/02/2025  01:08 AM                41 main
                1 File(s)             41 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\refs\remotes
 
 01/30/2025  05:39 PM    <DIR>          .
 01/30/2025  05:39 PM    <DIR>          ..
-02/01/2025  06:38 PM    <DIR>          origin
+02/02/2025  01:08 AM    <DIR>          origin
                0 File(s)              0 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\refs\remotes\origin
 
-02/01/2025  06:38 PM    <DIR>          .
+02/02/2025  01:08 AM    <DIR>          .
 01/30/2025  05:39 PM    <DIR>          ..
-02/01/2025  06:38 PM                41 main
+02/02/2025  01:08 AM                41 main
                1 File(s)             41 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\.git\refs\tags
@@ -1166,8 +1346,8 @@
 
 02/01/2025  08:25 PM    <DIR>          .
 02/01/2025  08:25 PM    <DIR>          ..
-02/01/2025  08:45 PM            10,748 marvel-faserip.css
-               1 File(s)         10,748 bytes
+02/02/2025  12:44 AM            11,495 marvel-faserip.css
+               1 File(s)         11,495 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\lang
 
@@ -1180,25 +1360,41 @@
 
 02/01/2025  08:25 PM    <DIR>          .
 02/01/2025  08:25 PM    <DIR>          ..
-02/01/2025  08:32 PM             7,564 config.js
-01/30/2025  09:13 PM    <DIR>          documents
-02/01/2025  09:08 PM             5,163 marvel-faserip.js
-01/30/2025  09:13 PM    <DIR>          sheets
-               2 File(s)         12,727 bytes
+02/02/2025  01:48 AM            11,650 config.js
+02/01/2025  09:14 PM    <DIR>          documents
+02/02/2025  01:04 AM             5,556 marvel-faserip.js
+02/02/2025  12:55 AM    <DIR>          sheets
+               2 File(s)         17,206 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\documents
 
-01/30/2025  09:13 PM    <DIR>          .
+02/01/2025  09:14 PM    <DIR>          .
 02/01/2025  08:25 PM    <DIR>          ..
-02/01/2025  08:34 PM            12,134 MarvelActor.js
-               1 File(s)         12,134 bytes
+02/01/2025  09:14 PM    <DIR>          items
+02/02/2025  12:36 AM            13,258 MarvelActor.js
+               1 File(s)         13,258 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\documents\items
+
+02/01/2025  09:14 PM    <DIR>          .
+02/01/2025  09:14 PM    <DIR>          ..
+02/02/2025  01:00 AM             1,955 MarvelAttackItem.js
+               1 File(s)          1,955 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\sheets
 
-01/30/2025  09:13 PM    <DIR>          .
+02/02/2025  12:55 AM    <DIR>          .
 02/01/2025  08:25 PM    <DIR>          ..
-02/01/2025  09:03 PM            18,891 MarvelActorSheet.js
-               1 File(s)         18,891 bytes
+02/02/2025  12:56 AM    <DIR>          items
+02/02/2025  01:41 AM            13,878 MarvelActorSheet.js
+               1 File(s)         13,878 bytes
+
+ Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\sheets\items
+
+02/02/2025  12:56 AM    <DIR>          .
+02/02/2025  12:55 AM    <DIR>          ..
+02/02/2025  01:31 AM             2,172 MarvelAttackItemSheet.js
+               1 File(s)          2,172 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\templates
 
@@ -1207,15 +1403,15 @@
 01/30/2025  09:13 PM    <DIR>          actor
 02/01/2025  08:25 PM    <DIR>          chat
 02/01/2025  08:50 PM    <DIR>          dialogs
-02/01/2025  08:42 PM    <DIR>          items
+02/01/2025  09:14 PM    <DIR>          items
                0 File(s)              0 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\templates\actor
 
 01/30/2025  09:13 PM    <DIR>          .
 02/01/2025  08:40 PM    <DIR>          ..
-02/01/2025  08:44 PM            11,657 actor-sheet.html
-               1 File(s)         11,657 bytes
+02/02/2025  12:42 AM            11,784 actor-sheet.html
+               1 File(s)         11,784 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\templates\chat
 
@@ -1234,12 +1430,11 @@
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\templates\items
 
-02/01/2025  08:42 PM    <DIR>          .
+02/01/2025  09:14 PM    <DIR>          .
 02/01/2025  08:40 PM    <DIR>          ..
-02/01/2025  08:39 PM             1,855 attack-item.html
-02/01/2025  08:42 PM               620 MarvelAttackItem.js
-               2 File(s)          2,475 bytes
+02/02/2025  01:23 AM             3,382 attack-item.html
+               1 File(s)          3,382 bytes
 
      Total Files Listed:
-             218 File(s)        584,246 bytes
-             433 Dir(s)  289,573,724,160 bytes free
+             252 File(s)        630,543 bytes
+             502 Dir(s)  289,480,663,040 bytes free

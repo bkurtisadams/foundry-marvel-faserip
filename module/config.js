@@ -147,22 +147,22 @@ export const COMBAT_TYPES = {
         ability: "fighting",
         name: "Hand-to-Hand Combat",
         types: {
-            BLUNT: {
+            BA: {
                 name: "Blunt Attack",
                 results: {
-                    white: {effect: "Miss", damage: 0},
-                    green: {effect: "Hit", damage: "strength"},
-                    yellow: {effect: "Slam", damage: "strength"},
-                    red: {effect: "Stun", damage: "strength"}
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "strength" },
+                    yellow: { effect: "Slam", damage: "strength" },
+                    red: { effect: "Stun", damage: "strength" }
                 }
             },
-            EDGED: {
-                name: "Edged Attack", 
+            EA: {
+                name: "Edged Attack",
                 results: {
-                    white: {effect: "Miss", damage: 0},
-                    green: {effect: "Hit", damage: "weapon"},
-                    yellow: {effect: "Stun", damage: "weapon"},
-                    red: {effect: "Kill", damage: "weapon"}
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "weapon" },
+                    yellow: { effect: "Stun", damage: "weapon" },
+                    red: { effect: "Kill", damage: "weapon" }
                 }
             }
         }
@@ -171,22 +171,133 @@ export const COMBAT_TYPES = {
         ability: "agility",
         name: "Ranged Combat",
         types: {
-            SHOOTING: {
-                name: "Shooting Attack",
+            Sh: {
+                name: "Shooting",
                 results: {
-                    white: {effect: "Miss", damage: 0},
-                    green: {effect: "Hit", damage: "weapon"},
-                    yellow: {effect: "Bullseye", damage: "weapon"},
-                    red: {effect: "Kill", damage: "weapon"}
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "weapon" },
+                    yellow: { effect: "Bullseye", damage: "weapon" },
+                    red: { effect: "Kill", damage: "weapon" }
                 }
             },
-            THROWING: {
-                name: "Throwing Attack",
+            TE: {
+                name: "Throwing Edged",
                 results: {
-                    white: {effect: "Miss", damage: 0},
-                    green: {effect: "Hit", damage: "strength"},
-                    yellow: {effect: "Bullseye", damage: "strength"},
-                    red: {effect: "Stun", damage: "strength"}
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "weapon" },
+                    yellow: { effect: "Stun", damage: "weapon" },
+                    red: { effect: "Kill", damage: "weapon" }
+                }
+            },
+            TB: {
+                name: "Throwing Blunt",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "strength" },
+                    yellow: { effect: "Hit", damage: "strength" },
+                    red: { effect: "Stun", damage: "strength" }
+                }
+            },
+            En: {
+                name: "Energy",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "weapon" },
+                    yellow: { effect: "Bullseye", damage: "weapon" },
+                    red: { effect: "Kill", damage: "weapon" }
+                }
+            },
+            Fo: {
+                name: "Force",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "weapon" },
+                    yellow: { effect: "Bullseye", damage: "weapon" },
+                    red: { effect: "Stun", damage: "weapon" }
+                }
+            }
+        }
+    },
+    STRENGTH: {
+        ability: "strength",
+        name: "Strength Combat",
+        types: {
+            Gp: {
+                name: "Grappling",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Miss", damage: 0 },
+                    yellow: { effect: "Partial", damage: 0 },
+                    red: { effect: "Hold", damage: 0 }
+                }
+            },
+            Gb: {
+                name: "Grabbing",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Take", damage: 0 },
+                    yellow: { effect: "Grab", damage: 0 },
+                    red: { effect: "Break", damage: 0 }
+                }
+            },
+            Es: {
+                name: "Escaping",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Miss", damage: 0 },
+                    yellow: { effect: "Escape", damage: 0 },
+                    red: { effect: "Reverse", damage: 0 }
+                }
+            },
+            Bl: {
+                name: "Blocking",
+                results: {
+                    white: { effect: "-6 CS", damage: 0 },
+                    green: { effect: "-4 CS", damage: 0 },
+                    yellow: { effect: "-2 CS", damage: 0 },
+                    red: { effect: "+1 CS", damage: 0 }
+                }
+            }
+        }
+    },
+    ENDURANCE: {
+        ability: "endurance",
+        name: "Endurance Combat",
+        types: {
+            Ch: {
+                name: "Charging",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "strength" },
+                    yellow: { effect: "Slam", damage: "strength" },
+                    red: { effect: "Stun", damage: "strength" }
+                }
+            },
+            St: {
+                name: "Stun?",
+                results: {
+                    white: { effect: "1-10", damage: 0 },
+                    green: { effect: "1", damage: 0 },
+                    yellow: { effect: "No", damage: 0 },
+                    red: { effect: "No", damage: 0 }
+                }
+            },
+            Sl: {
+                name: "Slam?",
+                results: {
+                    white: { effect: "Gr. Slam", damage: 0 },
+                    green: { effect: "1 area", damage: 0 },
+                    yellow: { effect: "Stagger", damage: 0 },
+                    red: { effect: "No", damage: 0 }
+                }
+            },
+            Ki: {
+                name: "Kill?",
+                results: {
+                    white: { effect: "En. Loss", damage: 0 },
+                    green: { effect: "E/S", damage: 0 },
+                    yellow: { effect: "No", damage: 0 },
+                    red: { effect: "No", damage: 0 }
                 }
             }
         }

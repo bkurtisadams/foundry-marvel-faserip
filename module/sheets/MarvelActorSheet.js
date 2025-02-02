@@ -49,20 +49,24 @@ export class MarvelActorSheet extends ActorSheet {
         super.activateListeners(html);
 
         if (this.isEditable) {
+            // These need to be bound to this
             html.find('.add-power').click(this._onAddPower.bind(this));
             html.find('.add-talent').click(this._onAddTalent.bind(this));
             html.find('.add-contact').click(this._onAddContact.bind(this));
             html.find('.ability-number').change(this._onNumberChange.bind(this));
             html.find('.rank-select').change(this._onRankChange.bind(this));
+            html.find('.add-attack').click(this._onAddAttack.bind(this));
+            html.find('.roll-attack').click(this._onRollAttack.bind(this));
             
-            // Item controls
+            // These can use arrow functions
             html.find('.item-edit').click(ev => {
                 ev.preventDefault();
                 const attackRow = ev.currentTarget.closest(".attack-row");
                 if (!attackRow) return;
                 const itemId = attackRow.dataset.itemId;
                 const item = this.actor.items.get(itemId);
-                if (item) item.sheet.render(true);
+                if (!item) return;
+                return item.sheet.render(true);
             });
             
             html.find('.item-delete').click(ev => {
@@ -70,81 +74,70 @@ export class MarvelActorSheet extends ActorSheet {
                 const item = this.actor.items.get(li.data("itemId"));
                 if (item) item.delete();
             });
-            
-            // Add attack handlers
-            html.find('.add-attack').click(this._onAddAttack.bind(this));
-            html.find('.roll-attack').click(this._onRollAttack.bind(this));
         }
 
         // Add ability roll handlers
         html.find('.ability-label').click(this._onAbilityRoll.bind(this));
     }
 
-    async _onNumberChange(event) {
+    async _onAddAttack(event) {
         event.preventDefault();
-        const element = event.currentTarget;
-        const abilityPath = element.dataset.ability;
-        const newNumber = parseInt(element.value) || 0;
-        
-        // Strip the 'primaryAbilities.' prefix if present
-        const cleanPath = abilityPath.replace('primaryAbilities.', '');
-        
-        // Get the rank that corresponds to this number
-        const newRank = this.actor.getRankFromValue(newNumber);
-        
-        // Update both number and rank
-        await this.actor.update({
-            [`system.primaryAbilities.${cleanPath}.rank`]: newRank,
-            [`system.primaryAbilities.${cleanPath}.number`]: newNumber
-        });
-    }
 
-    async _onRankChange(event) {
-        event.preventDefault();
-        const element = event.currentTarget;
-        const abilityPath = element.dataset.ability;
-        const newRank = element.value;
-        
-        // Strip the 'primaryAbilities.' prefix if present
-        const cleanPath = abilityPath.replace('primaryAbilities.', '');
-        
-        // Get current values
-        const currentAbility = this.actor.system.primaryAbilities[cleanPath];
-        
-        // If changing initial rank, update initial rank and number
-        if (element.classList.contains('initial-rank-select')) {
-            await this.actor.update({
-                [`system.primaryAbilities.${cleanPath}.initialRank`]: newRank,
-                [`system.primaryAbilities.${cleanPath}.initialNumber`]: MARVEL_RANKS[newRank]?.standard || 0
-            });
+        // Build abilities and their attacks from actionResults
+        const abilities = {};
+        for (const [code, action] of Object.entries(CONFIG.marvel.actionResults)) {
+            const abilityName = action.ability.toLowerCase();
+            if (!abilities[abilityName]) {
+                abilities[abilityName] = {
+                    label: action.ability,
+                    attacks: {}
+                };
+            }
+            abilities[abilityName].attacks[code] = action.name;
         }
-        // If changing current rank, update current rank and number
-        else {
-            const rankNumber = MARVEL_RANKS[newRank]?.standard || currentAbility.number || 0;
-            await this.actor.update({
-                [`system.primaryAbilities.${cleanPath}.rank`]: newRank,
-                [`system.primaryAbilities.${cleanPath}.number`]: rankNumber
-            });
-        }
-    }
 
-    async _onAddPower(event) {
-        event.preventDefault();
-        
-        // Get current powers list or initialize it
-        const powers = foundry.utils.getProperty(this.actor.system, "powers.list") || [];
-        
-        // Create new powers array with additional power
-        const newPowers = powers.concat([{
-            name: "",
-            rank: "",
-            number: 0
-        }]);
-        
-        // Update the actor
-        await this.actor.update({
-            "system.powers.list": newPowers
-        });
+        const template = "systems/marvel-faserip/templates/dialogs/add-attack.html";
+        const html = await renderTemplate(template, { abilities });
+
+        return new Dialog({
+            title: "Add Attack",
+            content: html,
+            buttons: {
+                create: {
+                    label: "Create",
+                    callback: async (dialogHtml) => {
+                        const form = dialogHtml.find("form")[0];
+                        if (!form) {
+                            console.error("Form element not found in dialog!");
+                            return;
+                        }
+
+                        // Get form values
+                        const formData = new FormData(form);
+                        console.log("Form values:", Object.fromEntries(formData.entries()));
+
+                        const data = {
+                            name: formData.get("attackName"),
+                            type: "attack",
+                            system: {
+                                ability: formData.get("ability").toLowerCase(),
+                                attackType: formData.get("attackType"),  // Should be BA, EA, etc.
+                                weaponDamage: parseInt(formData.get("weaponDamage")) || 0,
+                                range: parseInt(formData.get("range")) || 0,
+                                columnShift: parseInt(formData.get("columnShift")) || 0
+                            }
+                        };
+
+                        console.log("Creating attack with data:", data);
+                        await this.actor.createEmbeddedDocuments("Item", [data]);
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
+                }
+            },
+            default: "create"
+        }).render(true);
     }
 
     async _onRollAttack(event) {
@@ -163,79 +156,60 @@ export class MarvelActorSheet extends ActorSheet {
         await item.roll();
     }
 
-    async _onAddAttack(event) {
+    async _onAddPower(event) {
         event.preventDefault();
-        const template = "systems/marvel-faserip/templates/dialogs/add-attack.html";
-        const html = await renderTemplate(template, {});
-
-        return new Dialog({
-            title: "Add Attack",
-            content: html,
-            buttons: {
-                create: {
-                    label: "Create",
-                    callback: async (dialogHtml) => {
-                        const form = dialogHtml.find("form")[0];
-                        if (!form) {
-                            console.error("Form element not found in dialog!");
-                            return;
-                        }
-
-                        const data = {
-                            name: form.attackName.value,
-                            type: "attack",
-                            system: {
-                                ability: form.ability.value,
-                                attackType: form.attackType.value,
-                                weaponDamage: parseInt(form.weaponDamage.value) || 0,
-                                range: parseInt(form.range.value) || 0,
-                                columnShift: parseInt(form.columnShift.value) || 0
-                            }
-                        };
-
-                        await this.actor.createEmbeddedDocuments("Item", [data]);
-                    }
-                },
-                cancel: {
-                    label: "Cancel"
-                }
-            },
-            default: "create"
-        }).render(true);
+        const powers = foundry.utils.getProperty(this.actor.system, "powers.list") || [];
+        const newPowers = powers.concat([{ name: "", rank: "", number: 0 }]);
+        await this.actor.update({ "system.powers.list": newPowers });
     }
 
     async _onAddTalent(event) {
         event.preventDefault();
-        
-        // Get current talents list or initialize it
         const talents = foundry.utils.getProperty(this.actor.system, "talents.list") || [];
-        
-        // Create new talents array with additional talent
-        const newTalents = talents.concat([{
-            name: ""
-        }]);
-        
-        // Update the actor
-        await this.actor.update({
-            "system.talents.list": newTalents
-        });
+        const newTalents = talents.concat([{ name: "" }]);
+        await this.actor.update({ "system.talents.list": newTalents });
     }
 
     async _onAddContact(event) {
         event.preventDefault();
-        
-        // Get current contacts list or initialize it
         const contacts = foundry.utils.getProperty(this.actor.system, "contacts.list") || [];
-        
-        // Create new contacts array with additional contact
-        const newContacts = contacts.concat([{
-            name: ""
-        }]);
-        
-        // Update the actor
+        const newContacts = contacts.concat([{ name: "" }]);
+        await this.actor.update({ "system.contacts.list": newContacts });
+    }
+
+    async _onNumberChange(event) {
+        event.preventDefault();
+        const element = event.currentTarget;
+        const abilityPath = element.dataset.ability;
+        const newNumber = parseInt(element.value) || 0;
+        const cleanPath = abilityPath.replace('primaryAbilities.', '');
+        const newRank = this.actor.getRankFromValue(newNumber);
         await this.actor.update({
-            "system.contacts.list": newContacts
+            [`system.primaryAbilities.${cleanPath}.rank`]: newRank,
+            [`system.primaryAbilities.${cleanPath}.number`]: newNumber
         });
+    }
+
+    async _onRankChange(event) {
+        event.preventDefault();
+        const element = event.currentTarget;
+        const abilityPath = element.dataset.ability;
+        const newRank = element.value;
+        const cleanPath = abilityPath.replace('primaryAbilities.', '');
+        const currentAbility = this.actor.system.primaryAbilities[cleanPath];
+        
+        if (element.classList.contains('initial-rank-select')) {
+            await this.actor.update({
+                [`system.primaryAbilities.${cleanPath}.initialRank`]: newRank,
+                [`system.primaryAbilities.${cleanPath}.initialNumber`]: MARVEL_RANKS[newRank]?.standard || 0
+            });
+        } else {
+            const rankNumber = MARVEL_RANKS[newRank]?.standard || currentAbility.number || 0;
+            await this.actor.update({
+                [`system.primaryAbilities.${cleanPath}.rank`]: newRank,
+                [`system.primaryAbilities.${cleanPath}.number`]: rankNumber
+            });
+        }
     }
 
     async _onAbilityRoll(event) {

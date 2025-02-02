@@ -23,22 +23,29 @@ export class MarvelAttackItem extends Item {
             return null;
         }
 
-        // Get attack parameters and ensure they match the config values
-        let ability = this.system.ability.toUpperCase();
-        const attackType = this.system.attackType;
-        
-        // Validate the ability matches our combat types
-        if (!["FIGHTING", "AGILITY", "STRENGTH", "ENDURANCE"].includes(ability)) {
-            console.error(`Invalid ability: ${ability}, defaulting to FIGHTING`);
-            ability = "FIGHTING";
+        // Validate we have the required data
+        if (!this.system.ability) {
+            console.error("Attack item is missing ability.");
+            return null;
         }
-        
+        if (!this.system.attackType) {
+            console.error("Attack item is missing attack type.");
+            return null;
+        }
+
+        // Get the ability from the item's system data
+        const ability = this.system.ability.toLowerCase();
+                
+        // Get the attack type from the item's system data
+        const attackType = this.system.attackType;
+
         console.log(`Rolling attack with ability ${ability} and type ${attackType}`);
-        
+
         // Roll the attack
         const result = await this.actor.rollAttack(ability, attackType, {
             weaponDamage: this.system.weaponDamage,
-            columnShift: this.system.columnShift
+            columnShift: this.system.columnShift,
+            range: this.system.range
         });
 
         return result;
@@ -56,8 +63,9 @@ export class MarvelAttackItem extends Item {
         // Ensure system data exists
         if (!this.system) this.system = {};
         if (!this.system.ability) this.system.ability = "fighting";
-        if (!this.system.attackType) this.system.attackType = "BLUNT";
+        if (!this.system.attackType) this.system.attackType = "BA";  // Default to Blunt Attack
         if (!this.system.weaponDamage) this.system.weaponDamage = 0;
+        if (!this.system.range) this.system.range = 0;
         if (!this.system.columnShift) this.system.columnShift = 0;
     }
 }

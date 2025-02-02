@@ -7,20 +7,22 @@
     <div class="form-group">
         <label>Ability</label>
         <select name="ability">
-            <option value="fighting">Fighting</option>
-            <option value="agility">Agility</option>
-            <option value="strength">Strength</option>
-            <option value="endurance">Endurance</option>
+            {{#each abilities as |ability key|}}
+            <option value="{{key}}">{{ability.label}}</option>
+            {{/each}}
         </select>
     </div>
 
     <div class="form-group">
         <label>Attack Type</label>
         <select name="attackType">
-            <option value="BLUNT">Blunt Attack</option>
-            <option value="EDGED">Edged Attack</option>
-            <option value="SHOOTING">Shooting</option>
-            <option value="THROWING">Throwing</option>
+            {{#each abilities as |ability key|}}
+            <optgroup label="{{ability.label}}">
+                {{#each ability.attacks as |label code|}}
+                <option value="{{code}}">{{label}}</option>
+                {{/each}}
+            </optgroup>
+            {{/each}}
         </select>
     </div>
 

@@ -1,6 +1,3 @@
-/**
- * @extends {ItemSheet}
- */
 export class MarvelAttackItemSheet extends ItemSheet {
     /** @override */
     static get defaultOptions() {
@@ -18,17 +15,46 @@ export class MarvelAttackItemSheet extends ItemSheet {
         const context = await super.getData();
 
         context.system = context.item.system;
+        
+        // Abilities with their associated attacks
         context.abilities = {
-            fighting: "Fighting",
-            agility: "Agility",
-            strength: "Strength",
-            endurance: "Endurance"
-        };
-        context.attackTypes = {
-            BLUNT: "Blunt Attack",
-            EDGED: "Edged Attack",
-            SHOOTING: "Shooting",
-            THROWING: "Throwing"
+            fighting: {
+                label: "Fighting",
+                attacks: {
+                    BA: "Blunt Attack (BA)",
+                    EA: "Edged Attack (EA)"
+                }
+            },
+            agility: {
+                label: "Agility",
+                attacks: {
+                    Sh: "Shooting (Sh)",
+                    TE: "Throwing Edged (TE)",
+                    TB: "Throwing Blunt (TB)",
+                    En: "Energy (En)",
+                    Fo: "Force (Fo)",
+                    Do: "Dodging (Do)"
+                }
+            },
+            strength: {
+                label: "Strength",
+                attacks: {
+                    Gp: "Grappling (Gp)",
+                    Gb: "Grabbing (Gb)",
+                    Bl: "Blocking (Bl)"
+                }
+            },
+            endurance: {
+                label: "Endurance",
+                attacks: {
+                    Ch: "Charging (Ch)",
+                    Es: "Escaping (Es)",
+                    Ev: "Evading (Ev)",
+                    St: "Stun? (St)",
+                    Sl: "Slam? (Sl)",
+                    Ki: "Kill? (Ki)"
+                }
+            }
         };
 
         return context;
