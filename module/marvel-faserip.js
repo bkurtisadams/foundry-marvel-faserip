@@ -121,33 +121,48 @@ Hooks.on("renderCombatTracker", (app, html, data) => {
 Hooks.on("hotbarDrop", async (bar, data, slot) => {
     if (data.type !== "Item") return;
     
-    if (!("actorId" in data) || !("itemId" in data)) return;
+    const actor = game.actors.get(data.actorId);
+    const item = actor?.items.get(data.itemId);
+    if (!item || item.type !== "attack") return;
 
-    const command = `
-        (async () => {
+    const command = `(async () => {
+        try {
             const actor = game.actors.get("${data.actorId}");
-            if (!actor) return ui.notifications.warn("Actor not found");
+            if (!actor) {
+                ui.notifications.warn("Actor not found");
+                return;
+            }
+            
             const item = actor.items.get("${data.itemId}");
-            if (!item) return ui.notifications.warn("Item not found");
-            await item.roll();
-        })();
-    `;
+            if (!item) {
+                ui.notifications.warn("Attack item not found");
+                return;
+            }
 
-    let macro = game.macros.find(m => {
-        return m.name === item.name && 
-               m.command === command && 
-               m.author === game.user.id;
-    });
+            // Instead of opening the sheet, execute the roll
+            await actor.rollAttack(item.system.ability, item.system.attackType, {
+                weaponDamage: item.system.weaponDamage,
+                columnShift: item.system.columnShift,
+                range: item.system.range
+            });
+        } catch(err) {
+            console.error(err);
+            ui.notifications.error("Failed to roll attack");
+        }
+    })();`;
 
+    // Create or update the macro
+    let macro = game.macros.find(m => m.name === item.name && m.author.id === game.user.id);
     if (!macro) {
         macro = await Macro.create({
             name: item.name,
             type: "script",
             img: item.img,
             command: command,
-            flags: { "marvel-faserip.attackMacro": true },
-            author: game.user.id
+            flags: { "marvel-faserip.attackMacro": true }
         });
+    } else {
+        await macro.update({ command: command });
     }
     
     await game.user.assignHotbarMacro(macro, slot);
