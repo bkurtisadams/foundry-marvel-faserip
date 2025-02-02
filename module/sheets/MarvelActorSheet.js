@@ -56,7 +56,16 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.ability-number').change(this._onNumberChange.bind(this));
             html.find('.rank-select').change(this._onRankChange.bind(this));
             html.find('.add-attack').click(this._onAddAttack.bind(this));
-            html.find('.roll-attack').click(this._onRollAttack.bind(this));
+            
+            html.find('.roll-attack').click(async (ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                const itemId = ev.currentTarget.closest(".attack-row").dataset.itemId;
+                if (!itemId) return;
+                const item = this.actor.items.get(itemId);
+                if (!item) return;
+                return await item.roll();
+            });
             
             // These can use arrow functions
             html.find('.item-edit').click(ev => {

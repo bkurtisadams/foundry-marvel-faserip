@@ -121,29 +121,35 @@ Hooks.on("renderCombatTracker", (app, html, data) => {
 Hooks.on("hotbarDrop", async (bar, data, slot) => {
     if (data.type !== "Item") return;
     
-    // Get the item data
-    const actor = game.actors.get(data.actorId);
-    if (!actor) return;
-    const item = actor.items.get(data.itemId);
-    if (!item || item.type !== "attack") return;
+    if (!("actorId" in data) || !("itemId" in data)) return;
 
-    // Create the macro command
-    const command = `const actor = game.actors.get("${data.actorId}");
-if (!actor) return ui.notifications.warn("Actor not found");
-const item = actor.items.get("${data.itemId}");
-if (!item) return ui.notifications.warn("Item not found");
-item.roll();`;
+    const command = `
+        (async () => {
+            const actor = game.actors.get("${data.actorId}");
+            if (!actor) return ui.notifications.warn("Actor not found");
+            const item = actor.items.get("${data.itemId}");
+            if (!item) return ui.notifications.warn("Item not found");
+            await item.roll();
+        })();
+    `;
 
-    let macro = game.macros.find(m => (m.name === item.name) && (m.command === command));
+    let macro = game.macros.find(m => {
+        return m.name === item.name && 
+               m.command === command && 
+               m.author === game.user.id;
+    });
+
     if (!macro) {
         macro = await Macro.create({
             name: item.name,
             type: "script",
             img: item.img,
             command: command,
-            flags: { "marvel-faserip.attackMacro": true }
+            flags: { "marvel-faserip.attackMacro": true },
+            author: game.user.id
         });
     }
+    
     await game.user.assignHotbarMacro(macro, slot);
     return false;
 });
