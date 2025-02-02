@@ -191,12 +191,21 @@
 }
 
 /* Initial Roll/Rank styling */
-.primary-abilities .initial-roll-input,
-.primary-abilities .initial-rank-select {
+.primary-abilities .initial-roll-input {
     background-color: #e0e0e0;
     color: #666;
     border-color: #ccc;
-    cursor: default;
+    width: 40px;
+    text-align: center;
+}
+
+.primary-abilities .initial-rank-input {
+    background-color: #e0e0e0;
+    color: #666;
+    border-color: #ccc;
+    width: 100px;
+    text-align: left;
+    padding-left: 5px;
 }
 
 .primary-abilities th.init-column {
