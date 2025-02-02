@@ -141,3 +141,69 @@ export const FEAT_TYPES = {
         name: "Combat FEAT"
     }
 };
+
+export const COMBAT_TYPES = {
+    FIGHTING: {
+        ability: "fighting",
+        name: "Hand-to-Hand Combat",
+        types: {
+            BLUNT: {
+                name: "Blunt Attack",
+                results: {
+                    white: {effect: "Miss", damage: 0},
+                    green: {effect: "Hit", damage: "strength"},
+                    yellow: {effect: "Slam", damage: "strength"},
+                    red: {effect: "Stun", damage: "strength"}
+                }
+            },
+            EDGED: {
+                name: "Edged Attack", 
+                results: {
+                    white: {effect: "Miss", damage: 0},
+                    green: {effect: "Hit", damage: "weapon"},
+                    yellow: {effect: "Stun", damage: "weapon"},
+                    red: {effect: "Kill", damage: "weapon"}
+                }
+            }
+        }
+    },
+    AGILITY: {
+        ability: "agility",
+        name: "Ranged Combat",
+        types: {
+            SHOOTING: {
+                name: "Shooting Attack",
+                results: {
+                    white: {effect: "Miss", damage: 0},
+                    green: {effect: "Hit", damage: "weapon"},
+                    yellow: {effect: "Bullseye", damage: "weapon"},
+                    red: {effect: "Kill", damage: "weapon"}
+                }
+            },
+            THROWING: {
+                name: "Throwing Attack",
+                results: {
+                    white: {effect: "Miss", damage: 0},
+                    green: {effect: "Hit", damage: "strength"},
+                    yellow: {effect: "Bullseye", damage: "strength"},
+                    red: {effect: "Stun", damage: "strength"}
+                }
+            }
+        }
+    }
+};
+
+export const COMBAT_EFFECTS = {
+    SLAM: {
+        white: "No Effect",
+        green: "Stagger",
+        yellow: "1 Area",
+        red: "Grand Slam"
+    },
+    STUN: {
+        white: "1-10 Rounds",
+        green: "1 Round",
+        yellow: "No Effect",
+        red: "No Effect"
+    }
+};

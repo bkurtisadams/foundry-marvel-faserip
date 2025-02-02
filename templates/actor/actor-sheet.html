@@ -46,6 +46,32 @@
         </div>
     </header>
 
+    <div class="attacks-section">
+        <button type="button" class="add-attack">+ Add Attack</button>
+        <div class="attacks-list">
+            {{#each attacks as |attack id|}}
+            <div class="attack-row" data-item-id="{{attack._id}}">
+                <img src="{{attack.img}}" width="24" height="24"/>
+                <div class="attack-name item-name">{{attack.name}}</div>
+                <div class="attack-controls">
+                    <a class="item-control item-edit" title="Edit Attack">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button type="button" class="roll-attack" title="Roll Attack">
+                        <i class="fas fa-dice-d20"></i>
+                    </button>
+                    <a class="item-control item-delete" title="Delete Attack">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <div class="special-abilities">
+        <button type="button" class="add-power add-ability-button">+ Add Special Ability (Powers/Equipment/Stunts)</button>
+        <div class="powers-list">
     <section class="sheet-body">
         <div class="abilities-grid">
             <div class="primary-abilities">

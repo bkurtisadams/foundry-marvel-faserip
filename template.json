@@ -108,7 +108,7 @@
     }
   },
   "Item": {
-    "types": ["power", "talent", "contact", "equipment"],
+    "types": ["power", "talent", "contact", "equipment", "attack"],
     "templates": {
       "base": {
         "description": "",
@@ -130,13 +130,21 @@
       "type": "",
       "reliability": ""
     },
-    "equipment": {
+"equipment": {
       "templates": ["base"],
       "rank": "",
       "number": 0,
       "type": "",
       "durability": "",
       "material": ""
+    },
+    "attack": {
+      "templates": ["base"],
+      "ability": "",
+      "attackType": "",
+      "weaponDamage": 0,
+      "range": 0,
+      "columnShift": 0
     }
   }
 }

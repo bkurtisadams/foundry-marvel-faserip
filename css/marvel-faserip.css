@@ -549,3 +549,115 @@ select:focus {
     font-size: 0.95em;
     white-space: nowrap;
 }
+
+/* Attacks Section */
+.attacks-section {
+    margin-bottom: 20px;
+}
+
+.add-attack {
+    width: 100%;
+    background: #e8e6e3;
+    padding: 5px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    text-align: left;
+    border: 1px solid #7a7971;
+    border-radius: 3px;
+}
+
+.attacks-list {
+    margin-top: 10px;
+}
+
+.attack-row {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    margin-bottom: 5px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.attack-row:hover {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: #782e22;
+}
+
+.attack-row img {
+    margin-right: 10px;
+}
+
+.attack-name {
+    flex: 1;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+.attack-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.attack-controls a,
+.attack-controls button {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    line-height: 24px;
+    text-align: center;
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+}
+
+.attack-controls a:hover,
+.attack-controls button:hover {
+    color: #000;
+    text-shadow: 0 0 8px #782e22;
+}
+
+.roll-attack {
+    color: #782e22 !important;
+}
+
+.roll-attack:hover {
+    color: #9e3c2d !important;
+}
+
+.item-edit {
+    color: #005e8a !important;
+}
+
+.item-edit:hover {
+    color: #0076ad !important;
+}
+
+.item-delete {
+    color: #782e22 !important;
+}
+
+.item-delete:hover {
+    color: #9e3c2d !important;
+}
+
+/* Add Attack Dialog */
+.add-attack-dialog .form-group {
+    margin-bottom: 10px;
+}
+
+.add-attack-dialog label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.add-attack-dialog input,
+.add-attack-dialog select {
+    width: 100%;
+}

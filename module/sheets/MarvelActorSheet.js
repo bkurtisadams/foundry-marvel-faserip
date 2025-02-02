@@ -1,6 +1,7 @@
 import { MARVEL_RANKS } from "../config.js";
 
 export class MarvelActorSheet extends ActorSheet {
+    /** @override */
     static get defaultOptions() {
         return foundry.utils.mergeObject(super.defaultOptions, {
             classes: ["marvel-faserip", "sheet", "actor"],
@@ -15,6 +16,9 @@ export class MarvelActorSheet extends ActorSheet {
     async getData(options={}) {
         const context = await super.getData(options);
         
+        // Get attacks
+        context.attacks = context.items.filter(item => item.type === "attack");
+
         // Add configuration
         context.config = {
             ranks: Object.entries(CONFIG.marvel.ranks).reduce((obj, [key]) => {
@@ -37,10 +41,10 @@ export class MarvelActorSheet extends ActorSheet {
         // Initialize contacts if needed
         if (!system.contacts) system.contacts = { list: [] };
         if (!Array.isArray(system.contacts.list)) system.contacts.list = [];
-        
+
         return context;
     }
-    
+
     activateListeners(html) {
         super.activateListeners(html);
 
@@ -50,18 +54,32 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.add-contact').click(this._onAddContact.bind(this));
             html.find('.ability-number').change(this._onNumberChange.bind(this));
             html.find('.rank-select').change(this._onRankChange.bind(this));
-            html.find('.item-delete').click(this._onItemDelete.bind(this));
-            html.find('.clickable-popularity').click(this._onPopularityRoll.bind(this));
-
-            // Add karma tracking handlers
-            html.find('.karma-pool-input').change(this._onKarmaPoolChange.bind(this));
-            html.find('.advancement-fund-input').change(this._onAdvancementFundChange.bind(this));
+            
+            // Item controls
+            html.find('.item-edit').click(ev => {
+                const li = ev.currentTarget.closest(".attack-row");
+                const item = this.actor.items.get(li.dataset.itemId);
+                if (item) {
+                    const sheet = item.sheet;
+                    if (sheet) sheet.render(true);
+                }
+            });
+            
+            html.find('.item-delete').click(ev => {
+                const li = $(ev.currentTarget).parents(".attack-row");
+                const item = this.actor.items.get(li.data("itemId"));
+                if (item) item.delete();
+            });
+            
+            // Add attack handlers
+            html.find('.add-attack').click(this._onAddAttack.bind(this));
+            html.find('.roll-attack').click(this._onRollAttack.bind(this));
         }
 
         // Add ability roll handlers
         html.find('.ability-label').click(this._onAbilityRoll.bind(this));
     }
-    
+
     async _onNumberChange(event) {
         event.preventDefault();
         const element = event.currentTarget;
@@ -129,31 +147,61 @@ export class MarvelActorSheet extends ActorSheet {
         });
     }
 
-    /** @override */
-    async _updateObject(event, formData) {
-        // Ensure the lists are properly handled
-        const expandedData = foundry.utils.expandObject(formData);
-        
-        // Handle powers list
-        if (expandedData.system?.powers?.list) {
-            const powers = Object.values(expandedData.system.powers.list);
-            expandedData.system.powers.list = powers;
+    async _onRollAttack(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.closest(".attack-row").dataset.itemId;
+        if (!itemId) {
+            console.error("No item ID found");
+            return;
         }
-        
-        // Handle talents list
-        if (expandedData.system?.talents?.list) {
-            const talents = Object.values(expandedData.system.talents.list);
-            expandedData.system.talents.list = talents;
+        const item = this.actor.items.get(itemId);
+        if (!item) {
+            console.error(`No item found with ID ${itemId}`);
+            return;
         }
-        
-        // Handle contacts list
-        if (expandedData.system?.contacts?.list) {
-            const contacts = Object.values(expandedData.system.contacts.list);
-            expandedData.system.contacts.list = contacts;
-        }
-        
-        // Update the actor
-        return await super._updateObject(event, expandedData);
+        console.log("Rolling attack with item:", item);
+        await item.roll();
+    }
+
+    async _onAddAttack(event) {
+        event.preventDefault();
+        const template = "systems/marvel-faserip/templates/dialogs/add-attack.html";
+        const html = await renderTemplate(template, {});
+
+        return new Dialog({
+            title: "Add Attack",
+            content: html,
+            buttons: {
+                create: {
+                    label: "Create",
+                    callback: async (dialogHtml) => {
+                        const form = dialogHtml.find("form")[0];
+                        if (!form) {
+                            console.error("Form element not found in dialog!");
+                            return;
+                        }
+
+                        const data = {
+                            name: form.attackName.value,
+                            type: "attack",
+                            system: {
+                                ability: form.ability.value,
+                                attackType: form.attackType.value,
+                                weaponDamage: parseInt(form.weaponDamage.value) || 0,
+                                range: parseInt(form.range.value) || 0,
+                                columnShift: parseInt(form.columnShift.value) || 0
+                            }
+                        };
+
+                        await this.actor.createEmbeddedDocuments("Item", [data]);
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
+                }
+            },
+            default: "create"
+        }).render(true);
     }
 
     async _onAddTalent(event) {
@@ -187,120 +235,6 @@ export class MarvelActorSheet extends ActorSheet {
         // Update the actor
         await this.actor.update({
             "system.contacts.list": newContacts
-        });
-    }
-
-    async _onItemDelete(event) {
-        event.preventDefault();
-        const button = event.currentTarget;
-        const type = button.dataset.type;
-        const idx = parseInt(button.dataset.id);
-
-        // Get the current list
-        const currentList = foundry.utils.getProperty(this.actor.system, `${type}.list`) || [];
-        
-        // Make sure we have an array
-        if (!Array.isArray(currentList)) return;
-        
-        // Remove the item at the specified index
-        const updatedList = currentList.filter((_, index) => index !== idx);
-        
-        // Update the actor with the new list
-        await this.actor.update({
-            [`system.${type}.list`]: updatedList
-        });
-    }
-
-    async _onKarmaPoolChange(event) {
-        event.preventDefault();
-        const value = Number(event.currentTarget.value);
-        await this.actor.update({
-            "system.karmaTracking.karmaPool": value
-        });
-    }
-
-    async _onAdvancementFundChange(event) {
-        event.preventDefault();
-        const value = Number(event.currentTarget.value);
-        await this.actor.update({
-            "system.karmaTracking.advancementFund": value
-        });
-    }
-
-    async _onPopularityRoll(event) {
-        event.preventDefault();
-        const element = event.currentTarget;
-        const popularityType = element.dataset.popularityType;
-        
-        // Get stored values
-        const stored = await game.user.getFlag("world", "marvelPopularityOptions") || {
-            disposition: "neutral",
-            benefits: false,
-            danger: false,
-            goodValue: false,
-            remarkableValue: false,
-            noReturn: false,
-            unique: false,
-            additionalShift: 0,
-            karmaPoints: 0
-        };
-        
-        // Render dialog with stored values
-        const html = await renderTemplate(
-            "systems/marvel-faserip/templates/dialogs/popularity-roll.html",
-            { stored }
-        );
-        
-        return new Promise(resolve => {
-            const dialog = new Dialog({
-                title: "Popularity FEAT Roll",
-                content: html,
-                buttons: {
-                    roll: {
-                        label: "Roll",
-                        callback: async (html) => {
-                            const form = html[0].querySelector("form");
-                            const disposition = form.disposition.value;
-                            
-                            // Gather modifiers
-                            const modifiers = {};
-                            form.querySelectorAll('.modifiers-list input:checked').forEach(checkbox => {
-                                modifiers[checkbox.name] = parseInt(checkbox.value);
-                            });
-                            
-                            const options = {
-                                disposition: disposition,
-                                modifiers: modifiers,
-                                additionalShift: parseInt(form.additionalShift.value) || 0,
-                                karmaPoints: parseInt(form.karmaPoints.value) || 0
-                            };
-                            
-                            // Store values for next time
-                            const storedValues = {
-                                disposition: form.disposition.value,
-                                benefits: form.querySelector('input[name="benefits"]').checked,
-                                danger: form.querySelector('input[name="danger"]').checked,
-                                goodValue: form.querySelector('input[name="goodValue"]').checked,
-                                remarkableValue: form.querySelector('input[name="remarkableValue"]').checked,
-                                noReturn: form.querySelector('input[name="noReturn"]').checked,
-                                unique: form.querySelector('input[name="unique"]').checked,
-                                additionalShift: parseInt(form.additionalShift.value) || 0,
-                                karmaPoints: parseInt(form.karmaPoints.value) || 0
-                            };
-                            await game.user.setFlag("world", "marvelPopularityOptions", storedValues);
-                            
-                            // Perform the roll
-                            await this.actor.rollPopularityFeat(popularityType, options);
-                            resolve(true);
-                        }
-                    },
-                    cancel: {
-                        label: "Cancel",
-                        callback: () => resolve(false)
-                    }
-                },
-                default: "roll"
-            }).render(true);
         });
     }
 
@@ -381,5 +315,32 @@ export class MarvelActorSheet extends ActorSheet {
                 }
             }).render(true);
         });
+    }
+
+    /** @override */
+    async _updateObject(event, formData) {
+        // Ensure the lists are properly handled
+        const expandedData = foundry.utils.expandObject(formData);
+        
+        // Handle powers list
+        if (expandedData.system?.powers?.list) {
+            const powers = Object.values(expandedData.system.powers.list);
+            expandedData.system.powers.list = powers;
+        }
+        
+        // Handle talents list
+        if (expandedData.system?.talents?.list) {
+            const talents = Object.values(expandedData.system.talents.list);
+            expandedData.system.talents.list = talents;
+        }
+        
+        // Handle contacts list
+        if (expandedData.system?.contacts?.list) {
+            const contacts = Object.values(expandedData.system.contacts.list);
+            expandedData.system.contacts.list = contacts;
+        }
+        
+        // Update the actor
+        return await super._updateObject(event, expandedData);
     }
 }
