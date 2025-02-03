@@ -288,15 +288,21 @@
     margin-bottom: 10px;
 }
 
-.add-ability-button {
+.add-ability-button,
+.add-attack,
+.add-talent,
+.add-contact {
     width: 100%;
     background: #e8e6e3;
-    padding: 3px;
-    margin-bottom: 5px;
+    padding: 1px 3px;
+    margin-bottom: 3px;
     cursor: pointer;
     text-align: left;
     border: 1px solid #7a7971;
     border-radius: 3px;
+    height: 18px;
+    line-height: 18px;
+    font-size: 11px;
 }
 
 .power-row {
@@ -450,15 +456,13 @@ select:focus {
     margin-bottom: 10px;
 }
 
-.add-attack {
-    width: 100%;
-    background: #e8e6e3;
-    padding: 3px;
-    margin-bottom: 5px;
-    cursor: pointer;
-    text-align: left;
-    border: 1px solid #7a7971;
-    border-radius: 3px;
+/* Button hover states */
+.add-ability-button:hover,
+.add-attack:hover,
+.add-talent:hover,
+.add-contact:hover {
+    background: #d8d6d3;
+    border-color: #782e22;
 }
 
 .attacks-list {
@@ -468,49 +472,48 @@ select:focus {
 .attack-row {
     display: flex;
     align-items: center;
-    padding: 3px;
-    margin-bottom: 3px;
-    background: rgba(0, 0, 0, 0.05);
+    padding: 1px 3px;
+    margin-bottom: 2px;
+    background: white;
+    border: 1px solid #7a7971;
     border-radius: 3px;
-    border: 1px solid transparent;
-    transition: all 0.2s ease;
+    height: 18px;
 }
 
 .attack-row:hover {
-    background: rgba(0, 0, 0, 0.1);
     border-color: #782e22;
 }
 
 .attack-row img {
-    margin-right: 5px;
-    width: 20px;
-    height: 20px;
+    margin-right: 3px;
+    width: 14px;
+    height: 14px;
 }
 
 .attack-name {
     flex: 1;
-    font-weight: bold;
-    padding: 2px 3px;
-    border-radius: 3px;
+    font-size: 11px;
+    padding: 0 2px;
 }
 
 .attack-controls {
     display: flex;
-    gap: 5px;
+    gap: 2px;
     align-items: center;
 }
 
 .attack-controls a,
 .attack-controls button {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     padding: 0;
-    line-height: 20px;
+    line-height: 16px;
     text-align: center;
     background: none;
     border: none;
     color: #666;
     cursor: pointer;
+    font-size: 11px;
 }
 
 .attack-controls a:hover,
