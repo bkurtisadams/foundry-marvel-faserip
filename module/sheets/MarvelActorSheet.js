@@ -87,9 +87,6 @@ export class MarvelActorSheet extends ActorSheet {
                 if (item) item.delete();
             });
         }
-
-        // Add ability roll handlers
-        html.find('.ability-label').click(this._onAbilityRoll.bind(this));
     }
 
     async _onAddAttack(event) {

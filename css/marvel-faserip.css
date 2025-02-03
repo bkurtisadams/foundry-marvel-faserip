@@ -747,3 +747,8 @@ select:focus {
 .add-attack-dialog select {
     width: 100%;
 }
+
+.primary-abilities .ability-label:hover {
+    text-shadow: 0 0 8px #782e22 !important;
+    color: #782e22 !important;
+}
