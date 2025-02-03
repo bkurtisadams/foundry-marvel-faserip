@@ -242,6 +242,15 @@ Hooks.on("renderCombatTracker", (app, html, data) => {
         await combat.setFlag("marvel-faserip", "currentPhase", nextPhase);
     });
 });
+    // Disable individual initiative rolls when phase system is active
+    Hooks.on("preUpdateCombat", (combat, updateData, options, userId) => {
+        if (!game.user.isGM && 
+            combat.getFlag("marvel-faserip", "currentPhase") !== undefined && 
+            updateData.initiative !== undefined) {
+            ui.notifications.warn("Initiative is handled through the combat phase system");
+            return false;
+        }
+    });
 
 // Get next phase button label
 function getNextPhaseLabel(currentPhase) {
@@ -269,7 +278,6 @@ async function announceActionPhase(combat) {
                 <h3>Action Declaration Phase</h3>
                 <ul>
                     <li>Declare your intended actions</li>
-                    <li>Actions can be changed during resolution with yellow Agility FEAT (-1CS penalty)</li>
                 </ul>
             </div>
         `
