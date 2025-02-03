@@ -81,10 +81,26 @@ export class MarvelActorSheet extends ActorSheet {
                 return item.sheet.render(true);
             });
             
+            // Handle both attack items and special ability deletions
             html.find('.item-delete').click(ev => {
-                const li = $(ev.currentTarget).parents(".attack-row");
-                const item = this.actor.items.get(li.data("itemId"));
-                if (item) item.delete();
+                const element = ev.currentTarget;
+                const type = element.dataset.type;
+                const id = element.dataset.id;
+
+                if (type && id !== undefined) {
+                    // Handle special abilities, talents, and contacts
+                    const path = `system.${type}.list`;
+                    const items = foundry.utils.getProperty(this.actor, path) || [];
+                    console.log(`Deleting ${type} at index ${id}`); // Debug log
+                    const updatedItems = items.filter((_, idx) => idx !== Number(id));
+                    console.log('Updated items:', updatedItems); // Debug log
+                    return this.actor.update({[path]: updatedItems});
+                } else {
+                    // Handle attack items
+                    const li = $(element).parents(".attack-row");
+                    const item = this.actor.items.get(li.data("itemId"));
+                    if (item) item.delete();
+                }
             });
         }
     }
