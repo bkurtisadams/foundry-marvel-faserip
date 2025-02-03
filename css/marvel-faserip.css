@@ -781,3 +781,16 @@ select:focus {
     height: 100px;
     resize: vertical;
 }
+.roll-power {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    padding: 3px;
+}
+
+.roll-power i.fas.fa-dice-d20 {
+    font-size: 12px;
+}
