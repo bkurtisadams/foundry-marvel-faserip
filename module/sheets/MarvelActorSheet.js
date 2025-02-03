@@ -82,24 +82,45 @@ export class MarvelActorSheet extends ActorSheet {
             });
             
             // Handle both attack items and special ability deletions
-            html.find('.item-delete').click(ev => {
+            html.find('.item-delete').click(async ev => {
                 const element = ev.currentTarget;
                 const type = element.dataset.type;
                 const id = element.dataset.id;
+
+                // Get the name of the item being deleted
+                let itemName = "";
+                if (type && id !== undefined) {
+                    // For powers, talents, and contacts
+                    const path = `system.${type}.list`;
+                    const items = foundry.utils.getProperty(this.actor, path) || [];
+                    itemName = items[id]?.name || `${type} entry`;
+                } else {
+                    // For attacks
+                    const li = $(element).parents(".attack-row");
+                    const item = this.actor.items.get(li.data("itemId"));
+                    itemName = item?.name || "attack";
+                }
+
+                // Show confirmation dialog
+                const confirmDelete = await Dialog.confirm({
+                    title: "Confirm Deletion",
+                    content: `<p>Are you sure you want to delete "${itemName}"?</p>`,
+                    defaultYes: false
+                });
+
+                if (!confirmDelete) return;
 
                 if (type && id !== undefined) {
                     // Handle special abilities, talents, and contacts
                     const path = `system.${type}.list`;
                     const items = foundry.utils.getProperty(this.actor, path) || [];
-                    console.log(`Deleting ${type} at index ${id}`); // Debug log
                     const updatedItems = items.filter((_, idx) => idx !== Number(id));
-                    console.log('Updated items:', updatedItems); // Debug log
                     return this.actor.update({[path]: updatedItems});
                 } else {
                     // Handle attack items
                     const li = $(element).parents(".attack-row");
                     const item = this.actor.items.get(li.data("itemId"));
-                    if (item) item.delete();
+                    if (item) await item.delete();
                 }
             });
         }
