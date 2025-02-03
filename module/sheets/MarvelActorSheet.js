@@ -59,6 +59,9 @@ export class MarvelActorSheet extends ActorSheet {
 
             html.find('.ability-label').click(this._onAbilityRoll.bind(this));
             html.find('.clickable-popularity').click(this._onPopularityRoll.bind(this));
+
+            html.find('.power-edit').click(this._onPowerEdit.bind(this));
+            html.find('.roll-power').click(this._onPowerRoll.bind(this));
                         
             html.find('.roll-attack').click(async (ev) => {
                 ev.preventDefault();
@@ -126,6 +129,157 @@ export class MarvelActorSheet extends ActorSheet {
         }
     }
 
+    // Helper method to get color text formatting
+_getColorClass(color) {
+    switch(color.toLowerCase()) {
+        case 'white': return 'white-result';
+        case 'green': return 'green-result';
+        case 'yellow': return 'yellow-result';
+        case 'red': return 'red-result';
+        default: return '';
+    }
+}
+    /**
+ * Handle clicking the edit button for a power
+ * @param {Event} event The originating click event
+ * @private
+ */
+    async _onPowerEdit(event) {
+        event.preventDefault();
+        const powerIndex = event.currentTarget.dataset.id;
+        const powers = this.actor.system.powers.list;
+        const power = powers[powerIndex];
+    
+        if (!power) return;
+    
+        const template = "systems/marvel-faserip/templates/dialogs/edit-power.html";
+        const ranks = Object.entries(CONFIG.marvel.ranks).reduce((obj, [key]) => {
+            obj[key] = game.i18n.localize(`MARVEL.Rank${key.replace(/\s+/g, '')}`);
+            return obj;
+        }, {});
+        
+        const html = await renderTemplate(template, {
+            power: power,
+            config: {
+                ranks: ranks
+            }
+        });
+    
+        return new Dialog({
+            title: "Edit Power",
+            content: html,
+            buttons: {
+                save: {
+                    label: "Save",
+                    callback: async (html) => {
+                        const form = html[0].querySelector("form");
+                        const formData = new FormData(form);
+                        
+                        // Update the power data
+                        const updatedPower = {
+                            name: formData.get("name"),
+                            rank: formData.get("rank"),
+                            description: formData.get("description")
+                        };
+    
+                        // Create a copy of the powers list and update the specific power
+                        const updatedPowers = [...powers];
+                        updatedPowers[powerIndex] = updatedPower;
+    
+                        // Update the actor with the new powers list
+                        await this.actor.update({
+                            "system.powers.list": updatedPowers
+                        });
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
+                }
+            },
+            default: "save"
+        }).render(true);
+    }
+
+/**
+ * Handle rolling a power
+ * @param {Event} event The originating click event
+ * @private
+ */
+async _onPowerRoll(event) {
+    event.preventDefault();
+    const powerIndex = event.currentTarget.dataset.id;
+    const power = this.actor.system.powers.list[powerIndex];
+    
+    if (!power) return;
+
+    const stored = await game.user.getFlag("world", "marvelRollOptions") || {
+        columnShift: 0,
+        karmaPoints: 0
+    };
+
+    const template = "systems/marvel-faserip/templates/dialogs/ability-roll.html";
+    const templateData = {
+        config: CONFIG.marvel,
+        columnShift: stored.columnShift,
+        karmaPoints: stored.karmaPoints,
+        power: power
+    };
+
+    const html = await renderTemplate(template, templateData);
+
+    return new Dialog({
+        title: `${power.name} Power FEAT Roll`,
+        content: html,
+        buttons: {
+            roll: {
+                label: "Roll",
+                callback: async (html) => {
+                    const form = html[0].querySelector("form");
+                    const options = {
+                        columnShift: parseInt(form.columnShift.value) || 0,
+                        karmaPoints: parseInt(form.karmaPoints.value) || 0
+                    };
+
+                    // Store values for next time
+                    await game.user.setFlag("world", "marvelRollOptions", options);
+
+                    // Roll using the power's rank
+                    const roll = await new Roll("1d100").evaluate();
+                    const finalRoll = Math.min(100, roll.total + options.karmaPoints);
+                    
+                    const baseRank = power.rank;
+                    const shiftedRank = this.actor.applyColumnShift(baseRank, options.columnShift);
+                    const color = this.actor.getColorResult(finalRoll, shiftedRank);
+
+                    const messageContent = `
+                        <div class="marvel-roll">
+                            <h3>${this.actor.name} - ${power.name} Power FEAT</h3>
+                            <div class="roll-details">
+                                <div>Power Rank: ${baseRank}</div>
+                                ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
+                                <div>Roll: ${roll.total}${options.karmaPoints ? ` + ${options.karmaPoints} Karma = ${finalRoll}` : ''}</div>
+                            </div>
+                            <div style="text-align: center; font-weight: bold; padding: 5px; background-color: ${color};">
+                                ${color.toUpperCase()}
+                            </div>
+                        </div>`;
+
+                    await ChatMessage.create({
+                        speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+                        content: messageContent,
+                        rolls: [roll],
+                        sound: CONFIG.sounds.dice
+                    });
+                }
+            },
+            cancel: {
+                label: "Cancel"
+            }
+        },
+        default: "roll"
+    }).render(true);
+}
+    
     async _onAddAttack(event) {
         event.preventDefault();
 

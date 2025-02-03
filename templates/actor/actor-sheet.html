@@ -149,14 +149,21 @@
             <div class="powers-list">
                 {{#each actor.system.powers.list as |power idx|}}
                 <div class="power-row">
+                    <img src="systems/marvel-faserip/assets/icons/ability.webp" width="14" height="14"/>
                     <input type="text" name="system.powers.list.{{idx}}.name" value="{{power.name}}"/>
                     <div class="power-controls">
                         <select name="system.powers.list.{{idx}}.rank" class="rank-select">
                             {{selectOptions @root.config.ranks selected=power.rank blank=""}}
                         </select>
-                        <button type="button" class="item-delete" data-type="powers" data-id="{{idx}}">
-                            <i class="fas fa-trash"></i>
+                        <a class="item-control power-edit" title="Edit Power" data-type="powers" data-id="{{idx}}">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button type="button" class="roll-power" title="Roll Power" data-type="powers" data-id="{{idx}}">
+                            <i class="fas fa-dice-d20"></i>
                         </button>
+                        <a class="item-control item-delete" title="Delete Power" data-type="powers" data-id="{{idx}}">
+                            <i class="fas fa-trash"></i>
+                        </a>
                     </div>
                 </div>
                 {{/each}}

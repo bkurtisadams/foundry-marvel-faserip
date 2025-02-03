@@ -736,3 +736,48 @@ select:focus {
     margin-top: 3px;
     font-weight: bold;
 }
+
+/* Power Roll Results */
+.marvel-roll .white-result {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #000000;
+}
+
+.marvel-roll .green-result {
+    background-color: #4CAF50;
+    color: #ffffff;
+}
+
+.marvel-roll .yellow-result {
+    background-color: #FFC107;
+    color: #000000;
+    border: 1px solid #000000;
+}
+
+.marvel-roll .red-result {
+    background-color: #F44336;
+    color: #ffffff;
+}
+
+/* Power Dialog Styling */
+.power-dialog .form-group {
+    margin-bottom: 10px;
+}
+
+.power-dialog label {
+    display: block;
+    margin-bottom: 3px;
+    font-weight: bold;
+}
+
+.power-dialog input[type="text"],
+.power-dialog select {
+    width: 100%;
+}
+
+.power-dialog textarea {
+    width: 100%;
+    height: 100px;
+    resize: vertical;
+}
