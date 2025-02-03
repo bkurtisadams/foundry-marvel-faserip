@@ -487,34 +487,84 @@ select:focus {
     }
 }
 
-/* Combat Tracker Pre-Action Button */
-#combat-controls .complete-pre-action {
-    flex: 1;
-    height: 32px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid #666;
-    border-radius: 3px;
-    margin: 4px;
-    color: #f0f0e0;
-    line-height: 30px;
-    font-size: 14px;
+/* combat tracker */
+.phase-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.current-phase {
+    font-size: 0.9em;
+    color: #666;
     text-align: center;
-    padding: 0 6px;
+}
+
+.marvel-phase, .marvel-combat-phase, .marvel-initiative-roll {
+    background: #f0f0e0;
+    border-left: 3px solid #782e22;
+    padding: 10px;
+    margin: 5px 0;
+}
+
+.marvel-phase h3, .marvel-combat-phase h2, .marvel-initiative-roll h3 {
+    color: #782e22;
+    margin-bottom: 5px;
+    font-weight: bold;
+    border-bottom: 1px solid #782e22;
+}
+
+.marvel-phase ul {
+    margin: 5px 0;
+    padding-left: 20px;
+}
+
+.marvel-phase li {
+    margin-bottom: 3px;
+}
+
+.advance-phase, .marvel-init-button {
+    background: #782e22;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
     cursor: pointer;
 }
 
-#combat-controls .complete-pre-action:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: #999;
-    color: #ffffff;
-    text-shadow: 0 0 4px red;
+.advance-phase:hover, .marvel-init-button:hover {
+    background: #9e3c2d;
 }
 
-#combat-controls .complete-pre-action i {
-    margin-right: 4px;
+.change-action {
+    color: #782e22;
+    margin-right: 5px;
+    cursor: pointer;
 }
 
-/* Add to marvel-faserip.css */
+.change-action:hover {
+    color: #9e3c2d;
+    text-shadow: 0 0 8px rgba(120, 46, 34, 0.5);
+}
+
+.marvel-roll .note {
+    font-style: italic;
+    color: #666;
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+.marvel-roll .success { color: #4CAF50; font-weight: bold; }
+.marvel-roll .failure { color: #F44336; font-weight: bold; }
+
+.marvel-initiative-roll .heroes,
+.marvel-initiative-roll .villains {
+    margin: 5px 0;
+    padding: 5px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
 
 /* Popularity Roll Dialog */
 .popularity-roll-dialog {

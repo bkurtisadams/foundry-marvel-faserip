@@ -1,0 +1,325 @@
+// Import required classes and configurations
+import { MARVEL_RANKS, UNIVERSAL_TABLE_RANGES, ACTION_RESULTS, COMBAT_TYPES, COMBAT_EFFECTS } from "./config.js";
+import { MarvelActor } from "./documents/MarvelActor.js";
+import { MarvelActorSheet } from "./sheets/MarvelActorSheet.js";
+import { MarvelAttackItem } from "./documents/items/MarvelAttackItem.js";
+import { MarvelAttackItemSheet } from "./sheets/items/MarvelAttackItemSheet.js";
+
+// Define Combat Phases
+const COMBAT_PHASES = {
+    SETUP: 0,       // Judge determines NPC actions
+    DECLARE: 1,     // Players declare actions
+    INITIATIVE: 2,  // Roll initiatives
+    PREACTION: 3,   // Defensive rolls and action changes
+    SIDE_A: 4,      // Side with initiative acts
+    SIDE_B: 5       // Side without initiative acts
+};
+
+// At the beginning after imports and constants
+Hooks.on("preUpdateCombat", async (combat, changed, options, userId) => {
+    if (!game.user.isGM || !("round" in changed)) return;
+    
+    // If we're about to roll initiative, prevent individual rolls
+    if (options.initiativeRoll) {
+        const heroes = combat.combatants.filter(c => c.token?.disposition === CONST.TOKEN_DISPOSITIONS.FRIENDLY);
+        const villains = combat.combatants.filter(c => c.token?.disposition !== CONST.TOKEN_DISPOSITIONS.FRIENDLY);
+        
+        // Get highest initiative modifier for each side
+        const heroModifier = getSideInitiativeModifier(heroes);
+        const villainModifier = getSideInitiativeModifier(villains);
+        
+        // Roll for heroes
+        const heroRoll = await new Roll("1d10").evaluate();
+        const heroTotal = heroRoll.total === 1 ? 1 : heroRoll.total + heroModifier;
+        
+        // Roll for villains
+        const villainRoll = await new Roll("1d10").evaluate();
+        const villainTotal = villainRoll.total === 1 ? 1 : villainRoll.total + villainModifier;
+        
+        // Apply rolls to all combatants on each side
+        const updates = [];
+        heroes.forEach(c => updates.push({_id: c.id, initiative: heroTotal}));
+        villains.forEach(c => updates.push({_id: c.id, initiative: villainTotal}));
+        
+        // Update all combatants with their side's initiative
+        await combat.updateEmbeddedDocuments("Combatant", updates);
+        
+        // Announce results
+        await ChatMessage.create({
+            content: `
+                <div class="marvel-combat-round">
+                    <h3>Initiative Results</h3>
+                    <div>Heroes: ${heroRoll.total}${heroModifier ? ` + ${heroModifier} = ${heroTotal}` : ''}</div>
+                    <div>Villains: ${villainRoll.total}${villainModifier ? ` + ${villainModifier} = ${villainTotal}` : ''}</div>
+                    <div class="result">
+                        <strong>${heroTotal > villainTotal ? "Heroes" : "Villains"} have initiative!</strong>
+                    </div>
+                </div>
+            `,
+            speaker: ChatMessage.getSpeaker({alias: "Game"})
+        });
+        
+        // Prevent default roll behavior
+        return false;
+    }
+});
+
+// Initialize system
+Hooks.once('init', async function() {
+    console.log('marvel-faserip | Initializing Marvel FASERIP System');
+
+    CONFIG.marvel = {
+        ranks: MARVEL_RANKS,
+        universalTableRanges: UNIVERSAL_TABLE_RANGES,
+        actionResults: ACTION_RESULTS,
+        combatTypes: COMBAT_TYPES,
+        combatEffects: COMBAT_EFFECTS
+    };
+
+    CONFIG.Combat.initiative = {
+        formula: "1d10",
+        decimals: 0
+    };
+
+    // Register document classes
+    CONFIG.Actor.documentClass = MarvelActor;
+    CONFIG.Item.documentClass = MarvelAttackItem;
+
+    // Register sheets
+    Actors.unregisterSheet("core", ActorSheet);
+    Items.unregisterSheet("core", ItemSheet);
+    
+    Items.registerSheet("marvel-faserip", MarvelAttackItemSheet, { 
+        types: ["attack"],
+        makeDefault: true,
+        label: "MARVEL.SheetAttack"
+    });
+
+    Actors.registerSheet("marvel-faserip", MarvelActorSheet, { 
+        makeDefault: true,
+        label: "MARVEL.SheetCharacter"
+    });
+
+    // Load templates
+    await loadTemplates([
+        "systems/marvel-faserip/templates/dialogs/ability-roll.html",
+        "systems/marvel-faserip/templates/dialogs/popularity-roll.html",
+        "systems/marvel-faserip/templates/items/attack-item.html",
+        "systems/marvel-faserip/templates/dialogs/add-attack.html"
+    ]);
+});
+
+// Helper function to get side initiative modifier
+function getSideInitiativeModifier(combatants) {
+    let highestModifier = 0;
+    
+    for (const combatant of combatants) {
+        if (!combatant.actor) continue;
+        const intuition = combatant.actor.system.primaryAbilities?.intuition?.number || 0;
+        let modifier = 0;
+        
+        if (intuition >= 11 && intuition <= 20) modifier = 1;
+        else if (intuition >= 21 && intuition <= 30) modifier = 2;
+        else if (intuition >= 31 && intuition <= 40) modifier = 3;
+        else if (intuition >= 41 && intuition <= 50) modifier = 4;
+        else if (intuition >= 51 && intuition <= 75) modifier = 5;
+        else if (intuition > 75) modifier = 6;
+        
+        highestModifier = Math.max(highestModifier, modifier);
+    }
+    
+    return highestModifier;
+}
+
+
+// Handle new combat rounds
+Hooks.on("updateCombat", async (combat, changed, options, userId) => {
+    if (!("round" in changed) || !game.user.isGM) return;
+    
+    if (changed.round > 0) {
+        // Reset phase for new round
+        await combat.setFlag("marvel-faserip", "currentPhase", COMBAT_PHASES.SETUP);
+        
+        // Announce new round
+        await ChatMessage.create({
+            content: `
+                <div class="marvel-combat-round">
+                    <h2>Round ${changed.round}</h2>
+                    <p>Beginning new round - awaiting GM to advance phases</p>
+                </div>`
+        });
+    }
+});
+
+// Combat tracker rendering and phase management
+Hooks.on("renderCombatTracker", (app, html, data) => {
+    if (!game.user.isGM) return;
+    
+    const combat = game.combat;
+    if (!combat) return;
+
+    // Add phase advancement button
+    const controls = html.find(".combat-controls");
+    const currentPhase = combat.getFlag("marvel-faserip", "currentPhase") || COMBAT_PHASES.SETUP;
+    
+    controls.append(`
+        <button class="combat-control" data-control="advancePhase">
+            Advance Phase
+        </button>
+    `);
+
+    // Show current phase
+    const phaseNames = [
+        "Setup - Judge determines NPC actions",
+        "Declaration - Players declare actions",
+        "Initiative - Roll for sides",
+        "Pre-Action - Defensive rolls & action changes",
+        "First Side Acts",
+        "Second Side Acts"
+    ];
+
+    const header = html.find(".combat-round");
+    header.after(`
+        <div class="combat-phase-note">
+            <strong>Current Phase:</strong> ${phaseNames[currentPhase]}
+            ${currentPhase === COMBAT_PHASES.PREACTION ? 
+                "<div class='phase-reminder'>Players may change actions with yellow Agility FEAT (-1CS)</div>" : ""}
+        </div>
+    `);
+
+    // Handle phase advancement
+    html.find('[data-control="advancePhase"]').click(async (ev) => {
+        ev.preventDefault();
+        const newPhase = (currentPhase + 1) % 6;
+        
+        // Handle phase transition
+        switch(newPhase) {
+            case COMBAT_PHASES.SETUP:
+                await ChatMessage.create({
+                    content: `<div class="marvel-combat-round">
+                        <h3>Setup Phase</h3>
+                        <p>Judge determines NPC actions</p>
+                    </div>`
+                });
+                break;
+
+            case COMBAT_PHASES.DECLARE:
+                await ChatMessage.create({
+                    content: `<div class="marvel-combat-round">
+                        <h3>Declaration Phase</h3>
+                        <p>Players declare their intended actions</p>
+                    </div>`
+                });
+                break;
+
+            case COMBAT_PHASES.INITIATIVE:
+                // Clear any previous initiatives
+                const updates = combat.combatants.map(c => ({_id: c.id, initiative: null}));
+                await combat.updateEmbeddedDocuments("Combatant", updates);
+                
+                await ChatMessage.create({
+                    content: `<div class="marvel-combat-round">
+                        <h3>Initiative Phase</h3>
+                        <p>GM: Roll initiative for each side (heroes and villains)</p>
+                        <p>Highest Intuition modifier per side:</p>
+                        <ul>
+                            <li>Heroes: +${getSideInitiativeModifier(combat.combatants.filter(c => c.token?.disposition === CONST.TOKEN_DISPOSITIONS.FRIENDLY))}</li>
+                            <li>Villains: +${getSideInitiativeModifier(combat.combatants.filter(c => c.token?.disposition !== CONST.TOKEN_DISPOSITIONS.FRIENDLY))}</li>
+                        </ul>
+                    </div>`
+                });
+                break;
+
+            case COMBAT_PHASES.PREACTION:
+                await ChatMessage.create({
+                    content: `<div class="marvel-combat-round">
+                        <h3>Pre-Action Phase</h3>
+                        <ul>
+                            <li>Make defensive rolls (dodge, block, evade)</li>
+                            <li>Change actions (yellow Agility FEAT, -1CS penalty)</li>
+                            <li>Resolve planned events</li>
+                        </ul>
+                    </div>`
+                });
+                break;
+
+            case COMBAT_PHASES.SIDE_A:
+                const highSide = combat.combatants.reduce((prev, curr) => {
+                    return (!prev.initiative || (curr.initiative > prev.initiative)) ? curr : prev;
+                });
+                const isHeroes = highSide.token?.disposition === CONST.TOKEN_DISPOSITIONS.FRIENDLY;
+                
+                await ChatMessage.create({
+                    content: `<div class="marvel-combat-round">
+                        <h3>First Side Acts</h3>
+                        <p>${isHeroes ? 'Heroes' : 'Villains'} won initiative and act first</p>
+                    </div>`
+                });
+                break;
+
+            case COMBAT_PHASES.SIDE_B:
+                await ChatMessage.create({
+                    content: `<div class="marvel-combat-round">
+                        <h3>Second Side Acts</h3>
+                        <p>Remaining side acts now</p>
+                        <p class="reminder">Remember: Some actions may be negated</p>
+                    </div>`
+                });
+                break;
+        }
+
+        await combat.setFlag("marvel-faserip", "currentPhase", newPhase);
+    });
+});
+
+// Handle Macro Creation
+Hooks.on("hotbarDrop", async (bar, data, slot) => {
+    if (data.type !== "Item") return;
+    
+    const actor = game.actors.get(data.actorId);
+    const item = actor?.items.get(data.itemId);
+    if (!item || item.type !== "attack") return;
+
+    const command = `(async () => {
+        try {
+            const actor = game.actors.get("${data.actorId}");
+            if (!actor) {
+                ui.notifications.warn("Actor not found");
+                return;
+            }
+            
+            const item = actor.items.get("${data.itemId}");
+            if (!item) {
+                ui.notifications.warn("Attack item not found");
+                return;
+            }
+
+            // Instead of opening the sheet, execute the roll
+            await actor.rollAttack(item.system.ability, item.system.attackType, {
+                weaponDamage: item.system.weaponDamage,
+                columnShift: item.system.columnShift,
+                range: item.system.range
+            });
+        } catch(err) {
+            console.error(err);
+            ui.notifications.error("Failed to roll attack");
+        }
+    })();`;
+
+    // Create or update the macro
+    let macro = game.macros.find(m => m.name === item.name && m.author.id === game.user.id);
+    if (!macro) {
+        macro = await Macro.create({
+            name: item.name,
+            type: "script",
+            img: item.img,
+            command: command,
+            flags: { "marvel-faserip.attackMacro": true }
+        });
+    } else {
+        await macro.update({ command: command });
+    }
+    
+    await game.user.assignHotbarMacro(macro, slot);
+    return false;
+});
