@@ -56,7 +56,10 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.ability-number').change(this._onNumberChange.bind(this));
             html.find('.rank-select').change(this._onRankChange.bind(this));
             html.find('.add-attack').click(this._onAddAttack.bind(this));
-            
+
+            html.find('.ability-label').click(this._onAbilityRoll.bind(this));
+            html.find('.clickable-popularity').click(this._onPopularityRoll.bind(this));
+                        
             html.find('.roll-attack').click(async (ev) => {
                 ev.preventDefault();
                 ev.stopPropagation();
@@ -220,6 +223,73 @@ export class MarvelActorSheet extends ActorSheet {
             });
         }
     }
+
+    // Add this method before _onAbilityRoll
+async _onPopularityRoll(event) {
+    event.preventDefault();
+    const popularityType = event.currentTarget.dataset.popularityType;
+    
+    const stored = await game.user.getFlag("world", "marvelPopularityOptions") || {
+        disposition: "neutral",
+        benefits: false,
+        danger: false,
+        goodValue: false,
+        remarkableValue: false,
+        noReturn: false,
+        unique: false,
+        additionalShift: 0,
+        karmaPoints: 0
+    };
+
+    const templateData = {
+        config: CONFIG.marvel,
+        stored: stored
+    };
+
+    const html = await renderTemplate(
+        "systems/marvel-faserip/templates/dialogs/popularity-roll.html",
+        templateData
+    );
+
+    return new Promise(resolve => {
+        new Dialog({
+            title: "Popularity FEAT Roll",
+            content: html,
+            buttons: {
+                roll: {
+                    label: "Roll",
+                    callback: async (html) => {
+                        const form = html[0].querySelector("form");
+                        const formData = new FormData(form);
+                        
+                        const options = {
+                            disposition: formData.get("disposition"),
+                            modifiers: {
+                                benefits: formData.get("benefits") ? parseInt(formData.get("benefits")) : 0,
+                                danger: formData.get("danger") ? parseInt(formData.get("danger")) : 0,
+                                goodValue: formData.get("goodValue") ? parseInt(formData.get("goodValue")) : 0,
+                                remarkableValue: formData.get("remarkableValue") ? parseInt(formData.get("remarkableValue")) : 0,
+                                noReturn: formData.get("noReturn") ? parseInt(formData.get("noReturn")) : 0,
+                                unique: formData.get("unique") ? parseInt(formData.get("unique")) : 0
+                            },
+                            additionalShift: parseInt(formData.get("additionalShift")) || 0,
+                            karmaPoints: parseInt(formData.get("karmaPoints")) || 0
+                        };
+
+                        await game.user.setFlag("world", "marvelPopularityOptions", options);
+                        await this.actor.rollPopularityFeat(popularityType, options);
+                        resolve(true);
+                    }
+                },
+                cancel: {
+                    label: "Cancel",
+                    callback: () => resolve(false)
+                }
+            },
+            default: "roll"
+        }).render(true);
+    });
+}
 
     async _onAbilityRoll(event) {
         event.preventDefault();

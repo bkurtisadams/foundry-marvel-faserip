@@ -304,6 +304,16 @@
     flex: 1;
 }
 
+.clickable-popularity {
+    cursor: pointer;
+    transition: text-shadow 0.3s ease;
+}
+
+.clickable-popularity:hover {
+    text-shadow: 0 0 8px #782e22;
+    color: #9e3c2d !important;
+}
+
 /* Special Abilities Section */
 .special-abilities {
     margin-bottom: 20px;
