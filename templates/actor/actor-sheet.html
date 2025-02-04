@@ -49,7 +49,7 @@
         </div>
     </header>
 
-    <div class="attacks-section">
+    <!-- <div class="attacks-section">
         <button type="button" class="add-attack">+ Add Attack</button>
         <div class="attacks-list">
             {{#each attacks as |attack id|}}
@@ -70,7 +70,7 @@
             </div>
             {{/each}}
         </div>
-    </div>
+    </div> -->
 
         <div class="powers-list">
     <section class="sheet-body">
@@ -145,138 +145,107 @@
             </div>
         </div>
 
-        <div class="nav-categories">
-            <div class="nav-item active" data-category="special">Special Ability</div>
-            <div class="nav-item" data-category="stunts">Stunts</div>
-            <div class="nav-item" data-category="attacks">Attacks</div>
-            <div class="nav-item" data-category="equipment">Equipment</div>
-            <div class="nav-item" data-category="headquarters">Headquarters</div>
-            <div class="nav-item" data-category="vehicles">Vehicles</div>
+<!-- Navigation Bar -->
+<nav class="nav-categories" role="tablist">
+    <a class="nav-item active" data-tab="special">Special Ability</a>
+    <a class="nav-item" data-tab="stunts">Stunts</a>
+    <a class="nav-item" data-tab="attacks">Attacks</a>
+    <a class="nav-item" data-tab="equipment">Equipment</a>
+    <a class="nav-item" data-tab="headquarters">Headquarters</a>
+    <a class="nav-item" data-tab="vehicles">Vehicles</a>
+</nav>
+
+<!-- Tab Content -->
+<section class="sheet-body">
+    <!-- Special Ability Tab -->
+    <div class="tab-panel active" data-tab="special">
+        <button type="button" class="add-power add-ability-button">+ Add Special Ability (Powers/Equipment/Stunts)</button>
+        <div class="powers-list">
+            {{#each actor.system.powers.list as |power idx|}}
+            <div class="power-row">
+                <img src="systems/marvel-faserip/assets/icons/ability.webp" 
+                    width="14" 
+                    height="14" 
+                    class="power-info-icon" 
+                    data-action="showPowerInfo" 
+                    data-index="{{idx}}"
+                    style="cursor: pointer;"/>
+                <input type="text" name="system.powers.list.{{idx}}.name" value="{{power.name}}"/>
+                <div class="power-controls">
+                    <select name="system.powers.list.{{idx}}.rank" class="rank-select">
+                        {{selectOptions @root.config.ranks selected=power.rank blank=""}}
+                    </select>
+                    <a class="item-control power-edit" title="Edit Power" data-type="powers" data-id="{{idx}}">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button type="button" class="roll-power" title="Roll Power" data-type="powers" data-id="{{idx}}">
+                        <i class="fas fa-dice-d20"></i>
+                    </button>
+                    <a class="item-control item-delete" title="Delete Power" data-type="powers" data-id="{{idx}}">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </div>
+            </div>
+            {{/each}}
         </div>
-        <!-- Tab buttons -->
-        <div class="tab-content">
-            <!-- Special Abilities Tab - This is the default view -->
-            <div class="tab-panel" data-tab="special" style="display: block;">
-                <button type="button" class="add-power add-ability-button">+ Add Special Ability (Powers/Equipment/Stunts)</button>
-                <div class="powers-list">
-                    {{#each actor.system.powers.list as |power idx|}}
-                    <div class="power-row">
-                        <img src="systems/marvel-faserip/assets/icons/ability.webp" 
-                            width="14" 
-                            height="14" 
-                            class="power-info-icon" 
-                            data-action="showPowerInfo" 
-                            data-index="{{idx}}"
-                            style="cursor: pointer;"/>
-                        <input type="text" name="system.powers.list.{{idx}}.name" value="{{power.name}}"/>
-                        <div class="power-controls">
-                            <select name="system.powers.list.{{idx}}.rank" class="rank-select">
-                                {{selectOptions @root.config.ranks selected=power.rank blank=""}}
-                            </select>
-                            <a class="item-control power-edit" title="Edit Power" data-type="powers" data-id="{{idx}}">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <button type="button" class="roll-power" title="Roll Power" data-type="powers" data-id="{{idx}}">
-                                <i class="fas fa-dice-d20"></i>
-                            </button>
-                            <a class="item-control item-delete" title="Delete Power" data-type="powers" data-id="{{idx}}">
-                                <i class="fas fa-trash"></i>
-                            </a>
-                        </div>
-                    </div>
-                    {{/each}}
-                </div>
-            </div>
+    </div>
 
-            <!-- Stunts Tab -->
-            <div class="tab-panel" data-tab="stunts" style="display: none;">
-                <button type="button" class="add-stunt add-ability-button">+ Add Stunt</button>
-                <div class="stunts-list">
-                    <!-- Similar structure to powers list but for stunts -->
+    <!-- Attacks Tab -->
+    <div class="tab-panel" data-tab="attacks">
+        <button type="button" class="add-attack add-ability-button">+ Add Attack</button>
+        <div class="attacks-list">
+            {{#each attacks as |attack id|}}
+            <div class="attack-row item" data-item-id="{{attack._id}}" draggable="true">
+                <img src="{{attack.img}}" width="24" height="24"/>
+                <div class="attack-name item-name">{{attack.name}}</div>
+                <div class="attack-controls">
+                    <a class="item-control item-edit" title="Edit Attack">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button type="button" class="roll-attack" title="Roll Attack">
+                        <i class="fas fa-dice-d20"></i>
+                    </button>
+                    <a class="item-control item-delete" title="Delete Attack">
+                        <i class="fas fa-trash"></i>
+                    </a>
                 </div>
             </div>
-
-            <!-- Attacks Tab -->
-            <div class="tab-panel" data-tab="attacks" style="display: none;">
-                <button type="button" class="add-attack add-ability-button">+ Add Attack</button>
-                <div class="attacks-list">
-                    {{#each attacks as |attack id|}}
-                    <div class="attack-row item" data-item-id="{{attack._id}}" draggable="true">
-                        <img src="{{attack.img}}" width="24" height="24"/>
-                        <div class="attack-name item-name">{{attack.name}}</div>
-                        <div class="attack-controls">
-                            <a class="item-control item-edit" title="Edit Attack">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <button type="button" class="roll-attack" title="Roll Attack">
-                                <i class="fas fa-dice-d20"></i>
-                            </button>
-                            <a class="item-control item-delete" title="Delete Attack">
-                                <i class="fas fa-trash"></i>
-                            </a>
-                        </div>
-                    </div>
-                    {{/each}}
-                </div>
-            </div>
-
-            <!-- Equipment Tab -->
-            <div class="tab-panel" data-tab="equipment" style="display: none;">
-                <button type="button" class="add-equipment add-ability-button">+ Add Equipment</button>
-                <div class="equipment-list">
-                    <!-- Equipment list structure -->
-                </div>
-            </div>
-
-            <!-- Headquarters Tab -->
-            <div class="tab-panel" data-tab="headquarters" style="display: none;">
-                <button type="button" class="add-headquarters add-ability-button">+ Add Headquarters Feature</button>
-                <div class="headquarters-list">
-                    <!-- Headquarters list structure -->
-                </div>
-            </div>
-
-            <!-- Vehicles Tab -->
-            <div class="tab-panel" data-tab="vehicles" style="display: none;">
-                <button type="button" class="add-vehicle add-ability-button">+ Add Vehicle</button>
-                <div class="vehicles-list">
-                    <!-- Vehicles list structure -->
-                </div>
-            </div>
+            {{/each}}
         </div>
-        
-        <!-- <div class="special-abilities">
-            <button type="button" class="add-power add-ability-button">+ Add Special Ability (Powers/Equipment/Stunts)</button>
-            <div class="powers-list">
-                {{#each actor.system.powers.list as |power idx|}}
-                <div class="power-row">
-                    <img src="systems/marvel-faserip/assets/icons/ability.webp" 
-                        width="14" 
-                        height="14" 
-                        class="power-info-icon" 
-                        data-action="showPowerInfo" 
-                        data-index="{{idx}}"
-                        style="cursor: pointer;"/>
-                    <input type="text" name="system.powers.list.{{idx}}.name" value="{{power.name}}"/>
-                    <div class="power-controls">
-                        <select name="system.powers.list.{{idx}}.rank" class="rank-select">
-                            {{selectOptions @root.config.ranks selected=power.rank blank=""}}
-                        </select>
-                        <a class="item-control power-edit" title="Edit Power" data-type="powers" data-id="{{idx}}">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <button type="button" class="roll-power" title="Roll Power" data-type="powers" data-id="{{idx}}">
-                            <i class="fas fa-dice-d20"></i>
-                        </button>
-                        <a class="item-control item-delete" title="Delete Power" data-type="powers" data-id="{{idx}}">
-                            <i class="fas fa-trash"></i>
-                        </a>
-                    </div>
-                </div>
-                {{/each}}
-            </div>
+    </div>
+
+    <!-- Stunts Tab -->
+    <div class="tab-panel" data-tab="stunts">
+        <button type="button" class="add-stunt add-ability-button">+ Add Stunt</button>
+        <div class="stunts-list">
+            <!-- Stunts list content will go here -->
         </div>
- -->
+    </div>
+
+    <!-- Equipment Tab -->
+    <div class="tab-panel" data-tab="equipment">
+        <button type="button" class="add-equipment add-ability-button">+ Add Equipment</button>
+        <div class="equipment-list">
+            <!-- Equipment list content will go here -->
+        </div>
+    </div>
+
+    <!-- Headquarters Tab -->
+    <div class="tab-panel" data-tab="headquarters">
+        <button type="button" class="add-headquarters add-ability-button">+ Add Headquarters Feature</button>
+        <div class="headquarters-list">
+            <!-- Headquarters list content will go here -->
+        </div>
+    </div>
+
+    <!-- Vehicles Tab -->
+    <div class="tab-panel" data-tab="vehicles">
+        <button type="button" class="add-vehicle add-ability-button">+ Add Vehicle</button>
+        <div class="vehicles-list">
+            <!-- Vehicles list content will go here -->
+        </div>
+    </div>
+</section>
         <div class="bottom-grid">
             <div class="talents-box">
                 <div class="list-header">

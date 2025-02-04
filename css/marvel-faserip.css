@@ -988,3 +988,54 @@ select:focus {
     line-height: 18px;
     font-size: 11px;
 }
+
+/* Navigation Categories */
+.nav-categories {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 10px;
+    background: #514d44;
+    padding: 2px;
+}
+
+.nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 3px 5px;
+    background: #e8e6e3;
+    cursor: pointer;
+    font-size: 11px;
+    border: 1px solid #7a7971;
+    user-select: none;
+    text-decoration: none;
+    color: inherit;
+}
+
+.nav-item:hover {
+    background: #d8d6d3;
+    border-color: #782e22;
+}
+
+.nav-item.active {
+    background: #782e22;
+    color: white;
+    border-color: #782e22;
+}
+
+/* Tab Panels */
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* Content Area */
+.sheet-body {
+    background: white;
+    border: 1px solid #7a7971;
+    border-radius: 3px;
+    padding: 5px;
+    margin-top: -1px;
+}

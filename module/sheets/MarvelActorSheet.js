@@ -52,6 +52,20 @@ export class MarvelActorSheet extends ActorSheet {
     activateListeners(html) {
         super.activateListeners(html);
 
+        // Add tab switching functionality
+        html.find('.nav-item').click(ev => {
+            ev.preventDefault();
+            const tab = ev.currentTarget.dataset.tab;
+            
+            // Update active tab
+            html.find('.nav-item').removeClass('active');
+            html.find(`.nav-item[data-tab="${tab}"]`).addClass('active');
+            
+            // Show correct content
+            html.find('.tab-panel').removeClass('active').hide();
+            html.find(`.tab-panel[data-tab="${tab}"]`).addClass('active').show();
+        });
+
         if (this.isEditable) {
             // These need to be bound to this
             html.find('.add-power').click(this._onAddPower.bind(this));
@@ -73,6 +87,22 @@ export class MarvelActorSheet extends ActorSheet {
 
             html.find('.nav-item').click(this._onCategoryChange.bind(this));
             html.find('.nav-item').click(this._onTabChange.bind(this));
+
+            html.find('.nav-item').click(async ev => {
+                ev.preventDefault();
+                const tab = ev.currentTarget.dataset.tab;
+                
+                // Update active tab
+                html.find('.nav-item').removeClass('active');
+                html.find(`.nav-item[data-tab="${tab}"]`).addClass('active');
+                
+                // Show correct content
+                html.find('.tab-panel').removeClass('active').hide();
+                html.find(`.tab-panel[data-tab="${tab}"]`).addClass('active').show();
+                
+                // Save active tab
+                await this.actor.setFlag('marvel-faserip', 'activeTab', tab);
+            });
                         
             html.find('.roll-attack').click(async (ev) => {
                 ev.preventDefault();
