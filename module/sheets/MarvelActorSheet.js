@@ -66,6 +66,8 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.power-info-icon').click(this._onPowerInfo.bind(this));
 
             html.find('.karma-history-button').click(this._onKarmaTracking.bind(this));
+
+            html.find('.nav-item').click(this._onCategoryChange.bind(this));
                         
             html.find('.roll-attack').click(async (ev) => {
                 ev.preventDefault();
@@ -133,6 +135,28 @@ export class MarvelActorSheet extends ActorSheet {
         }
     }
 
+    _onCategoryChange(event) {
+        const category = event.currentTarget.dataset.category;
+        const navItems = event.currentTarget.parentElement.children;
+        
+        // Update active state
+        for (let item of navItems) {
+            item.classList.remove('active');
+        }
+        event.currentTarget.classList.add('active');
+        
+        // Hide all category content
+        const sheet = event.currentTarget.closest('.marvel-faserip');
+        const categories = sheet.querySelectorAll('.category-content');
+        categories.forEach(c => c.style.display = 'none');
+        
+        // Show selected category
+        const selectedCategory = sheet.querySelector(`.category-${category}`);
+        if (selectedCategory) {
+            selectedCategory.style.display = 'block';
+        }
+    }
+    
     async _onKarmaTracking(event) {
         event.preventDefault();
         

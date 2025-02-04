@@ -920,3 +920,34 @@ select:focus {
 .karma-description {
     font-style: italic;
 }
+
+/* Navigation Categories */
+.nav-categories {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 10px;
+    background: #514d44;
+    padding: 2px;
+}
+
+.nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 3px 5px;
+    background: #e8e6e3;
+    cursor: pointer;
+    font-size: 11px;
+    border: 1px solid #7a7971;
+    user-select: none;
+}
+
+.nav-item:hover {
+    background: #d8d6d3;
+    border-color: #782e22;
+}
+
+.nav-item.active {
+    background: #782e22;
+    color: white;
+    border-color: #782e22;
+}
