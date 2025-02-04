@@ -63,6 +63,7 @@ export class MarvelActorSheet extends ActorSheet {
 
             html.find('.power-edit').click(this._onPowerEdit.bind(this));
             html.find('.roll-power').click(this._onPowerRoll.bind(this));
+            html.find('.power-info-icon').click(this._onPowerInfo.bind(this));
                         
             html.find('.roll-attack').click(async (ev) => {
                 ev.preventDefault();
@@ -686,4 +687,39 @@ async _onResourceRoll(event) {
             }).render(true);
         });
     }
+
+    async _onPowerInfo(event) {
+        event.preventDefault();
+        const powerIndex = event.currentTarget.dataset.index;
+        const power = this.actor.system.powers.list[powerIndex];
+        
+        if (!power) return;
+    
+        // Format description text or use name if no description
+        const description = power.description || power.name;
+        const formattedDesc = description.replace(/\n/g, '<br>');
+    
+        // Create chat message
+        const messageContent = `
+            <div class="marvel-power-info">
+                <h2 style="color: #782e22; border-bottom: 2px solid #782e22; margin-bottom: 5px;">
+                    ${power.name}
+                </h2>
+                <div class="power-details">
+                    <div style="margin-bottom: 5px;">
+                        <strong>Rank:</strong> ${power.rank}
+                    </div>
+                    <div class="power-description">
+                        ${formattedDesc}
+                    </div>
+                </div>
+            </div>
+        `;
+    
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+            content: messageContent
+        });
+    }
+    
 }

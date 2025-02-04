@@ -81,10 +81,10 @@
         }
       },
       "powers": {
-        "powers": {
-          "list": [],
-          "limitation": ""
-        }
+        "templates": ["base"],
+        "list": [],
+        "limitation": "",
+        "description": ""  // Add this line
       },
       "contacts": {
         "contacts": {

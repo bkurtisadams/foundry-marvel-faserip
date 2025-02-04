@@ -826,3 +826,34 @@ select:focus {
     width: 45px;
     text-align: center;
 }
+
+/* power info icon */
+.marvel-power-info {
+    background: #f0f0e0;
+    border: 1px solid #782e22;
+    border-radius: 3px;
+    padding: 8px;
+    margin: 3px 0;
+}
+
+.marvel-power-info h2 {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0 0 5px 0;
+}
+
+.power-details {
+    line-height: 1.4;
+}
+
+.power-description {
+    padding: 5px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.power-info-icon:hover {
+    filter: brightness(1.2);
+    transform: scale(1.1);
+    transition: all 0.2s ease;
+}
