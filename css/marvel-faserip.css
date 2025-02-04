@@ -857,3 +857,66 @@ select:focus {
     transform: scale(1.1);
     transition: all 0.2s ease;
 }
+
+/* Karma Tracking Styles */
+.karma-box {
+    position: relative;
+}
+
+.karma-history-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 12px;
+    color: #782e22;
+    cursor: pointer;
+}
+
+.karma-tracking-dialog {
+    min-width: 400px;
+}
+
+.karma-history {
+    margin-top: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.karma-entries {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.karma-entry {
+    display: grid;
+    grid-template-columns: auto 80px 1fr;
+    gap: 10px;
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+}
+
+.karma-entry:last-child {
+    border-bottom: none;
+}
+
+.karma-date {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.karma-amount {
+    text-align: right;
+    font-weight: bold;
+}
+
+.karma-earned {
+    color: #4CAF50;
+}
+
+.karma-spent {
+    color: #F44336;
+}
+
+.karma-description {
+    font-style: italic;
+}

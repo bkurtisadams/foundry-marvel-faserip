@@ -1,0 +1,27 @@
+<form class="karma-tracking-dialog">
+    <div class="form-group">
+        <label>Karma Amount</label>
+        <input type="number" name="amount" value="0" required/>
+        <p class="hint">(Use negative numbers for karma spending/penalties)</p>
+    </div>
+
+    <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" rows="3" required placeholder="Why was karma awarded or spent?"></textarea>
+    </div>
+
+    <div class="karma-history">
+        <h3>Recent Karma History</h3>
+        <div class="karma-entries">
+            {{#each karmaHistory}}
+            <div class="karma-entry">
+                <div class="karma-date">{{this.date}}</div>
+                <div class="karma-amount {{#if (lt this.amount 0)}}karma-spent{{else}}karma-earned{{/if}}">
+                    {{this.amount}}
+                </div>
+                <div class="karma-description">{{this.description}}</div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</form>

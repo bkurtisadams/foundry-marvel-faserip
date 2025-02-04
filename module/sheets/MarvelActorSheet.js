@@ -64,6 +64,8 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.power-edit').click(this._onPowerEdit.bind(this));
             html.find('.roll-power').click(this._onPowerRoll.bind(this));
             html.find('.power-info-icon').click(this._onPowerInfo.bind(this));
+
+            html.find('.karma-history-button').click(this._onKarmaTracking.bind(this));
                         
             html.find('.roll-attack').click(async (ev) => {
                 ev.preventDefault();
@@ -131,6 +133,90 @@ export class MarvelActorSheet extends ActorSheet {
         }
     }
 
+    async _onKarmaTracking(event) {
+        event.preventDefault();
+        
+        // Get karma history from flags
+        const karmaHistory = this.actor.getFlag("marvel-faserip", "karmaHistory") || [];
+        
+        const html = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/karma-tracking.html",
+            {
+                karmaHistory: karmaHistory.slice(-10).reverse() // Show last 10 entries
+            }
+        );
+    
+        return new Dialog({
+            title: "Karma Tracking",
+            content: html,
+            buttons: {
+                add: {
+                    label: "Add Entry",
+                    callback: async (html) => {
+                        const form = html[0].querySelector("form");
+                        const amount = parseInt(form.amount.value) || 0;
+                        const description = form.description.value;
+                        
+                        if (amount === 0 || !description) {
+                            ui.notifications.warn("Please enter an amount and description");
+                            return;
+                        }
+    
+                        // Create new karma entry
+                        const newEntry = {
+                            date: new Date().toLocaleString(),
+                            amount: amount,
+                            description: description
+                        };
+    
+                        // Update karma history
+                        const updatedHistory = [...karmaHistory, newEntry];
+                        await this.actor.setFlag("marvel-faserip", "karmaHistory", updatedHistory);
+    
+                        // Update karma pool
+                        const currentPool = this.actor.system.karmaTracking.karmaPool || 0;
+                        await this.actor.update({
+                            "system.karmaTracking.karmaPool": currentPool + amount
+                        });
+    
+                        // Create chat message
+                        const messageContent = `
+                            <div class="marvel-karma-update">
+                                <h3>${this.actor.name} - Karma ${amount >= 0 ? 'Award' : 'Deduction'}</h3>
+                                <div>Amount: <strong>${amount}</strong></div>
+                                <div>Reason: ${description}</div>
+                                <div>New Karma Pool: ${currentPool + amount}</div>
+                            </div>
+                        `;
+    
+                        await ChatMessage.create({
+                            speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+                            content: messageContent
+                        });
+                    }
+                },
+                clear: {
+                    label: "Clear History",
+                    callback: async (html) => {
+                        const confirm = await Dialog.confirm({
+                            title: "Clear Karma History",
+                            content: "Are you sure you want to clear the karma history? This cannot be undone.",
+                            defaultYes: false
+                        });
+    
+                        if (confirm) {
+                            await this.actor.setFlag("marvel-faserip", "karmaHistory", []);
+                        }
+                    }
+                },
+                close: {
+                    label: "Close"
+                }
+            },
+            default: "add"
+        }).render(true);
+    }
+    
     /** @override */
     async _updateObject(event, formData) {
         // Ensure the lists are properly handled
@@ -721,5 +807,5 @@ async _onResourceRoll(event) {
             content: messageContent
         });
     }
-    
+
 }

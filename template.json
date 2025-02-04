@@ -77,14 +77,15 @@
         },
         "karmaTracking": {
           "karmaPool": 0,
-          "advancementFund": 0
+          "advancementFund": 0,
+          "history": []
         }
       },
       "powers": {
         "templates": ["base"],
         "list": [],
         "limitation": "",
-        "description": ""  // Add this line
+        "description": ""
       },
       "contacts": {
         "contacts": {
