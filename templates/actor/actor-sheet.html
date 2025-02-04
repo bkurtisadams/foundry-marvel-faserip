@@ -147,10 +147,9 @@
 
 <!-- Navigation Bar -->
 <nav class="nav-categories" role="tablist">
-    <a class="nav-item active" data-tab="special">Special Ability</a>
-    <a class="nav-item" data-tab="stunts">Stunts</a>
-    <a class="nav-item" data-tab="attacks">Attacks</a>
-    <a class="nav-item" data-tab="equipment">Equipment</a>
+    <a class="nav-item {{#if tabs.special}}active{{/if}}" data-tab="special">Special Ability</a>
+    <a class="nav-item {{#if tabs.stunts}}active{{/if}}" data-tab="stunts">Stunts</a>
+    <a class="nav-item {{#if tabs.attacks}}active{{/if}}" data-tab="attacks">Attacks</a><a class="nav-item" data-tab="equipment">Equipment</a>
     <a class="nav-item" data-tab="headquarters">Headquarters</a>
     <a class="nav-item" data-tab="vehicles">Vehicles</a>
 </nav>
@@ -158,7 +157,7 @@
 <!-- Tab Content -->
 <section class="sheet-body">
     <!-- Special Ability Tab -->
-    <div class="tab-panel active" data-tab="special">
+    <div class="tab-panel {{#if tabs.special}}active{{/if}}" data-tab="special" {{#unless tabs.special}}style="display: none;"{{/unless}}>
         <button type="button" class="add-power add-ability-button">+ Add Special Ability (Powers/Equipment/Stunts)</button>
         <div class="powers-list">
             {{#each actor.system.powers.list as |power idx|}}
@@ -191,7 +190,7 @@
     </div>
 
     <!-- Attacks Tab -->
-    <div class="tab-panel" data-tab="attacks">
+    <div class="tab-panel {{#if tabs.attacks}}active{{/if}}" data-tab="attacks" {{#unless tabs.attacks}}style="display: none;"{{/unless}}>
         <button type="button" class="add-attack add-ability-button">+ Add Attack</button>
         <div class="attacks-list">
             {{#each attacks as |attack id|}}
@@ -215,59 +214,27 @@
     </div>
 
     <!-- Stunts Tab -->
-    <div class="tab-panel" data-tab="stunts">
-        <div class="stunts-header">
-            <h2>Power Stunts</h2>
-            <p class="stunts-rules-hint">Use Powers in unexpected ways. Requires Karma and increases in difficulty with repetition.</p>
-        </div>
-    
-        <button type="button" class="add-power-stunt">+ Create New Power Stunt</button>
-    
+    <div class="tab-panel {{#if tabs.stunts}}active{{/if}}" data-tab="stunts" {{#unless tabs.stunts}}style="display: none;"{{/unless}}>
+        <button type="button" class="add-power-stunt add-ability-button">+ Create New Power Stunt</button>
         <div class="stunts-list">
             {{#each actor.system.stunts.list as |stunt idx|}}
-            <div class="stunt-row" data-index="{{idx}}">
-                <div class="stunt-info">
-                    <div class="stunt-name">
-                        <input type="text" name="system.stunts.list.{{idx}}.name" value="{{stunt.name}}" placeholder="Stunt Description"/>
-                    </div>
-                    <div class="stunt-details">
-                        <select name="system.stunts.list.{{idx}}.associatedPower" class="associated-power">
-                            {{#each ../actor.system.powers.list as |power pidx|}}
-                            <option value="{{pidx}}" {{#if (eq stunt.associatedPower pidx)}}selected{{/if}}>
-                                {{power.name}}
-                            </option>
-                            {{/each}}
-                        </select>
-                    </div>
-                </div>
-                <div class="stunt-difficulty">
-                    {{#if (lt stunt.attempts 1)}}Red FEAT
-                    {{else if (lt stunt.attempts 4)}}Yellow FEAT
-                    {{else if (lt stunt.attempts 11)}}Green FEAT
-                    {{else}}Automatic
-                    {{/if}}
-                </div>
+            <div class="stunt-row">
+                <input type="text" name="system.stunts.list.{{idx}}.name" value="{{stunt.name}}" placeholder="Stunt Description"/>
+                <select name="system.stunts.list.{{idx}}.associatedPower" class="associated-power">
+                    {{#each ../actor.system.powers.list as |power pidx|}}
+                    <option value="{{pidx}}" {{#if (eq stunt.associatedPower pidx)}}selected{{/if}}>{{power.name}}</option>
+                    {{/each}}
+                </select>
                 <div class="stunt-controls">
-                    <button type="button" class="roll-power-stunt" title="Attempt Power Stunt">
+                    <button type="button" class="roll-power-stunt" title="Attempt Power Stunt" data-id="{{idx}}">
                         <i class="fas fa-dice-d20"></i>
                     </button>
-                    <button type="button" class="delete-power-stunt" title="Delete Stunt">
+                    <button type="button" class="item-delete" data-type="stunts" data-id="{{idx}}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
             {{/each}}
-        </div>
-    
-        <div class="stunts-rules-box">
-            <h3>Power Stunt Rules</h3>
-            <ul>
-                <li>Never tried: Red FEAT (difficult)</li>
-                <li>1-3 attempts: Yellow FEAT (challenging)</li>
-                <li>4-10 attempts: Green FEAT (easier)</li>
-                <li>10+ attempts: Automatic success</li>
-                <li>Each attempt requires 100 Karma points</li>
-            </ul>
         </div>
     </div>
 

@@ -8,7 +8,6 @@ export class MarvelActorSheet extends ActorSheet {
             template: "systems/marvel-faserip/templates/actor/actor-sheet.html",
             width: 600,
             height: 680,
-            tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "abilities" }],
             dragDrop: [{ dragSelector: ".attack-row", dropSelector: null }]
         });
     }
@@ -22,6 +21,16 @@ export class MarvelActorSheet extends ActorSheet {
         // Get the active tab from flags or default to 'special'
         const activeTab = this.actor.getFlag('marvel-faserip', 'activeTab') || 'special';
         context.activeTab = activeTab;
+
+        // Set up tabs context properly
+        context.tabs = {
+        special: activeTab === 'special',
+        stunts: activeTab === 'stunts',
+        attacks: activeTab === 'attacks',
+        equipment: activeTab === 'equipment',
+        headquarters: activeTab === 'headquarters',
+        vehicles: activeTab === 'vehicles'
+        };
         
         // Get attacks
         context.attacks = context.items.filter(item => item.type === "attack");
@@ -38,6 +47,10 @@ export class MarvelActorSheet extends ActorSheet {
         // Initialize powers if needed
         if (!system.powers) system.powers = { list: [], limitation: "" };
         if (!Array.isArray(system.powers.list)) system.powers.list = [];
+
+        // Initialize stunts if needed
+        if (!system.stunts) system.stunts = { list: [] };
+        if (!Array.isArray(system.stunts.list)) system.stunts.list = [];
         
         // Initialize talents if needed
         if (!system.talents) system.talents = { list: [] };
@@ -57,19 +70,7 @@ export class MarvelActorSheet extends ActorSheet {
         super.activateListeners(html);
 
         // Add tab switching functionality
-        html.find('.nav-item').click(ev => {
-            ev.preventDefault();
-            const tab = ev.currentTarget.dataset.tab;
-            
-            // Update active tab
-            html.find('.nav-item').removeClass('active');
-            html.find(`.nav-item[data-tab="${tab}"]`).addClass('active');
-            
-            // Show correct content
-            html.find('.tab-panel').removeClass('active').hide();
-            html.find(`.tab-panel[data-tab="${tab}"]`).addClass('active').show();
-        });
-
+        
         if (this.isEditable) {
             // These need to be bound to this
             html.find('.add-power').click(this._onAddPower.bind(this));
@@ -82,33 +83,14 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.ability-label').click(this._onAbilityRoll.bind(this));
             html.find('.clickable-popularity').click(this._onPopularityRoll.bind(this));
             html.find('.clickable-resources').click(this._onResourceRoll.bind(this));
-
             html.find('.power-edit').click(this._onPowerEdit.bind(this));
             html.find('.roll-power').click(this._onPowerRoll.bind(this));
             html.find('.power-info-icon').click(this._onPowerInfo.bind(this));
-
             html.find('.karma-history-button').click(this._onKarmaTracking.bind(this));
-
-            html.find('.nav-item').click(this._onCategoryChange.bind(this));
-            html.find('.nav-item').click(this._onTabChange.bind(this));
-            // Add this line to bind the click event for the stunt button
             html.find('.add-power-stunt').click(this._onCreatePowerStunt.bind(this));
-
-            html.find('.nav-item').click(async ev => {
-                ev.preventDefault();
-                const tab = ev.currentTarget.dataset.tab;
-                
-                // Update active tab
-                html.find('.nav-item').removeClass('active');
-                html.find(`.nav-item[data-tab="${tab}"]`).addClass('active');
-                
-                // Show correct content
-                html.find('.tab-panel').removeClass('active').hide();
-                html.find(`.tab-panel[data-tab="${tab}"]`).addClass('active').show();
-                
-                // Save active tab
-                await this.actor.setFlag('marvel-faserip', 'activeTab', tab);
-            });
+            html.find('.roll-power-stunt').click(this._onRollPowerStunt.bind(this));
+            html.find('.nav-item').off('click').on('click', this._onTabChange.bind(this));
+            
                         
             html.find('.roll-attack').click(async (ev) => {
                 ev.preventDefault();
@@ -928,22 +910,25 @@ async _onResourceRoll(event) {
     // Add this method to the MarvelActorSheet class:
     _onTabChange(event) {
         event.preventDefault();
+        event.stopPropagation();
+        
         const target = event.currentTarget;
         const category = target.dataset.tab;
-    
-        // Use jQuery to find elements within the sheet
-        const $sheet = $(this.element);
-    
-        // Update active state on nav items
-        $sheet.find('.nav-item').removeClass('active');
-        $sheet.find(`.nav-item[data-tab="${category}"]`).addClass('active');
-    
-        // Show/hide appropriate tab panels
-        $sheet.find('.tab-panel').hide();
-        $sheet.find(`.tab-panel[data-tab="${category}"]`).show();
-    
-        // Store the active tab in the actor's flags
-        this.actor.setFlag('marvel-faserip', 'activeTab', category);
+        
+        // Update DOM directly first
+        $(this.element).find('.nav-item').removeClass('active');
+        $(this.element).find(`.nav-item[data-tab="${category}"]`).addClass('active');
+        
+        $(this.element).find('.tab-panel').hide();
+        $(this.element).find(`.tab-panel[data-tab="${category}"]`).show();
+        
+        // Store active tab without triggering a re-render
+        this.actor.setFlag('marvel-faserip', 'activeTab', category).then(() => {
+            // Only re-render if absolutely necessary
+            if (this._tabs === undefined) {
+                this.render(false);
+            }
+        });
     }
 
 }

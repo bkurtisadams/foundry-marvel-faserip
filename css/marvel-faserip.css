@@ -1067,11 +1067,6 @@ select:focus {
     border-radius: 3px;
 }
 */
-.stunts-rules-hint {
-    color: #666;
-    font-style: italic;
-    margin: 5px 0;
-}
 
 .stunts-rules-box {
     background: #f5f5f5;
@@ -1122,4 +1117,50 @@ select:focus {
     border-radius: 3px;
     font-weight: bold;
     text-align: center;
+}
+
+.stunt-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 3px;
+}
+
+.stunt-row input {
+    flex: 2;
+}
+
+.stunt-row select {
+    flex: 1;
+}
+
+.stunt-controls {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.stunt-controls button {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #782e22;
+    cursor: pointer;
+}
+
+.stunt-controls button:hover {
+    color: #9e3c2d;
+}
+
+.stunt-controls .roll-power-stunt {
+    color: #782e22;
+}
+
+.stunt-controls .item-delete {
+    color: #782e22;
 }
