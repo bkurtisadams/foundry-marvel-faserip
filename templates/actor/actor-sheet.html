@@ -218,12 +218,10 @@
     <div class="tab-panel" data-tab="stunts">
         <div class="stunts-header">
             <h2>Power Stunts</h2>
-            <p class="stunts-rules-hint">
-                Use Powers in unexpected ways. Requires Karma and increases in difficulty with repetition.
-            </p>
+            <p class="stunts-rules-hint">Use Powers in unexpected ways. Requires Karma and increases in difficulty with repetition.</p>
         </div>
     
-        <button type="button" class="add-power-stunt add-ability-button">+ Create New Power Stunt</button>
+        <button type="button" class="add-power-stunt">+ Create New Power Stunt</button>
     
         <div class="stunts-list">
             {{#each actor.system.stunts.list as |stunt idx|}}
@@ -240,24 +238,16 @@
                             </option>
                             {{/each}}
                         </select>
-                        <input type="number" name="system.stunts.list.{{idx}}.attempts" 
-                               value="{{stunt.attempts}}" 
-                               min="0" 
-                               max="10" 
-                               class="stunt-attempts"/>
                     </div>
                 </div>
+                <div class="stunt-difficulty">
+                    {{#if (lt stunt.attempts 1)}}Red FEAT
+                    {{else if (lt stunt.attempts 4)}}Yellow FEAT
+                    {{else if (lt stunt.attempts 11)}}Green FEAT
+                    {{else}}Automatic
+                    {{/if}}
+                </div>
                 <div class="stunt-controls">
-                    <div class="stunt-difficulty">
-                        {{#if (lt stunt.attempts 1)}}Red FEAT
-                        {{else if (lt stunt.attempts 4)}}Yellow FEAT
-                        {{else if (lt stunt.attempts 11)}}Green FEAT
-                        {{else}}Automatic
-                        {{/if}}
-                    </div>
-                    <div class="stunt-karma-cost">
-                        Karma Cost: 100
-                    </div>
                     <button type="button" class="roll-power-stunt" title="Attempt Power Stunt">
                         <i class="fas fa-dice-d20"></i>
                     </button>
@@ -269,7 +259,7 @@
             {{/each}}
         </div>
     
-        <div class="stunts-rules-details">
+        <div class="stunts-rules-box">
             <h3>Power Stunt Rules</h3>
             <ul>
                 <li>Never tried: Red FEAT (difficult)</li>

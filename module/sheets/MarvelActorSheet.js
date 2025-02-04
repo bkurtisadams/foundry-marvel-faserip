@@ -91,6 +91,8 @@ export class MarvelActorSheet extends ActorSheet {
 
             html.find('.nav-item').click(this._onCategoryChange.bind(this));
             html.find('.nav-item').click(this._onTabChange.bind(this));
+            // Add this line to bind the click event for the stunt button
+            html.find('.add-power-stunt').click(this._onCreatePowerStunt.bind(this));
 
             html.find('.nav-item').click(async ev => {
                 ev.preventDefault();
@@ -877,6 +879,52 @@ async _onResourceRoll(event) {
         });
     }
 
+    // create power stunt
+    async _onCreatePowerStunt(event) {
+        event.preventDefault();
+        
+        const powers = this.actor.system.powers?.list || [];
+        if (powers.length === 0) {
+            ui.notifications.warn("You need at least one power to create a stunt");
+            return;
+        }
+    
+        // Initialize stunts array if it doesn't exist
+        const stunts = foundry.utils.getProperty(this.actor.system, "stunts.list") || [];
+        
+        const newStunts = stunts.concat([{
+            name: "",
+            associatedPower: 0,  // Index of first power
+            attempts: 0,
+            description: ""
+        }]);
+    
+        await this.actor.update({"system.stunts.list": newStunts});
+    }
+
+    async _onRollPowerStunt(event) {
+        event.preventDefault();
+        const stuntIndex = event.currentTarget.closest('.stunt-row').dataset.index;
+        const stunt = this.actor.system.stunts.list[stuntIndex];
+        
+        // Check karma
+        if (this.actor.system.karmaTracking.karmaPool < 100) {
+            ui.notifications.error("Not enough Karma (100 required)");
+            return;
+        }
+
+        // Roll based on attempts
+        let difficulty;
+        if (stunt.attempts === 0) difficulty = "red";
+        else if (stunt.attempts < 4) difficulty = "yellow";
+        else if (stunt.attempts < 11) difficulty = "green";
+        else {
+            ui.notifications.info("This stunt is now automatic!");
+            return;
+        }
+
+    // Proceed with roll logic...
+}
     // Add this method to the MarvelActorSheet class:
     _onTabChange(event) {
         event.preventDefault();
