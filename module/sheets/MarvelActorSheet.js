@@ -15,14 +15,17 @@ export class MarvelActorSheet extends ActorSheet {
 
     async getData(options={}) {
         const context = await super.getData(options);
-
+    
+        // Ensure context.actor.system exists
+        const system = context.actor.system || {};
+    
         // Get the active tab from flags or default to 'special'
         const activeTab = this.actor.getFlag('marvel-faserip', 'activeTab') || 'special';
         context.activeTab = activeTab;
         
         // Get attacks
         context.attacks = context.items.filter(item => item.type === "attack");
-
+    
         // Add configuration
         context.config = {
             ranks: Object.entries(CONFIG.marvel.ranks).reduce((obj, [key]) => {
@@ -32,8 +35,6 @@ export class MarvelActorSheet extends ActorSheet {
         };
         
         // Ensure lists exist and are initialized properly
-        const system = context.actor.system;
-        
         // Initialize powers if needed
         if (!system.powers) system.powers = { list: [], limitation: "" };
         if (!Array.isArray(system.powers.list)) system.powers.list = [];
@@ -45,7 +46,10 @@ export class MarvelActorSheet extends ActorSheet {
         // Initialize contacts if needed
         if (!system.contacts) system.contacts = { list: [] };
         if (!Array.isArray(system.contacts.list)) system.contacts.list = [];
-
+    
+        // Update context with initialized system
+        context.actor.system = system;
+    
         return context;
     }
 
@@ -455,65 +459,66 @@ export class MarvelActorSheet extends ActorSheet {
         }).render(true);
     }
     
-    async _onAddAttack(event) {
-        event.preventDefault();
+    // In MarvelActorSheet.js
+async _onAddAttack(event) {
+    event.preventDefault();
 
-        // Build abilities and their attacks from actionResults
-        const abilities = {};
-        for (const [code, action] of Object.entries(CONFIG.marvel.actionResults)) {
-            const abilityName = action.ability.toLowerCase();
-            if (!abilities[abilityName]) {
-                abilities[abilityName] = {
-                    label: action.ability,
-                    attacks: {}
-                };
-            }
-            abilities[abilityName].attacks[code] = action.name;
+    // Build abilities and their attacks from actionResults
+    const abilities = {};
+    for (const [code, action] of Object.entries(CONFIG.marvel.actionResults)) {
+        const abilityName = action.ability.toLowerCase();
+        if (!abilities[abilityName]) {
+            abilities[abilityName] = {
+                label: action.ability,
+                attacks: {}
+            };
         }
+        abilities[abilityName].attacks[code] = action.name;
+    }
 
-        const template = "systems/marvel-faserip/templates/dialogs/add-attack.html";
-        const html = await renderTemplate(template, { abilities });
+    const template = "systems/marvel-faserip/templates/dialogs/add-attack.html";
+    const html = await renderTemplate(template, { abilities });
 
-        return new Dialog({
-            title: "Add Attack",
-            content: html,
-            buttons: {
-                create: {
-                    label: "Create",
-                    callback: async (dialogHtml) => {
-                        const form = dialogHtml.find("form")[0];
-                        if (!form) {
-                            console.error("Form element not found in dialog!");
-                            return;
-                        }
-
-                        // Get form values
-                        const formData = new FormData(form);
-                        console.log("Form values:", Object.fromEntries(formData.entries()));
-
-                        const data = {
-                            name: formData.get("attackName"),
-                            type: "attack",
-                            system: {
-                                ability: formData.get("ability").toLowerCase(),
-                                attackType: formData.get("attackType"),  // Should be BA, EA, etc.
-                                weaponDamage: parseInt(formData.get("weaponDamage")) || 0,
-                                range: parseInt(formData.get("range")) || 0,
-                                columnShift: parseInt(formData.get("columnShift")) || 0
-                            }
-                        };
-
-                        console.log("Creating attack with data:", data);
-                        await this.actor.createEmbeddedDocuments("Item", [data]);
+    return new Dialog({
+        title: "Add Attack",
+        content: html,
+        buttons: {
+            create: {
+                label: "Create",
+                callback: async (dialogHtml) => {
+                    const form = dialogHtml.find("form")[0];
+                    if (!form) {
+                        console.error("Form element not found in dialog!");
+                        return;
                     }
-                },
-                cancel: {
-                    label: "Cancel"
+
+                    // Get form values
+                    const formData = new FormData(form);
+                    console.log("Form values:", Object.fromEntries(formData.entries()));
+
+                    const data = {
+                        name: formData.get("attackName"),
+                        type: "attack",
+                        system: {
+                            ability: formData.get("ability").toLowerCase(),
+                            attackType: formData.get("attackType"),  // Should be BA, EA, etc.
+                            weaponDamage: parseInt(formData.get("weaponDamage")) || 0,
+                            range: parseInt(formData.get("range")) || 0,
+                            columnShift: parseInt(formData.get("columnShift")) || 0
+                        }
+                    };
+
+                    console.log("Creating attack with data:", data);
+                    await this.actor.createEmbeddedDocuments("Item", [data]);
                 }
             },
-            default: "create"
-        }).render(true);
-    }
+            cancel: {
+                label: "Cancel"
+            }
+        },
+        default: "create"
+    }).render(true);
+}
 
     async _onRollAttack(event) {
         event.preventDefault();
@@ -534,7 +539,12 @@ export class MarvelActorSheet extends ActorSheet {
     async _onAddPower(event) {
         event.preventDefault();
         const powers = foundry.utils.getProperty(this.actor.system, "powers.list") || [];
-        const newPowers = powers.concat([{ name: "", rank: "", number: 0 }]);
+        const newPowers = powers.concat([{ 
+            name: "", 
+            rank: "", 
+            description: "",  // Add description field
+            number: 0 
+        }]);
         await this.actor.update({ "system.powers.list": newPowers });
     }
 
@@ -871,19 +881,19 @@ async _onResourceRoll(event) {
     _onTabChange(event) {
         event.preventDefault();
         const target = event.currentTarget;
-        const category = target.dataset.category;
-
+        const category = target.dataset.tab;
+    
+        // Use jQuery to find elements within the sheet
+        const $sheet = $(this.element);
+    
         // Update active state on nav items
-        const navItems = target.closest('.nav-categories').querySelectorAll('.nav-item');
-        navItems.forEach(item => item.classList.remove('active'));
-        target.classList.add('active');
-
+        $sheet.find('.nav-item').removeClass('active');
+        $sheet.find(`.nav-item[data-tab="${category}"]`).addClass('active');
+    
         // Show/hide appropriate tab panels
-        const tabPanels = this.element.querySelectorAll('.tab-panel');
-        tabPanels.forEach(panel => {
-            panel.style.display = panel.dataset.tab === category ? 'block' : 'none';
-        });
-
+        $sheet.find('.tab-panel').hide();
+        $sheet.find(`.tab-panel[data-tab="${category}"]`).show();
+    
         // Store the active tab in the actor's flags
         this.actor.setFlag('marvel-faserip', 'activeTab', category);
     }

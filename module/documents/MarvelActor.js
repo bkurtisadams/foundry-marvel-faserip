@@ -13,6 +13,16 @@ export class MarvelActor extends Actor {
                 popularity: { hero: 0, secret: 0 }
             };
         }
+        
+        if (!this.system.powers) {
+            this.system.powers = { 
+                list: [], 
+                limitation: "" 
+            };
+        }
+        if (!Array.isArray(this.system.powers.list)) {
+            this.system.powers.list = [];
+        }
     
         // Calculate derived values
         this._calculateHealth(this.system);
@@ -164,7 +174,7 @@ export class MarvelActor extends Actor {
     // attack roll method
     async rollAttack(ability, attackType, options = {}) {
         console.log("Rolling attack with:", { ability, attackType, options });
-        
+       
         // Get the action results from CONFIG
         const actionResult = CONFIG.marvel.actionResults[attackType];
         if (!actionResult) {
@@ -173,7 +183,7 @@ export class MarvelActor extends Actor {
             console.error(notification);
             return null;
         }
-        
+       
         // Validate ability matches required ability for this attack type
         const requiredAbility = actionResult.ability.toLowerCase();
         if (ability !== requiredAbility) {
@@ -182,7 +192,7 @@ export class MarvelActor extends Actor {
             console.warn(notification);
             ability = requiredAbility;
         }
-        
+       
         // Validate ability exists on actor
         if (!this.system.primaryAbilities[ability]) {
             const notification = `Actor does not have ability: ${ability}`;
@@ -190,27 +200,26 @@ export class MarvelActor extends Actor {
             console.error(notification);
             return null;
         }
-
         const abilityValue = this.system.primaryAbilities[ability];
-        
+       
         // Apply column shifts
         let finalRank = abilityValue.rank;
         if (options.columnShift) {
             finalRank = this.applyColumnShift(finalRank, options.columnShift);
         }
-
-        // Roll d100
-        const roll = await new Roll("1d100").evaluate();
-        
+    
+        // Create the roll with full Foundry roll options
+        const roll = await new Roll("1d100").evaluate({async: true});
+       
         // Add karma if used
         const finalRoll = Math.min(100, roll.total + (options.karma || 0));
-        
+       
         // Get result color (white, green, yellow, red)
         const color = this.getColorResult(finalRoll, finalRank);
-        
+       
         // Get result from action results
         const result = actionResult.results[color];
-        
+       
         // Calculate damage based on attack type and result
         let damage = 0;
         if (attackType === "BA" || attackType === "TB" || attackType === "Ch") {
@@ -220,32 +229,35 @@ export class MarvelActor extends Actor {
             // These attacks use weapon damage
             damage = options.weaponDamage;
         }
-
-        // Create chat message
-        const messageContent = `
-            <div class="marvel-roll combat-roll">
-                <h3>${this.name} - ${actionResult.name}</h3>
-                <div class="roll-details">
-                    <div>Roll: ${roll.total}</div>
-                    <div>Ability: ${ability.charAt(0).toUpperCase() + ability.slice(1)} (${finalRank})</div>
-                    ${options.karma ? `<div>Karma Used: ${options.karma}</div>` : ''}
-                    ${options.columnShift ? `<div>Column Shift: ${options.columnShift}</div>` : ''}
-                </div>
-                <div class="roll-result" style="background-color: ${color};">
-                    Effect: ${result}
-                    ${damage ? `<br>Damage: ${damage}` : ''}
-                </div>
-            </div>
-        `;
-
-        await ChatMessage.create({
+    
+        // Create chat message with roll
+        const chatData = {
             speaker: ChatMessage.getSpeaker({ actor: this }),
-            content: messageContent,
+            rollMode: game.settings.get("core", "rollMode"),
+            sound: CONFIG.sounds.dice,
+            content: `
+                <div class="marvel-roll combat-roll">
+                    <h3>${this.name} - ${actionResult.name}</h3>
+                    <div class="roll-details">
+                        <div>Roll: ${roll.total}</div>
+                        <div>Ability: ${ability.charAt(0).toUpperCase() + ability.slice(1)} (${finalRank})</div>
+                        ${options.karma ? `<div>Karma Used: ${options.karma}</div>` : ''}
+                        ${options.columnShift ? `<div>Column Shift: ${options.columnShift}</div>` : ''}
+                    </div>
+                    <div class="roll-result" style="background-color: ${color};">
+                        Effect: ${result}
+                        ${damage ? `<br>Damage: ${damage}` : ''}
+                    </div>
+                </div>
+            `,
             type: CONST.CHAT_MESSAGE_TYPES.ROLL,
-            roll: roll
-        });
-
-        return { roll, effect: result, damage, color };
+            rolls: [roll]
+        };
+    
+        // Create the chat message
+        const message = await ChatMessage.create(chatData);
+    
+        return { roll, effect: result, damage, color, message };
     }
     
     /**
