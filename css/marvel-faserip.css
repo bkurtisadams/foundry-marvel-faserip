@@ -34,23 +34,103 @@
     gap: 5px;
 }
 
-/* Header Portrait Layout */
-.header-top-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 5px;
-}
-
 .profile-img {
     width: 80px;
     height: 80px;
+    object-fit: cover;
+    object-position: top;
     border: 2px solid #782e22;
     border-radius: 5px;
-    object-fit: cover;
     cursor: pointer;
 }
 
+async rollAttack(ability, attackType, options = {}) {
+    console.log("Rolling attack with:", { ability, attackType, options });
+   
+    // Get the action results from CONFIG
+    const actionResult = CONFIG.marvel.actionResults[attackType];
+    if (!actionResult) {
+        const notification = `Invalid attack type: ${attackType}. Check your attack configuration.`;
+        ui.notifications.error(notification);
+        console.error(notification);
+        return null;
+    }
+   
+    // Validate ability matches required ability for this attack type
+    const requiredAbility = actionResult.ability.toLowerCase();
+    if (ability !== requiredAbility) {
+        const notification = `This attack requires ${requiredAbility} (using it instead of ${ability})`;
+        ui.notifications.warn(notification);
+        console.warn(notification);
+        ability = requiredAbility;
+    }
+   
+    // Validate ability exists on actor
+    if (!this.system.primaryAbilities[ability]) {
+        const notification = `Actor does not have ability: ${ability}`;
+        ui.notifications.error(notification);
+        console.error(notification);
+        return null;
+    }
+    const abilityValue = this.system.primaryAbilities[ability];
+   
+    // Apply column shifts
+    let finalRank = abilityValue.rank;
+    if (options.columnShift) {
+        finalRank = this.applyColumnShift(finalRank, options.columnShift);
+    }
+
+    // Create the roll with full Foundry roll options
+    const roll = await new Roll("1d100").evaluate({async: true});
+   
+    // Add karma if used
+    const finalRoll = Math.min(100, roll.total + (options.karma || 0));
+   
+    // Get result color (white, green, yellow, red)
+    const color = this.getColorResult(finalRoll, finalRank);
+   
+    // Get result from action results
+    const result = actionResult.results[color];
+   
+    // Calculate damage based on attack type and result
+    let damage = 0;
+    if (attackType === "BA" || attackType === "TB" || attackType === "Ch") {
+        // These attacks use Strength for damage
+        damage = this.system.primaryAbilities.strength.number;
+    } else if (options.weaponDamage && ["EA", "Sh", "TE", "En", "Fo"].includes(attackType)) {
+        // These attacks use weapon damage
+        damage = options.weaponDamage;
+    }
+
+    // Create chat message with roll
+    const chatData = {
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        rollMode: game.settings.get("core", "rollMode"),
+        sound: CONFIG.sounds.dice,
+        content: `
+            <div class="marvel-roll combat-roll">
+                <h3>${this.name} - ${actionResult.name}</h3>
+                <div class="roll-details">
+                    <div>Roll: ${roll.total}</div>
+                    <div>Ability: ${ability.charAt(0).toUpperCase() + ability.slice(1)} (${finalRank})</div>
+                    ${options.karma ? `<div>Karma Used: ${options.karma}</div>` : ''}
+                    ${options.columnShift ? `<div>Column Shift: ${options.columnShift}</div>` : ''}
+                </div>
+                <div class="roll-result" style="background-color: ${color};">
+                    Effect: ${result}
+                    ${damage ? `<br>Damage: ${damage}` : ''}
+                </div>
+            </div>
+        `,
+        type: CONST.CHAT_MESSAGE_TYPES.ROLL,
+        rolls: [roll]
+    };
+
+    // Create the chat message
+    const message = await ChatMessage.create(chatData);
+
+    return { roll, effect: result, damage, color, message };
+}
 /* Marvel logo */
 .marvel-logo {
     height: 45px;
