@@ -413,10 +413,19 @@ export class MarvelActorSheet extends ActorSheet {
         const newNumber = parseInt(element.value) || 0;
         const cleanPath = abilityPath.replace('primaryAbilities.', '');
         const newRank = this.actor.getRankFromValue(newNumber);
-        await this.actor.update({
+
+        // Create update data
+        const updateData = {
             [`system.primaryAbilities.${cleanPath}.rank`]: newRank,
             [`system.primaryAbilities.${cleanPath}.number`]: newNumber
-        });
+        };
+
+        // Update the actor
+        await this.actor.update(updateData);
+
+        // Force a recalculation of derived values
+        await this.actor.prepareData();
+        this.render(false);
     }
 
     async _onRankChange(event) {

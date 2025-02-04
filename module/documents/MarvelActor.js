@@ -1,14 +1,27 @@
 export class MarvelActor extends Actor {
     /** @override */
     prepareData() {
+        // Always call super first to ensure all data is initialized properly
         super.prepareData();
-
-        const actorData = this;
-        const data = actorData.system;
-
-        // Make separate methods for each of these preparation steps
-        this._calculateHealth(data);
-        this._calculateKarma(data);
+    
+        // Initialize data structure if needed
+        if (!this.system.secondaryAbilities) {
+            this.system.secondaryAbilities = {
+                health: { value: 0, max: 0 },
+                karma: { value: 0, max: 0 },
+                resources: { rank: "Shift 0", number: 0 },
+                popularity: { hero: 0, secret: 0 }
+            };
+        }
+    
+        // Calculate derived values
+        this._calculateHealth(this.system);
+        this._calculateKarma(this.system);
+    
+        // Update resource rank based on number
+        if (this.system.secondaryAbilities?.resources?.number !== undefined) {
+            this.updateResourceRank();
+        }
     }
 
     /**
@@ -18,13 +31,15 @@ export class MarvelActor extends Actor {
      */
     _calculateHealth(data) {
         if (data.primaryAbilities) {
-            const health = 
-                data.primaryAbilities.fighting.number +
-                data.primaryAbilities.agility.number +
-                data.primaryAbilities.strength.number +
-                data.primaryAbilities.endurance.number;
+            const health = Number(data.primaryAbilities.fighting.number || 0) +
+                          Number(data.primaryAbilities.agility.number || 0) +
+                          Number(data.primaryAbilities.strength.number || 0) +
+                          Number(data.primaryAbilities.endurance.number || 0);
             
+            // Update maximum
             data.secondaryAbilities.health.max = health;
+            
+            // Initialize value if not set
             if (!data.secondaryAbilities.health.value) {
                 data.secondaryAbilities.health.value = health;
             }
@@ -38,12 +53,14 @@ export class MarvelActor extends Actor {
      */
     _calculateKarma(data) {
         if (data.primaryAbilities) {
-            const karma = 
-                data.primaryAbilities.reason.number +
-                data.primaryAbilities.intuition.number +
-                data.primaryAbilities.psyche.number;
+            const karma = Number(data.primaryAbilities.reason.number || 0) +
+                         Number(data.primaryAbilities.intuition.number || 0) +
+                         Number(data.primaryAbilities.psyche.number || 0);
             
+            // Update maximum
             data.secondaryAbilities.karma.max = karma;
+            
+            // Initialize value if not set
             if (!data.secondaryAbilities.karma.value) {
                 data.secondaryAbilities.karma.value = karma;
             }
@@ -566,7 +583,7 @@ export class MarvelActor extends Actor {
         });
     }
 
-    // Ensure this method is called whenever the resource number changes
+    /* // Ensure this method is called whenever the resource number changes
     prepareData() {
         super.prepareData();
 
@@ -574,5 +591,5 @@ export class MarvelActor extends Actor {
         if (this.system.secondaryAbilities?.resources?.number !== undefined) {
             this.updateResourceRank();
         }
-    }
+    } */
 }

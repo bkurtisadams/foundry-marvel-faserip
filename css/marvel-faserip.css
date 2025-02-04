@@ -815,3 +815,14 @@ select:focus {
     color: #666;
     font-size: 0.9em;
 }
+
+.value-pair input[readonly] {
+    background-color: #f0f0f0;
+    color: #000;
+    border: 1px solid #ccc;
+}
+
+.value-pair input {
+    width: 45px;
+    text-align: center;
+}
