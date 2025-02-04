@@ -15,6 +15,10 @@ export class MarvelActorSheet extends ActorSheet {
 
     async getData(options={}) {
         const context = await super.getData(options);
+
+        // Get the active tab from flags or default to 'special'
+        const activeTab = this.actor.getFlag('marvel-faserip', 'activeTab') || 'special';
+        context.activeTab = activeTab;
         
         // Get attacks
         context.attacks = context.items.filter(item => item.type === "attack");
@@ -68,6 +72,7 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.karma-history-button').click(this._onKarmaTracking.bind(this));
 
             html.find('.nav-item').click(this._onCategoryChange.bind(this));
+            html.find('.nav-item').click(this._onTabChange.bind(this));
                         
             html.find('.roll-attack').click(async (ev) => {
                 ev.preventDefault();
@@ -156,7 +161,7 @@ export class MarvelActorSheet extends ActorSheet {
             selectedCategory.style.display = 'block';
         }
     }
-    
+
     async _onKarmaTracking(event) {
         event.preventDefault();
         
@@ -830,6 +835,27 @@ async _onResourceRoll(event) {
             speaker: ChatMessage.getSpeaker({ actor: this.actor }),
             content: messageContent
         });
+    }
+
+    // Add this method to the MarvelActorSheet class:
+    _onTabChange(event) {
+        event.preventDefault();
+        const target = event.currentTarget;
+        const category = target.dataset.category;
+
+        // Update active state on nav items
+        const navItems = target.closest('.nav-categories').querySelectorAll('.nav-item');
+        navItems.forEach(item => item.classList.remove('active'));
+        target.classList.add('active');
+
+        // Show/hide appropriate tab panels
+        const tabPanels = this.element.querySelectorAll('.tab-panel');
+        tabPanels.forEach(panel => {
+            panel.style.display = panel.dataset.tab === category ? 'block' : 'none';
+        });
+
+        // Store the active tab in the actor's flags
+        this.actor.setFlag('marvel-faserip', 'activeTab', category);
     }
 
 }
