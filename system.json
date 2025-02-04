@@ -15,6 +15,7 @@
     }
   ],
   "esmodules": ["module/marvel-faserip.js"],
+  
   "styles": ["css/marvel-faserip.css"],
   "languages": [
     {

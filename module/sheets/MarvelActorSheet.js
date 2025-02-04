@@ -59,6 +59,7 @@ export class MarvelActorSheet extends ActorSheet {
 
             html.find('.ability-label').click(this._onAbilityRoll.bind(this));
             html.find('.clickable-popularity').click(this._onPopularityRoll.bind(this));
+            html.find('.clickable-resources').click(this._onResourceRoll.bind(this));
 
             html.find('.power-edit').click(this._onPowerEdit.bind(this));
             html.find('.roll-power').click(this._onPowerRoll.bind(this));
@@ -129,21 +130,49 @@ export class MarvelActorSheet extends ActorSheet {
         }
     }
 
-    // Helper method to get color text formatting
-_getColorClass(color) {
-    switch(color.toLowerCase()) {
-        case 'white': return 'white-result';
-        case 'green': return 'green-result';
-        case 'yellow': return 'yellow-result';
-        case 'red': return 'red-result';
-        default: return '';
+    /** @override */
+    async _updateObject(event, formData) {
+        // Ensure the lists are properly handled
+        const expandedData = foundry.utils.expandObject(formData);
+        
+        // Handle powers list
+        if (expandedData.system?.powers?.list) {
+            const powers = Object.values(expandedData.system.powers.list);
+            expandedData.system.powers.list = powers;
+        }
+        
+        // Handle talents list
+        if (expandedData.system?.talents?.list) {
+            const talents = Object.values(expandedData.system.talents.list);
+            expandedData.system.talents.list = talents;
+        }
+        
+        // Handle contacts list
+        if (expandedData.system?.contacts?.list) {
+            const contacts = Object.values(expandedData.system.contacts.list);
+            expandedData.system.contacts.list = contacts;
+        }
+        
+        // Update the actor
+        return await super._updateObject(event, expandedData);
     }
-}
+
+    // Helper method to get color text formatting
+    _getColorClass(color) {
+        switch(color.toLowerCase()) {
+            case 'white': return 'white-result';
+            case 'green': return 'green-result';
+            case 'yellow': return 'yellow-result';
+            case 'red': return 'red-result';
+            default: return '';
+        }
+    }
+
     /**
- * Handle clicking the edit button for a power
- * @param {Event} event The originating click event
- * @private
- */
+     * Handle clicking the edit button for a power
+     * @param {Event} event The originating click event
+     * @private
+     */
     async _onPowerEdit(event) {
         event.preventDefault();
         const powerIndex = event.currentTarget.dataset.id;
@@ -200,85 +229,85 @@ _getColorClass(color) {
         }).render(true);
     }
 
-/**
- * Handle rolling a power
- * @param {Event} event The originating click event
- * @private
- */
-async _onPowerRoll(event) {
-    event.preventDefault();
-    const powerIndex = event.currentTarget.dataset.id;
-    const power = this.actor.system.powers.list[powerIndex];
-    
-    if (!power) return;
+    /**
+     * Handle rolling a power
+     * @param {Event} event The originating click event
+     * @private
+     */
+    async _onPowerRoll(event) {
+        event.preventDefault();
+        const powerIndex = event.currentTarget.dataset.id;
+        const power = this.actor.system.powers.list[powerIndex];
+        
+        if (!power) return;
 
-    const stored = await game.user.getFlag("world", "marvelRollOptions") || {
-        columnShift: 0,
-        karmaPoints: 0
-    };
+        const stored = await game.user.getFlag("world", "marvelRollOptions") || {
+            columnShift: 0,
+            karmaPoints: 0
+        };
 
-    const template = "systems/marvel-faserip/templates/dialogs/ability-roll.html";
-    const templateData = {
-        config: CONFIG.marvel,
-        columnShift: stored.columnShift,
-        karmaPoints: stored.karmaPoints,
-        power: power
-    };
+        const template = "systems/marvel-faserip/templates/dialogs/ability-roll.html";
+        const templateData = {
+            config: CONFIG.marvel,
+            columnShift: stored.columnShift,
+            karmaPoints: stored.karmaPoints,
+            power: power
+        };
 
-    const html = await renderTemplate(template, templateData);
+        const html = await renderTemplate(template, templateData);
 
-    return new Dialog({
-        title: `${power.name} Power FEAT Roll`,
-        content: html,
-        buttons: {
-            roll: {
-                label: "Roll",
-                callback: async (html) => {
-                    const form = html[0].querySelector("form");
-                    const options = {
-                        columnShift: parseInt(form.columnShift.value) || 0,
-                        karmaPoints: parseInt(form.karmaPoints.value) || 0
-                    };
+        return new Dialog({
+            title: `${power.name} Power FEAT Roll`,
+            content: html,
+            buttons: {
+                roll: {
+                    label: "Roll",
+                    callback: async (html) => {
+                        const form = html[0].querySelector("form");
+                        const options = {
+                            columnShift: parseInt(form.columnShift.value) || 0,
+                            karmaPoints: parseInt(form.karmaPoints.value) || 0
+                        };
 
-                    // Store values for next time
-                    await game.user.setFlag("world", "marvelRollOptions", options);
+                        // Store values for next time
+                        await game.user.setFlag("world", "marvelRollOptions", options);
 
-                    // Roll using the power's rank
-                    const roll = await new Roll("1d100").evaluate();
-                    const finalRoll = Math.min(100, roll.total + options.karmaPoints);
-                    
-                    const baseRank = power.rank;
-                    const shiftedRank = this.actor.applyColumnShift(baseRank, options.columnShift);
-                    const color = this.actor.getColorResult(finalRoll, shiftedRank);
+                        // Roll using the power's rank
+                        const roll = await new Roll("1d100").evaluate();
+                        const finalRoll = Math.min(100, roll.total + options.karmaPoints);
+                        
+                        const baseRank = power.rank;
+                        const shiftedRank = this.actor.applyColumnShift(baseRank, options.columnShift);
+                        const color = this.actor.getColorResult(finalRoll, shiftedRank);
 
-                    const messageContent = `
-                        <div class="marvel-roll">
-                            <h3>${this.actor.name} - ${power.name} Power FEAT</h3>
-                            <div class="roll-details">
-                                <div>Power Rank: ${baseRank}</div>
-                                ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                                <div>Roll: ${roll.total}${options.karmaPoints ? ` + ${options.karmaPoints} Karma = ${finalRoll}` : ''}</div>
-                            </div>
-                            <div style="text-align: center; font-weight: bold; padding: 5px; background-color: ${color};">
-                                ${color.toUpperCase()}
-                            </div>
-                        </div>`;
+                        const messageContent = `
+                            <div class="marvel-roll">
+                                <h3>${this.actor.name} - ${power.name} Power FEAT</h3>
+                                <div class="roll-details">
+                                    <div>Power Rank: ${baseRank}</div>
+                                    ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
+                                    <div>Roll: ${roll.total}${options.karmaPoints ? ` + ${options.karmaPoints} Karma = ${finalRoll}` : ''}</div>
+                                </div>
+                                <div style="text-align: center; font-weight: bold; padding: 5px; background-color: ${color};">
+                                    ${color.toUpperCase()}
+                                </div>
+                            </div>`;
 
-                    await ChatMessage.create({
-                        speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-                        content: messageContent,
-                        rolls: [roll],
-                        sound: CONFIG.sounds.dice
-                    });
+                        await ChatMessage.create({
+                            speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+                            content: messageContent,
+                            rolls: [roll],
+                            sound: CONFIG.sounds.dice
+                        });
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
                 }
             },
-            cancel: {
-                label: "Cancel"
-            }
-        },
-        default: "roll"
-    }).render(true);
-}
+            default: "roll"
+        }).render(true);
+    }
     
     async _onAddAttack(event) {
         event.preventDefault();
@@ -413,59 +442,148 @@ async _onPowerRoll(event) {
     }
 
     // Add this method before _onAbilityRoll
-async _onPopularityRoll(event) {
+    async _onPopularityRoll(event) {
+        event.preventDefault();
+        const popularityType = event.currentTarget.dataset.popularityType;
+        
+        const stored = await game.user.getFlag("world", "marvelPopularityOptions") || {
+            disposition: "neutral",
+            benefits: false,
+            danger: false,
+            goodValue: false,
+            remarkableValue: false,
+            noReturn: false,
+            unique: false,
+            additionalShift: 0,
+            karmaPoints: 0
+        };
+
+        const templateData = {
+            config: CONFIG.marvel,
+            stored: stored
+        };
+
+        const html = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/popularity-roll.html",
+            templateData
+        );
+
+        return new Promise(resolve => {
+            new Dialog({
+                title: "Popularity FEAT Roll",
+                content: html,
+                buttons: {
+                    roll: {
+                        label: "Roll",
+                        callback: async (html) => {
+                            const form = html[0].querySelector("form");
+                            const formData = new FormData(form);
+                            
+                            const options = {
+                                disposition: formData.get("disposition"),
+                                modifiers: {
+                                    benefits: formData.get("benefits") ? parseInt(formData.get("benefits")) : 0,
+                                    danger: formData.get("danger") ? parseInt(formData.get("danger")) : 0,
+                                    goodValue: formData.get("goodValue") ? parseInt(formData.get("goodValue")) : 0,
+                                    remarkableValue: formData.get("remarkableValue") ? parseInt(formData.get("remarkableValue")) : 0,
+                                    noReturn: formData.get("noReturn") ? parseInt(formData.get("noReturn")) : 0,
+                                    unique: formData.get("unique") ? parseInt(formData.get("unique")) : 0
+                                },
+                                additionalShift: parseInt(formData.get("additionalShift")) || 0,
+                                karmaPoints: parseInt(formData.get("karmaPoints")) || 0
+                            };
+
+                            await game.user.setFlag("world", "marvelPopularityOptions", options);
+                            await this.actor.rollPopularityFeat(popularityType, options);
+                            resolve(true);
+                        }
+                    },
+                    cancel: {
+                        label: "Cancel",
+                        callback: () => resolve(false)
+                    }
+                },
+                default: "roll"
+            }).render(true);
+        });
+    }
+
+        // Resource FEAT roll method 
+        // In MarvelActorSheet.js, update the _onResourceRoll method:
+
+// In MarvelActorSheet.js, update the _onResourceRoll method:
+
+async _onResourceRoll(event) {
     event.preventDefault();
-    const popularityType = event.currentTarget.dataset.popularityType;
+
+    // Check if Simple Calendar is active
+    if (!game.modules.get("simple-calendar")?.active) {
+        ui.notifications.warn("Simple Calendar module is required for proper Resource FEAT timing restrictions.");
+    }
     
-    const stored = await game.user.getFlag("world", "marvelPopularityOptions") || {
-        disposition: "neutral",
-        benefits: false,
-        danger: false,
-        goodValue: false,
-        remarkableValue: false,
-        noReturn: false,
-        unique: false,
-        additionalShift: 0,
+    const resourceRank = this.actor.system.secondaryAbilities.resources.rank || "Shift 0";
+    const resourceNumber = this.actor.system.secondaryAbilities.resources.number || 0;
+
+    // Get stored values
+    const stored = await game.user.getFlag("world", "marvelResourceOptions") || {
+        itemRank: "Typical",
+        columnShift: 0,
         karmaPoints: 0
     };
 
-    const templateData = {
-        config: CONFIG.marvel,
-        stored: stored
-    };
+    // Get timing information
+    const lastAttempt = this.actor.getFlag("marvel-faserip", "lastResourceAttempt");
+    const lastFailure = this.actor.getFlag("marvel-faserip", "lastResourceFailure");
+
+    let warningMessage = "";
+    if (lastAttempt) {
+        const daysSinceAttempt = Math.floor((Date.now() - lastAttempt.timestamp) / (24 * 60 * 60 * 1000));
+        if (daysSinceAttempt < 7) {
+            warningMessage = `Warning: Last Resource FEAT attempt was ${daysSinceAttempt} days ago. Must wait 7 days between attempts.`;
+        }
+    }
 
     const html = await renderTemplate(
-        "systems/marvel-faserip/templates/dialogs/popularity-roll.html",
-        templateData
+        "systems/marvel-faserip/templates/dialogs/resource-roll.html",
+        {
+            config: CONFIG.marvel,
+            ranks: Object.keys(CONFIG.marvel.ranks),
+            resourceRank: resourceRank,
+            itemRank: stored.itemRank,
+            columnShift: stored.columnShift,
+            karmaPoints: stored.karmaPoints,
+            warningMessage: warningMessage,
+            lastAttempt: lastAttempt,
+            lastFailure: lastFailure
+        }
     );
 
     return new Promise(resolve => {
-        new Dialog({
-            title: "Popularity FEAT Roll",
+        const dialog = new Dialog({
+            title: "Resource FEAT Roll",
             content: html,
             buttons: {
                 roll: {
                     label: "Roll",
-                    callback: async (html) => {
-                        const form = html[0].querySelector("form");
-                        const formData = new FormData(form);
-                        
+                    callback: async (dialogHtml) => {
+                        const form = dialogHtml[0].querySelector("form");
                         const options = {
-                            disposition: formData.get("disposition"),
-                            modifiers: {
-                                benefits: formData.get("benefits") ? parseInt(formData.get("benefits")) : 0,
-                                danger: formData.get("danger") ? parseInt(formData.get("danger")) : 0,
-                                goodValue: formData.get("goodValue") ? parseInt(formData.get("goodValue")) : 0,
-                                remarkableValue: formData.get("remarkableValue") ? parseInt(formData.get("remarkableValue")) : 0,
-                                noReturn: formData.get("noReturn") ? parseInt(formData.get("noReturn")) : 0,
-                                unique: formData.get("unique") ? parseInt(formData.get("unique")) : 0
-                            },
-                            additionalShift: parseInt(formData.get("additionalShift")) || 0,
-                            karmaPoints: parseInt(formData.get("karmaPoints")) || 0
+                            itemRank: form.itemRank.value,
+                            columnShift: parseInt(form.columnShift.value) || 0,
+                            karmaPoints: parseInt(form.karmaPoints.value) || 0
                         };
 
-                        await game.user.setFlag("world", "marvelPopularityOptions", options);
-                        await this.actor.rollPopularityFeat(popularityType, options);
+                        // Store values for next time
+                        await game.user.setFlag("world", "marvelResourceOptions", options);
+
+                        // Check if the attempt is allowed
+                        const canAttempt = await this.actor._canAttemptResourceFeat(options.itemRank);
+                        if (!canAttempt.allowed) {
+                            ui.notifications.warn(canAttempt.message);
+                            return;
+                        }
+
+                        await this.actor.rollResourceFeat(options.itemRank, options);
                         resolve(true);
                     }
                 },
@@ -475,7 +593,9 @@ async _onPopularityRoll(event) {
                 }
             },
             default: "roll"
-        }).render(true);
+        });
+
+        dialog.render(true);
     });
 }
 
@@ -556,32 +676,5 @@ async _onPopularityRoll(event) {
                 }
             }).render(true);
         });
-    }
-
-    /** @override */
-    async _updateObject(event, formData) {
-        // Ensure the lists are properly handled
-        const expandedData = foundry.utils.expandObject(formData);
-        
-        // Handle powers list
-        if (expandedData.system?.powers?.list) {
-            const powers = Object.values(expandedData.system.powers.list);
-            expandedData.system.powers.list = powers;
-        }
-        
-        // Handle talents list
-        if (expandedData.system?.talents?.list) {
-            const talents = Object.values(expandedData.system.talents.list);
-            expandedData.system.talents.list = talents;
-        }
-        
-        // Handle contacts list
-        if (expandedData.system?.contacts?.list) {
-            const contacts = Object.values(expandedData.system.contacts.list);
-            expandedData.system.contacts.list = contacts;
-        }
-        
-        // Update the actor
-        return await super._updateObject(event, expandedData);
     }
 }

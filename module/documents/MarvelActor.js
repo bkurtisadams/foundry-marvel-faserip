@@ -231,6 +231,216 @@ export class MarvelActor extends Actor {
         return { roll, effect: result, damage, color };
     }
     
+    /**
+     * Check if a character can attempt a Resource FEAT based on game calendar
+     * @param {string} itemRank - The rank of the item being attempted
+     * @returns {Object} Object containing whether FEAT is allowed and relevant message
+     * @private
+     */
+    async _canAttemptResourceFeat(itemRank) {
+        const lastFailure = this.getFlag("marvel-faserip", "lastResourceFailure");
+        const lastAttempt = this.getFlag("marvel-faserip", "lastResourceAttempt");
+        
+        const now = Date.now();
+        const oneWeek = 7 * 24 * 60 * 60 * 1000;
+    
+        // Check if there's been any attempt in the last week
+        if (lastAttempt && (now - lastAttempt.timestamp) < oneWeek) {
+            return {
+                allowed: false,
+                message: "Cannot attempt another Resource FEAT for " + 
+                        Math.ceil((oneWeek - (now - lastAttempt.timestamp)) / (24 * 60 * 60 * 1000)) + 
+                        " more days."
+            };
+        }
+    
+        // Check if there's been a failure and if attempting same/higher rank
+        if (lastFailure && (now - lastFailure.timestamp) < oneWeek) {
+            const ranks = Object.keys(CONFIG.marvel.ranks);
+            const failedRankIndex = ranks.indexOf(lastFailure.rank);
+            const attemptedRankIndex = ranks.indexOf(itemRank);
+            
+            if (attemptedRankIndex >= failedRankIndex) {
+                return {
+                    allowed: false,
+                    message: `Cannot attempt to purchase items of rank ${lastFailure.rank} or higher for ` +
+                            Math.ceil((oneWeek - (now - lastFailure.timestamp)) / (24 * 60 * 60 * 1000)) +
+                            " more days after previous failure."
+                };
+            }
+        }
+    
+        return { allowed: true, message: null };
+    }
+
+        _getResourceFeatDifficulty(resourceRank, itemRank) {
+        const ranks = Object.keys(CONFIG.marvel.ranks);
+        const resourceIndex = ranks.indexOf(resourceRank);
+        const itemIndex = ranks.indexOf(itemRank);
+
+        // Cannot purchase higher rank items
+        if (itemIndex > resourceIndex) {
+            return {
+                allowed: false,
+                message: "Cannot purchase items of higher rank than Resource rank"
+            };
+        }
+
+        const rankDiff = resourceIndex - itemIndex;
+
+        // Automatic if 3+ ranks lower
+        if (rankDiff >= 3) {
+            return {
+                allowed: true,
+                automatic: true,
+                message: "Automatic Success - Item rank is 3 or more ranks below Resource rank"
+            };
+        }
+
+        // Green FEAT if 1-2 ranks lower
+        if (rankDiff === 1 || rankDiff === 2) {
+            return {
+                allowed: true,
+                color: "green",
+                difficulty: "Green",
+                message: "Green FEAT required - Item rank is 1-2 ranks below Resource rank"
+            };
+        }
+
+        // Yellow FEAT if equal rank
+        if (rankDiff === 0) {
+            return {
+                allowed: true,
+                color: "yellow",
+                difficulty: "Yellow",
+                message: "Yellow FEAT required - Item rank equals Resource rank"
+            };
+        }
+    }
+    
+    async rollResourceFeat(itemRank, options = {}) {
+        const resourceRank = this.system.secondaryAbilities.resources.rank || "Shift 0";
+        let messageContent = `
+            <div class="marvel-roll">
+                <h3>${this.name} - Resource FEAT</h3>
+                <div class="roll-details">
+                    <div>Resource Rank: ${resourceRank}</div>
+                    <div>Item Rank: ${itemRank}</div>
+        `;
+    
+        // Check if we can attempt
+        const canAttempt = await this._canAttemptResourceFeat(itemRank);
+        console.log("Resource FEAT attempt check:", canAttempt);
+    
+        if (!canAttempt.allowed) {
+            ui.notifications.warn(canAttempt.message);
+            messageContent += `
+                <div class="resource-failure">${canAttempt.message}</div>
+            </div>`;
+            
+            await ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({ actor: this }),
+                content: messageContent
+            });
+            return null;
+        }
+    
+        // Check difficulty
+        const difficulty = this._getResourceFeatDifficulty(resourceRank, itemRank);
+        
+        if (!difficulty.allowed) {
+            messageContent += `
+                <div class="resource-failure">${difficulty.message}</div>
+            </div>`;
+            
+            await ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({ actor: this }),
+                content: messageContent
+            });
+            return null;
+        }
+    
+        if (difficulty.automatic) {
+            messageContent += `
+                <div class="success">${difficulty.message}</div>
+            </div>`;
+            
+            await ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({ actor: this }),
+                content: messageContent
+            });
+            return null;
+        }
+    
+        // Apply shifts and make the roll
+        const shiftedRank = this.applyColumnShift(resourceRank, options.columnShift || 0);
+        const roll = await new Roll("1d100").evaluate();
+        const finalRoll = Math.min(100, roll.total + (options.karmaPoints || 0));
+        const color = this.getColorResult(finalRoll, shiftedRank);
+
+        await this.setFlag("marvel-faserip", "lastResourceAttempt", {
+            timestamp: Date.now(),
+            rank: itemRank,
+            date: new Date().toISOString()
+        });
+    
+        // Check success
+        const colors = ["white", "green", "yellow", "red"];
+        const requiredColorIndex = colors.indexOf(difficulty.color);
+        const resultColorIndex = colors.indexOf(color);
+        const success = resultColorIndex >= requiredColorIndex;
+    
+        messageContent += `
+            ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
+            <div>Roll: ${roll.total}${options.karmaPoints ? ` + ${options.karmaPoints} = ${finalRoll}` : ''}</div>
+            </div>
+            <div style="text-align: center; font-weight: bold; padding: 5px; background-color: ${color};">
+                ${success ? "SUCCESS" : "FAILURE"}
+            </div>
+        `;
+    
+        // Handle failure
+        if (!success) {
+            const failureData = {
+                timestamp: Date.now(),
+                rank: itemRank,
+                date: new Date().toISOString()
+            };
+    
+            console.log("Recording Resource FEAT failure:", failureData);
+    
+            await this.update({
+                "flags.marvel-faserip.lastResourceFailure": failureData
+            });
+    
+            const nextAttemptDate = new Date(Date.now() + (7 * 24 * 60 * 60 * 1000));
+            
+            messageContent += `
+                <div class="resource-failure">
+                    <div class="failure-consequences">
+                        Resource FEAT failed. Cannot attempt again for 7 days.
+                        <br>
+                        Next attempt available: ${nextAttemptDate.toLocaleString()}
+                    </div>
+                </div>
+            `;
+    
+            // Verify flag was set
+            const verifyFlag = this.getFlag("marvel-faserip", "lastResourceFailure");
+            console.log("Verifying failure flag was set:", verifyFlag);
+        }
+    
+        // Create chat message
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this }),
+            content: messageContent,
+            rolls: [roll],
+            sound: CONFIG.sounds.dice
+        });
+    
+        return roll;
+    }
+
     async rollPopularityFeat(popularityType, options = {}) {
         const popularity = this.system.secondaryAbilities.popularity[popularityType];
         const isNegative = popularity < 0;
@@ -343,6 +553,26 @@ export class MarvelActor extends Actor {
         // Check for death at 0 health
         if (newHealth === 0) {
             await this.rollEndurance({type: "kill"});
+        }
+    }
+
+    updateResourceRank() {
+        const resourceNumber = this.system.secondaryAbilities.resources.number || 0;
+        const resourceRank = this.getRankFromValue(resourceNumber);
+        
+        // Update the rank in the actor's data
+        return this.update({
+            "system.secondaryAbilities.resources.rank": resourceRank
+        });
+    }
+
+    // Ensure this method is called whenever the resource number changes
+    prepareData() {
+        super.prepareData();
+
+        // Update resource rank based on number
+        if (this.system.secondaryAbilities?.resources?.number !== undefined) {
+            this.updateResourceRank();
         }
     }
 }

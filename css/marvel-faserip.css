@@ -278,9 +278,11 @@
     transition: text-shadow 0.3s ease;
 }
 
-.clickable-popularity:hover {
+.clickable-popularity:hover,
+.clickable-resources:hover {
     text-shadow: 0 0 8px #782e22;
     color: #9e3c2d !important;
+    cursor: pointer;
 }
 
 /* Special Abilities Section */
@@ -793,4 +795,23 @@ select:focus {
 
 .roll-power i.fas.fa-dice-d20 {
     font-size: 12px;
+}
+
+.marvel-roll .resource-failure {
+    margin-top: 10px;
+    padding: 5px;
+    border: 1px solid #782e22;
+    background-color: #fff0f0;
+}
+
+.marvel-roll .failure-message {
+    color: #782e22;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.marvel-roll .failure-consequences {
+    font-style: italic;
+    color: #666;
+    font-size: 0.9em;
 }

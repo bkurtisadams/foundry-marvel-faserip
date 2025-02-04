@@ -1,0 +1,60 @@
+<!-- In templates/dialogs/resource-roll.html -->
+
+<form class="resource-roll-dialog">
+    {{#if warningMessage}}
+    <div class="warning-message" style="color: #782e22; margin-bottom: 10px; padding: 5px; background: #fff0f0; border: 1px solid #782e22;">
+        {{{warningMessage}}}
+    </div>
+    {{/if}}
+
+    <div class="form-group">
+        <label>Item Rank to Purchase</label>
+        <select name="itemRank">
+            {{#each ranks as |rank|}}
+            <option value="{{rank}}" {{#if (eq rank ../itemRank)}}selected{{/if}}>{{rank}}</option>
+            {{/each}}
+        </select>
+        <p class="hint">Cannot purchase an item with a higher rank than your Resource rank</p>
+    </div>
+
+    <div class="form-group">
+        <label>Current Resource Rank: {{resourceRank}}</label>
+        <div class="resource-rules">
+            <p>Resource Rank rules:</p>
+            <ul>
+                <li>1-2 ranks lower: Green FEAT</li>
+                <li>Equal rank: Yellow FEAT</li>
+                <li>3+ ranks lower: Automatic Success</li>
+                <li>Higher rank: Cannot purchase</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Column Shift:</label>
+        <div class="form-fields">
+            <input type="number" name="columnShift" value="{{columnShift}}" placeholder="0">
+            <p class="hint">(Positive for right shift, negative for left shift)</p>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label>Karma Points:</label>
+        <div class="form-fields">
+            <input type="number" name="karmaPoints" value="{{karmaPoints}}" min="0" placeholder="0">
+            <p class="hint">(Added to d100 roll)</p>
+        </div>
+    </div>
+
+    {{#if lastAttempt}}
+    <div class="last-attempt" style="margin-top: 10px; font-size: 0.9em; color: #666;">
+        Last attempt: {{lastAttempt.date}} (Rank: {{lastAttempt.rank}})
+    </div>
+    {{/if}}
+    
+    {{#if lastFailure}}
+    <div class="last-failure" style="margin-top: 5px; font-size: 0.9em; color: #782e22;">
+        Last failure: {{lastFailure.date}} (Rank: {{lastFailure.rank}})
+    </div>
+    {{/if}}
+</form>
