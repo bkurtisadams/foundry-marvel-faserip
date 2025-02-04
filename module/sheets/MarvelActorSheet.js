@@ -7,7 +7,7 @@ export class MarvelActorSheet extends ActorSheet {
             classes: ["marvel-faserip", "sheet", "actor"],
             template: "systems/marvel-faserip/templates/actor/actor-sheet.html",
             width: 600,
-            height: 800,
+            height: 680,
             tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "abilities" }],
             dragDrop: [{ dragSelector: ".attack-row", dropSelector: null }]
         });
