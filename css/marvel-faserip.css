@@ -79,9 +79,11 @@
 
 .identity-controls {
     display: flex;
+    justify-content: flex-end;  /* Add this to move buttons to the right */
     gap: 20px;
-    margin-top: 3px;
-    margin-bottom: 0;  /* Remove any bottom margin */
+    margin-top: 1px;
+    margin-bottom: 0;
+    padding-right: 10px;  /* Add some padding from the right edge */
 }
 
 .identity-controls label {
