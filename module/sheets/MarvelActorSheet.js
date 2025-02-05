@@ -68,30 +68,40 @@ export class MarvelActorSheet extends ActorSheet {
 
     activateListeners(html) {
         super.activateListeners(html);
-
-        // Add tab switching functionality
-        
+    
         if (this.isEditable) {
-            // These need to be bound to this
-            html.find('.add-power').click(this._onAddPower.bind(this));
-            html.find('.add-talent').click(this._onAddTalent.bind(this));
-            html.find('.add-contact').click(this._onAddContact.bind(this));
-            html.find('.ability-number').change(this._onNumberChange.bind(this));
-            html.find('.rank-select').change(this._onRankChange.bind(this));
-            html.find('.add-attack').click(this._onAddAttack.bind(this));
-
-            html.find('.ability-label').click(this._onAbilityRoll.bind(this));
-            html.find('.clickable-popularity').click(this._onPopularityRoll.bind(this));
-            html.find('.clickable-resources').click(this._onResourceRoll.bind(this));
-            html.find('.power-edit').click(this._onPowerEdit.bind(this));
-            html.find('.roll-power').click(this._onPowerRoll.bind(this));
-            html.find('.power-info-icon').click(this._onPowerInfo.bind(this));
-            html.find('.karma-history-button').click(this._onKarmaTracking.bind(this));
-            html.find('.add-power-stunt').click(this._onCreatePowerStunt.bind(this));
-            html.find('.roll-power-stunt').click(this._onRollPowerStunt.bind(this));
+            // Test each method exists before binding
+            const bindings = [
+                { selector: '.add-power', method: this._onAddPower },
+                { selector: '.add-talent', method: this._onAddTalent },
+                { selector: '.add-contact', method: this._onAddContact },
+                { selector: '.ability-number', method: this._onNumberChange },
+                { selector: '.rank-select', method: this._onRankChange },
+                { selector: '.add-attack', method: this._onAddAttack },
+                { selector: '.ability-label', method: this._onAbilityRoll },
+                { selector: '.clickable-popularity', method: this._onPopularityRoll },
+                { selector: '.clickable-resources', method: this._onResourceRoll },
+                { selector: '.power-edit', method: this._onPowerEdit },
+                { selector: '.roll-power', method: this._onPowerRoll },
+                { selector: '.power-info-icon', method: this._onPowerInfo },
+                { selector: '.karma-history-button', method: this._onKarmaTracking },
+                { selector: '.add-power-stunt', method: this._onCreatePowerStunt },
+                { selector: '.roll-power-stunt', method: this._onRollPowerStunt }
+            ];
+    
+            // Check each binding
+            bindings.forEach(({selector, method}) => {
+                if (method === undefined) {
+                    console.error(`Missing method for selector: ${selector}`);
+                    return;
+                }
+                html.find(selector).click(method.bind(this));
+            });
+    
+            // Navigation tabs (separate because it uses a different binding pattern)
             html.find('.nav-item').off('click').on('click', this._onTabChange.bind(this));
-            
-                        
+    
+            // Attack roll button
             html.find('.roll-attack').click(async (ev) => {
                 ev.preventDefault();
                 ev.stopPropagation();
@@ -101,8 +111,8 @@ export class MarvelActorSheet extends ActorSheet {
                 if (!item) return;
                 return await item.roll();
             });
-            
-            // These can use arrow functions
+    
+            // Edit item button
             html.find('.item-edit').click(ev => {
                 ev.preventDefault();
                 const attackRow = ev.currentTarget.closest(".attack-row");
@@ -112,44 +122,38 @@ export class MarvelActorSheet extends ActorSheet {
                 if (!item) return;
                 return item.sheet.render(true);
             });
-            
-            // Handle both attack items and special ability deletions
+    
+            // Delete button handling
             html.find('.item-delete').click(async ev => {
                 const element = ev.currentTarget;
                 const type = element.dataset.type;
                 const id = element.dataset.id;
-
-                // Get the name of the item being deleted
+    
                 let itemName = "";
                 if (type && id !== undefined) {
-                    // For powers, talents, and contacts
                     const path = `system.${type}.list`;
                     const items = foundry.utils.getProperty(this.actor, path) || [];
                     itemName = items[id]?.name || `${type} entry`;
                 } else {
-                    // For attacks
                     const li = $(element).parents(".attack-row");
                     const item = this.actor.items.get(li.data("itemId"));
                     itemName = item?.name || "attack";
                 }
-
-                // Show confirmation dialog
+    
                 const confirmDelete = await Dialog.confirm({
                     title: "Confirm Deletion",
                     content: `<p>Are you sure you want to delete "${itemName}"?</p>`,
                     defaultYes: false
                 });
-
+    
                 if (!confirmDelete) return;
-
+    
                 if (type && id !== undefined) {
-                    // Handle special abilities, talents, and contacts
                     const path = `system.${type}.list`;
                     const items = foundry.utils.getProperty(this.actor, path) || [];
                     const updatedItems = items.filter((_, idx) => idx !== Number(id));
                     return this.actor.update({[path]: updatedItems});
                 } else {
-                    // Handle attack items
                     const li = $(element).parents(".attack-row");
                     const item = this.actor.items.get(li.data("itemId"));
                     if (item) await item.delete();
@@ -307,92 +311,118 @@ export class MarvelActorSheet extends ActorSheet {
      * @param {Event} event The originating click event
      * @private
      */
-    // File: module/sheets/MarvelActorSheet.js
-// Around line 290
-async _onPowerEdit(event) {
-    event.preventDefault();
-    const powerIndex = event.currentTarget.dataset.id;
-    const powers = this.actor.system.powers.list;
-    const power = powers[powerIndex];
+
+
+    async _onPowerEdit(event) {
+        event.preventDefault();
+        const powerIndex = event.currentTarget.dataset.id;
+        const powers = this.actor.system.powers.list;
+        const power = powers[powerIndex];
+        
+        if (!power) return;
     
-    if (!power) return;
-
-    const template = "systems/marvel-faserip/templates/dialogs/edit-power.html";
-    const ranks = Object.entries(CONFIG.marvel.ranks).reduce((obj, [key]) => {
-        obj[key] = game.i18n.localize(`MARVEL.Rank${key.replace(/\s+/g, '')}`);
-        return obj;
-    }, {});
+        const template = "systems/marvel-faserip/templates/dialogs/edit-power.html";
+        const ranks = Object.entries(CONFIG.marvel.ranks).reduce((obj, [key]) => {
+            obj[key] = game.i18n.localize(`MARVEL.Rank${key.replace(/\s+/g, '')}`);
+            return obj;
+        }, {});
+        
+        const html = await renderTemplate(template, {
+            power: power,
+            config: {
+                ranks: ranks
+            }
+        });
     
-    const html = await renderTemplate(template, {
-        power: power,
-        config: {
-            ranks: ranks
-        }
-    });
-
-    return new Dialog({
-        title: "Edit Power",
-        content: html,
-        buttons: {
-            save: {
-                label: "Save",
-                callback: async (html) => {
-                    const form = html[0].querySelector("form");
-                    
-                    // Get the power's current rank number from CONFIG
-                    const rankKey = form.querySelector('[name="rank"]').value;
-                    const rankNumber = CONFIG.marvel.ranks[rankKey]?.standard || 0;
-                    
-                    // Create updated power data
-                    const updatedPower = duplicate(power); // Create a copy of existing power
-                    
-                    // Update with new values
-                    updatedPower.name = form.querySelector('[name="name"]').value;
-                    updatedPower.rank = form.querySelector('[name="rank"]').value;
-                    updatedPower.rankNumber = rankNumber;
-                    updatedPower.damage = parseInt(form.querySelector('[name="damage"]').value) || 0;
-                    updatedPower.range = parseInt(form.querySelector('[name="range"]').value) || 0;
-                    updatedPower.description = form.querySelector('textarea[name="system.powers.list.description"]').value;
-                    updatedPower.limitations = form.querySelector('textarea[name="system.powers.list.limitations"]').value;
-                    updatedPower.type = form.querySelector('[name="type"]').value;
-
-                    console.log("Updating power with data:", updatedPower);
-
-                    // Create a copy of the powers list
-                    const updatedPowers = duplicate(powers);
-                    updatedPowers[powerIndex] = updatedPower;
-
-                    // Update the actor
-                    await this.actor.update({
-                        "system.powers.list": updatedPowers
-                    });
+        return new Dialog({
+            title: "Edit Power",
+            content: html,
+            buttons: {
+                save: {
+                    label: "Save",
+                    callback: async (html) => {
+                        const form = html[0].querySelector("form");
+                        if (!form) return;
+                        
+                        // Get the power's current rank number from CONFIG
+                        const rankKey = form.querySelector('[name="rank"]').value;
+                        const rankNumber = CONFIG.marvel.ranks[rankKey]?.standard || 0;
+                        
+                        // Create updated power data
+                        const updatedPower = foundry.utils.deepClone(power);
+                        
+                        // Get all form values with logging
+                        const nameInput = form.querySelector('[name="name"]');
+                        const rankSelect = form.querySelector('[name="rank"]');
+                        const damageInput = form.querySelector('[name="damage"]');
+                        const rangeInput = form.querySelector('[name="range"]');
+                        const descriptionInput = form.querySelector('[name="description"]');
+                        const limitationsInput = form.querySelector('[name="limitations"]');
+                        const typeSelect = form.querySelector('[name="type"]');
+                        
+                        console.log('Form values:', {
+                            name: nameInput?.value,
+                            rank: rankSelect?.value,
+                            damage: damageInput?.value,
+                            range: rangeInput?.value,
+                            description: descriptionInput?.value,
+                            limitations: limitationsInput?.value,
+                            type: typeSelect?.value
+                        });
+                        
+                        // Update with new values, using null coalescing for safety
+                        updatedPower.name = nameInput?.value || updatedPower.name;
+                        updatedPower.rank = rankSelect?.value || updatedPower.rank;
+                        updatedPower.rankNumber = rankNumber;
+                        updatedPower.damage = parseInt(damageInput?.value) || 0;
+                        updatedPower.range = parseInt(rangeInput?.value) || 0;
+                        updatedPower.description = descriptionInput?.value || '';
+                        updatedPower.limitations = limitationsInput?.value || '';
+                        updatedPower.type = typeSelect?.value || '';
+                        
+                        console.log('Updated power:', updatedPower);
+                
+                        // Create a copy of the powers list and update the specific power
+                        const updatedPowers = foundry.utils.deepClone(powers);
+                        updatedPowers[powerIndex] = updatedPower;
+                
+                        // Update the actor with logging
+                        try {
+                            console.log('Updating actor with:', {
+                                "system.powers.list": updatedPowers
+                            });
+                            
+                            await this.actor.update({
+                                "system.powers.list": updatedPowers
+                            });
+                            
+                            ui.notifications.info(`Updated power: ${updatedPower.name}`);
+                        } catch (error) {
+                            console.error("Error updating power:", error);
+                            ui.notifications.error("Failed to update power");
+                        }
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
                 }
             },
-            cancel: {
-                label: "Cancel"
-            }
-        },
-        default: "save"
-    }).render(true);
-}
+            default: "save"
+        }).render(true);
+    }
 
-    /**
-     * Handle rolling a power
-     * @param {Event} event The originating click event
-     * @private
-     */
     async _onPowerRoll(event) {
         event.preventDefault();
         const powerIndex = event.currentTarget.dataset.id;
         const power = this.actor.system.powers.list[powerIndex];
         
         if (!power) return;
-
+    
         const stored = await game.user.getFlag("world", "marvelRollOptions") || {
             columnShift: 0,
             karmaPoints: 0
         };
-
+    
         const template = "systems/marvel-faserip/templates/dialogs/ability-roll.html";
         const templateData = {
             config: CONFIG.marvel,
@@ -400,9 +430,9 @@ async _onPowerEdit(event) {
             karmaPoints: stored.karmaPoints,
             power: power
         };
-
+    
         const html = await renderTemplate(template, templateData);
-
+    
         return new Dialog({
             title: `${power.name} Power FEAT Roll`,
             content: html,
@@ -415,10 +445,10 @@ async _onPowerEdit(event) {
                             columnShift: parseInt(form.columnShift.value) || 0,
                             karmaPoints: parseInt(form.karmaPoints.value) || 0
                         };
-
+    
                         // Store values for next time
                         await game.user.setFlag("world", "marvelRollOptions", options);
-
+    
                         // Roll using the power's rank
                         const roll = await new Roll("1d100").evaluate();
                         const finalRoll = Math.min(100, roll.total + options.karmaPoints);
@@ -426,7 +456,7 @@ async _onPowerEdit(event) {
                         const baseRank = power.rank;
                         const shiftedRank = this.actor.applyColumnShift(baseRank, options.columnShift);
                         const color = this.actor.getColorResult(finalRoll, shiftedRank);
-
+    
                         const messageContent = `
                             <div class="marvel-roll">
                                 <h3>${this.actor.name} - ${power.name} Power FEAT</h3>
@@ -439,7 +469,7 @@ async _onPowerEdit(event) {
                                     ${color.toUpperCase()}
                                 </div>
                             </div>`;
-
+    
                         await ChatMessage.create({
                             speaker: ChatMessage.getSpeaker({ actor: this.actor }),
                             content: messageContent,
@@ -455,7 +485,7 @@ async _onPowerEdit(event) {
             default: "roll"
         }).render(true);
     }
-    
+
     // In MarvelActorSheet.js
 async _onAddAttack(event) {
     event.preventDefault();
@@ -541,6 +571,7 @@ async _onAddAttack(event) {
         
         // Create new power with all fields
         const newPower = {
+            _id: foundry.utils.randomID(),  // Changed this line
             name: "",
             rank: "Feeble",
             rankNumber: CONFIG.marvel.ranks["Feeble"]?.standard || 2,
@@ -564,14 +595,14 @@ async _onAddAttack(event) {
     async _onAddTalent(event) {
         event.preventDefault();
         const talents = foundry.utils.getProperty(this.actor.system, "talents.list") || [];
-        const newTalents = talents.concat([{ name: "" }]);
+        const newTalents = talents.concat([{ _id: foundry.utils.randomID(), name: "" }]);
         await this.actor.update({ "system.talents.list": newTalents });
     }
-
+    
     async _onAddContact(event) {
         event.preventDefault();
         const contacts = foundry.utils.getProperty(this.actor.system, "contacts.list") || [];
-        const newContacts = contacts.concat([{ name: "" }]);
+        const newContacts = contacts.concat([{ _id: foundry.utils.randomID(), name: "" }]);
         await this.actor.update({ "system.contacts.list": newContacts });
     }
 

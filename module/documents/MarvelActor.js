@@ -25,6 +25,7 @@ export class MarvelActor extends Actor {
         // Ensure each power has all properties
         this.system.powers.list = this.system.powers.list.map(power => {
             return {
+                _id: power._id || foundry.utils.randomID(),
                 name: power.name || "",
                 rank: power.rank || "Feeble",
                 rankNumber: power.rankNumber || 2,
@@ -36,7 +37,7 @@ export class MarvelActor extends Actor {
             };
         });
     
-        // Initialize data structure if needed
+        // Initialize stunts data structure
         if (!this.system.stunts) {
             this.system.stunts = { 
                 list: [],
@@ -48,16 +49,43 @@ export class MarvelActor extends Actor {
         }
 
         // Ensure each stunt has all required properties
-        if (this.system.stunts.list) {
-            this.system.stunts.list = this.system.stunts.list.map(stunt => ({
-                name: stunt.name || "",
-                associatedPower: stunt.associatedPower || "",
-                attempts: stunt.attempts || 0,
-                status: stunt.status || "untried",
-                description: stunt.description || ""
-            }));
+        this.system.stunts.list = this.system.stunts.list.map(stunt => ({
+            _id: stunt._id || foundry.utils.randomID(),
+            name: stunt.name || "",
+            associatedPower: stunt.associatedPower || "",
+            attempts: stunt.attempts || 0,
+            status: stunt.status || "untried",
+            description: stunt.description || ""
+        }));
+
+        // Initialize talents data structure
+        if (!this.system.talents) {
+            this.system.talents = { list: [] };
+        }
+        if (!Array.isArray(this.system.talents.list)) {
+            this.system.talents.list = [];
         }
         
+        // Map talents with proper ID reference
+        this.system.talents.list = this.system.talents.list.map(talent => ({
+            _id: talent._id || foundry.utils.randomID(),
+            name: talent.name || ""
+        }));
+
+        // Initialize contacts data structure
+        if (!this.system.contacts) {
+            this.system.contacts = { list: [] };
+        }
+        if (!Array.isArray(this.system.contacts.list)) {
+            this.system.contacts.list = [];
+        }
+        
+        // Map contacts with proper ID reference
+        this.system.contacts.list = this.system.contacts.list.map(contact => ({
+            _id: contact._id || foundry.utils.randomID(),
+            name: contact.name || ""
+        }));
+
         // Calculate derived values
         this._calculateHealth(this.system);
         this._calculateKarma(this.system);
