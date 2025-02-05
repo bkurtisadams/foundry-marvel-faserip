@@ -219,17 +219,30 @@
         <div class="stunts-list">
             {{#each actor.system.stunts.list as |stunt idx|}}
             <div class="stunt-row">
-                <input type="text" name="system.stunts.list.{{idx}}.name" value="{{stunt.name}}" placeholder="Stunt Description"/>
-                <select name="system.stunts.list.{{idx}}.associatedPower" class="associated-power">
+                <input type="text" 
+                       name="system.stunts.list.{{idx}}.name" 
+                       value="{{stunt.name}}" 
+                       placeholder="Stunt Description"/>
+                <select name="system.stunts.list.{{idx}}.associatedPower" 
+                        class="associated-power">
                     {{#each ../actor.system.powers.list as |power pidx|}}
-                    <option value="{{pidx}}" {{#if (eq stunt.associatedPower pidx)}}selected{{/if}}>{{power.name}}</option>
+                    <option value="{{power.name}}" 
+                            {{#if (eq ../stunt.associatedPower power.name)}}selected{{/if}}>
+                        {{power.name}}
+                    </option>
                     {{/each}}
                 </select>
                 <div class="stunt-controls">
-                    <button type="button" class="roll-power-stunt" title="Attempt Power Stunt" data-id="{{idx}}">
+                    <button type="button" 
+                            class="roll-power-stunt" 
+                            title="Attempt Power Stunt" 
+                            data-id="{{idx}}">
                         <i class="fas fa-dice-d20"></i>
                     </button>
-                    <button type="button" class="item-delete" data-type="stunts" data-id="{{idx}}">
+                    <button type="button" 
+                            class="item-delete" 
+                            data-type="stunts" 
+                            data-id="{{idx}}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>

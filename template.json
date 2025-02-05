@@ -82,14 +82,37 @@
         }
       },
       "powers": {
-        "templates": ["base"],
-        "list": [],
-        "limitation": "",
-        "description": ""
+          "templates": ["base"],
+          "list": [],
+          "limitation": "",
+          "schema": {
+              "name": "",
+              "rank": "",
+              "rankNumber": 0,
+              "damage": {
+                  "value": 0,
+                  "type": ""  
+              },
+              "range": {
+                  "value": 0,
+                  "unit": "areas"
+              },
+              "description": "",
+              "limitations": "",
+              "type": ""  
+          }
       },
       "stunts": {
-        "list": [],
-        "history": []
+          "list": [],
+          "templates": ["base"],
+          "description": "",
+          "schema": {
+              "name": "",
+              "associatedPower": "",
+              "attempts": 0,
+              "status": "untried",
+              "description": ""
+          }
       },
       "contacts": {
         "contacts": {

@@ -312,7 +312,7 @@ export class MarvelActorSheet extends ActorSheet {
         const powerIndex = event.currentTarget.dataset.id;
         const powers = this.actor.system.powers.list;
         const power = powers[powerIndex];
-    
+        
         if (!power) return;
     
         const template = "systems/marvel-faserip/templates/dialogs/edit-power.html";
@@ -338,18 +338,29 @@ export class MarvelActorSheet extends ActorSheet {
                         const form = html[0].querySelector("form");
                         const formData = new FormData(form);
                         
-                        // Update the power data
+                        // Create updated power data
                         const updatedPower = {
                             name: formData.get("name"),
                             rank: formData.get("rank"),
-                            description: formData.get("description")
+                            rankNumber: parseInt(formData.get("rankNumber")) || 0,
+                            damage: {
+                                value: parseInt(formData.get("damage.value")) || 0,
+                                type: formData.get("damage.type")
+                            },
+                            range: {
+                                value: parseInt(formData.get("range.value")) || 0,
+                                unit: formData.get("range.unit")
+                            },
+                            description: formData.get("description"),
+                            limitations: formData.get("limitations"),
+                            type: formData.get("type")
                         };
     
-                        // Create a copy of the powers list and update the specific power
+                        // Update the powers list
                         const updatedPowers = [...powers];
                         updatedPowers[powerIndex] = updatedPower;
     
-                        // Update the actor with the new powers list
+                        // Update the actor
                         await this.actor.update({
                             "system.powers.list": updatedPowers
                         });
@@ -523,12 +534,24 @@ async _onAddAttack(event) {
     async _onAddPower(event) {
         event.preventDefault();
         const powers = foundry.utils.getProperty(this.actor.system, "powers.list") || [];
-        const newPowers = powers.concat([{ 
-            name: "", 
-            rank: "", 
-            description: "",  // Add description field
-            number: 0 
-        }]);
+        const newPower = {
+            name: "",
+            rank: "Feeble",  // Default starting rank
+            rankNumber: 2,    // Corresponding to Feeble
+            damage: {
+                value: 0,
+                type: ""
+            },
+            range: {
+                value: 0,
+                unit: "areas"
+            },
+            description: "",
+            limitations: "",
+            type: ""
+        };
+        
+        const newPowers = [...powers, newPower];
         await this.actor.update({ "system.powers.list": newPowers });
     }
 
@@ -874,13 +897,19 @@ async _onResourceRoll(event) {
         // Initialize stunts array if it doesn't exist
         const stunts = foundry.utils.getProperty(this.actor.system, "stunts.list") || [];
         
-        const newStunts = stunts.concat([{
+        // Create new stunt with all required properties
+        const newStunt = {
             name: "",
-            associatedPower: 0,  // Index of first power
+            associatedPower: powers[0]?.name || "",  // Reference first power's name
             attempts: 0,
-            description: ""
-        }]);
+            description: "",
+            status: "untried"  // Add a status tracker
+        };
     
+        // Add the new stunt to the list
+        const newStunts = [...stunts, newStunt];
+    
+        // Update the actor with the new stunts list
         await this.actor.update({"system.stunts.list": newStunts});
     }
 

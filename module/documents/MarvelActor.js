@@ -24,6 +24,28 @@ export class MarvelActor extends Actor {
             this.system.powers.list = [];
         }
     
+        // Initialize data structure if needed
+        if (!this.system.stunts) {
+            this.system.stunts = { 
+                list: [],
+                description: "" 
+            };
+        }
+        if (!Array.isArray(this.system.stunts.list)) {
+            this.system.stunts.list = [];
+        }
+
+        // Ensure each stunt has all required properties
+        if (this.system.stunts.list) {
+            this.system.stunts.list = this.system.stunts.list.map(stunt => ({
+                name: stunt.name || "",
+                associatedPower: stunt.associatedPower || "",
+                attempts: stunt.attempts || 0,
+                status: stunt.status || "untried",
+                description: stunt.description || ""
+            }));
+        }
+        
         // Calculate derived values
         this._calculateHealth(this.system);
         this._calculateKarma(this.system);

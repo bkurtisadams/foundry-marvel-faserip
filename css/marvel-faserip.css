@@ -763,26 +763,45 @@ select:focus {
 }
 
 /* Power Dialog Styling */
+.power-dialog {
+    padding: 5px;
+}
+
 .power-dialog .form-group {
     margin-bottom: 10px;
 }
 
 .power-dialog label {
     display: block;
-    margin-bottom: 3px;
     font-weight: bold;
+    margin-bottom: 3px;
 }
 
 .power-dialog input[type="text"],
+.power-dialog input[type="number"],
 .power-dialog select {
     width: 100%;
+    height: 24px;
+    padding: 2px 5px;
 }
 
 .power-dialog textarea {
     width: 100%;
-    height: 100px;
     resize: vertical;
+    min-height: 60px;
 }
+
+.power-dialog .damage-inputs,
+.power-dialog .range-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+}
+
+.power-dialog input[type="number"] {
+    text-align: right;
+}
+
 .roll-power {
     display: flex;
     align-items: center;

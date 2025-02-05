@@ -1,21 +1,66 @@
-<!-- In templates/dialogs/edit-power.html -->
-<form class="edit-power-dialog">
+<form class="power-dialog">
     <div class="form-group">
         <label>Power Name</label>
-        <input type="text" name="name" value="{{power.name}}" placeholder="Power name"/>
+        <input type="text" name="name" value="{{power.name}}"/>
+    </div>
+    
+    <div class="form-group">
+        <label>Rank</label>
+        <select name="rank" class="rank-select">
+            {{selectOptions config.ranks selected=power.rank}}
+        </select>
     </div>
 
     <div class="form-group">
-        <label>Power Rank</label>
-        <select name="rank">
-            {{#each config.ranks as |label key|}}
-            <option value="{{key}}" {{#if (eq ../power.rank key)}}selected{{/if}}>{{label}}</option>
-            {{/each}}
-        </select>
+        <label>Rank Number</label>
+        <input type="number" name="rankNumber" value="{{power.rankNumber}}"/>
+    </div>
+
+    <div class="form-group">
+        <label>Damage</label>
+        <div class="damage-inputs">
+            <input type="number" name="damage.value" value="{{power.damage.value}}" placeholder="Amount"/>
+            <select name="damage.type">
+                <option value="">None</option>
+                <option value="energy" {{#if (eq power.damage.type "energy")}}selected{{/if}}>Energy</option>
+                <option value="force" {{#if (eq power.damage.type "force")}}selected{{/if}}>Force</option>
+                <option value="physical" {{#if (eq power.damage.type "physical")}}selected{{/if}}>Physical</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Range</label>
+        <div class="range-inputs">
+            <input type="number" name="range.value" value="{{power.range.value}}" placeholder="Distance"/>
+            <select name="range.unit">
+                <option value="areas" {{#if (eq power.range.unit "areas")}}selected{{/if}}>Areas</option>
+                <option value="self" {{#if (eq power.range.unit "self")}}selected{{/if}}>Self</option>
+                <option value="touch" {{#if (eq power.range.unit "touch")}}selected{{/if}}>Touch</option>
+            </select>
+        </div>
     </div>
 
     <div class="form-group">
         <label>Description</label>
         <textarea name="description" rows="4">{{power.description}}</textarea>
+    </div>
+
+    <div class="form-group">
+        <label>Limitations</label>
+        <textarea name="limitations" rows="2">{{power.limitations}}</textarea>
+    </div>
+
+    <div class="form-group">
+        <label>Type</label>
+        <select name="type">
+            <option value="">Select Type</option>
+            <option value="attack" {{#if (eq power.type "attack")}}selected{{/if}}>Attack</option>
+            <option value="defense" {{#if (eq power.type "defense")}}selected{{/if}}>Defense</option>
+            <option value="movement" {{#if (eq power.type "movement")}}selected{{/if}}>Movement</option>
+            <option value="sensory" {{#if (eq power.type "sensory")}}selected{{/if}}>Sensory</option>
+            <option value="control" {{#if (eq power.type "control")}}selected{{/if}}>Control</option>
+            <option value="utility" {{#if (eq power.type "utility")}}selected{{/if}}>Utility</option>
+        </select>
     </div>
 </form>
