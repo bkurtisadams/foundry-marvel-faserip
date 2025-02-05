@@ -14,15 +14,27 @@ export class MarvelActor extends Actor {
             };
         }
         
+        // Ensure powers data structure
         if (!this.system.powers) {
-            this.system.powers = { 
-                list: [], 
-                limitation: "" 
-            };
+            this.system.powers = { list: [] };
         }
         if (!Array.isArray(this.system.powers.list)) {
             this.system.powers.list = [];
         }
+
+        // Ensure each power has all properties
+        this.system.powers.list = this.system.powers.list.map(power => {
+            return {
+                name: power.name || "",
+                rank: power.rank || "Feeble",
+                rankNumber: power.rankNumber || 2,
+                damage: power.damage || 0,
+                range: power.range || 0,
+                description: power.description || "",
+                limitations: power.limitations || "",
+                type: power.type || ""
+            };
+        });
     
         // Initialize data structure if needed
         if (!this.system.stunts) {

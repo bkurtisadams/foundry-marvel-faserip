@@ -83,23 +83,16 @@
       },
       "powers": {
           "templates": ["base"],
-          "list": [],
-          "limitation": "",
-          "schema": {
+          "list": [],         
+          "schema": {         
               "name": "",
               "rank": "",
               "rankNumber": 0,
-              "damage": {
-                  "value": 0,
-                  "type": ""  
-              },
-              "range": {
-                  "value": 0,
-                  "unit": "areas"
-              },
+              "damage": 0,
+              "range": 0,
               "description": "",
               "limitations": "",
-              "type": ""  
+              "type": ""
           }
       },
       "stunts": {
@@ -126,10 +119,10 @@
       }
     },
     "hero": {
-      "templates": ["base", "powers", "contacts", "talents"]
+        "templates": ["base", "powers", "contacts", "talents", "stunts"]
     },
     "villain": {
-      "templates": ["base", "powers"]
+        "templates": ["base", "powers", "stunts"]
     },
     "npc": {
       "templates": ["base"]

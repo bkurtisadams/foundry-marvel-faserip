@@ -307,72 +307,74 @@ export class MarvelActorSheet extends ActorSheet {
      * @param {Event} event The originating click event
      * @private
      */
-    async _onPowerEdit(event) {
-        event.preventDefault();
-        const powerIndex = event.currentTarget.dataset.id;
-        const powers = this.actor.system.powers.list;
-        const power = powers[powerIndex];
-        
-        if (!power) return;
+    // File: module/sheets/MarvelActorSheet.js
+// Around line 290
+async _onPowerEdit(event) {
+    event.preventDefault();
+    const powerIndex = event.currentTarget.dataset.id;
+    const powers = this.actor.system.powers.list;
+    const power = powers[powerIndex];
     
-        const template = "systems/marvel-faserip/templates/dialogs/edit-power.html";
-        const ranks = Object.entries(CONFIG.marvel.ranks).reduce((obj, [key]) => {
-            obj[key] = game.i18n.localize(`MARVEL.Rank${key.replace(/\s+/g, '')}`);
-            return obj;
-        }, {});
-        
-        const html = await renderTemplate(template, {
-            power: power,
-            config: {
-                ranks: ranks
-            }
-        });
+    if (!power) return;
+
+    const template = "systems/marvel-faserip/templates/dialogs/edit-power.html";
+    const ranks = Object.entries(CONFIG.marvel.ranks).reduce((obj, [key]) => {
+        obj[key] = game.i18n.localize(`MARVEL.Rank${key.replace(/\s+/g, '')}`);
+        return obj;
+    }, {});
     
-        return new Dialog({
-            title: "Edit Power",
-            content: html,
-            buttons: {
-                save: {
-                    label: "Save",
-                    callback: async (html) => {
-                        const form = html[0].querySelector("form");
-                        const formData = new FormData(form);
-                        
-                        // Create updated power data
-                        const updatedPower = {
-                            name: formData.get("name"),
-                            rank: formData.get("rank"),
-                            rankNumber: parseInt(formData.get("rankNumber")) || 0,
-                            damage: {
-                                value: parseInt(formData.get("damage.value")) || 0,
-                                type: formData.get("damage.type")
-                            },
-                            range: {
-                                value: parseInt(formData.get("range.value")) || 0,
-                                unit: formData.get("range.unit")
-                            },
-                            description: formData.get("description"),
-                            limitations: formData.get("limitations"),
-                            type: formData.get("type")
-                        };
-    
-                        // Update the powers list
-                        const updatedPowers = [...powers];
-                        updatedPowers[powerIndex] = updatedPower;
-    
-                        // Update the actor
-                        await this.actor.update({
-                            "system.powers.list": updatedPowers
-                        });
-                    }
-                },
-                cancel: {
-                    label: "Cancel"
+    const html = await renderTemplate(template, {
+        power: power,
+        config: {
+            ranks: ranks
+        }
+    });
+
+    return new Dialog({
+        title: "Edit Power",
+        content: html,
+        buttons: {
+            save: {
+                label: "Save",
+                callback: async (html) => {
+                    const form = html[0].querySelector("form");
+                    
+                    // Get the power's current rank number from CONFIG
+                    const rankKey = form.querySelector('[name="rank"]').value;
+                    const rankNumber = CONFIG.marvel.ranks[rankKey]?.standard || 0;
+                    
+                    // Create updated power data
+                    const updatedPower = duplicate(power); // Create a copy of existing power
+                    
+                    // Update with new values
+                    updatedPower.name = form.querySelector('[name="name"]').value;
+                    updatedPower.rank = form.querySelector('[name="rank"]').value;
+                    updatedPower.rankNumber = rankNumber;
+                    updatedPower.damage = parseInt(form.querySelector('[name="damage"]').value) || 0;
+                    updatedPower.range = parseInt(form.querySelector('[name="range"]').value) || 0;
+                    updatedPower.description = form.querySelector('textarea[name="system.powers.list.description"]').value;
+                    updatedPower.limitations = form.querySelector('textarea[name="system.powers.list.limitations"]').value;
+                    updatedPower.type = form.querySelector('[name="type"]').value;
+
+                    console.log("Updating power with data:", updatedPower);
+
+                    // Create a copy of the powers list
+                    const updatedPowers = duplicate(powers);
+                    updatedPowers[powerIndex] = updatedPower;
+
+                    // Update the actor
+                    await this.actor.update({
+                        "system.powers.list": updatedPowers
+                    });
                 }
             },
-            default: "save"
-        }).render(true);
-    }
+            cancel: {
+                label: "Cancel"
+            }
+        },
+        default: "save"
+    }).render(true);
+}
 
     /**
      * Handle rolling a power
@@ -531,28 +533,32 @@ async _onAddAttack(event) {
         await item.roll();
     }
 
+
+    // File: module/sheets/MarvelActorSheet.js
     async _onAddPower(event) {
         event.preventDefault();
         const powers = foundry.utils.getProperty(this.actor.system, "powers.list") || [];
+        
+        // Create new power with all fields
         const newPower = {
             name: "",
-            rank: "Feeble",  // Default starting rank
-            rankNumber: 2,    // Corresponding to Feeble
-            damage: {
-                value: 0,
-                type: ""
-            },
-            range: {
-                value: 0,
-                unit: "areas"
-            },
+            rank: "Feeble",
+            rankNumber: CONFIG.marvel.ranks["Feeble"]?.standard || 2,
+            damage: 0,
+            range: 0,
             description: "",
             limitations: "",
             type: ""
         };
         
-        const newPowers = [...powers, newPower];
-        await this.actor.update({ "system.powers.list": newPowers });
+        // Make a clean copy of the powers array
+        const newPowers = powers.map(p => duplicate(p));
+        newPowers.push(newPower);
+        
+        // Update the actor
+        await this.actor.update({
+            "system.powers.list": newPowers
+        });
     }
 
     async _onAddTalent(event) {
