@@ -14,22 +14,54 @@ export class MarvelActorSheet extends ActorSheet {
 
     async getData(options={}) {
         const context = await super.getData(options);
-    
-        // Ensure context.actor.system exists
+        
+        // Ensure context.actor.system exists and initialize if needed
         const system = context.actor.system || {};
-    
+        
+        // Initialize primary abilities if not set
+        if (!system.primaryAbilities) {
+            system.primaryAbilities = {
+                fighting: { initialRoll: "", initialRank: "", rank: "", number: 0 },
+                agility: { initialRoll: "", initialRank: "", rank: "", number: 0 },
+                strength: { initialRoll: "", initialRank: "", rank: "", number: 0 },
+                endurance: { initialRoll: "", initialRank: "", rank: "", number: 0 },
+                reason: { initialRoll: "", initialRank: "", rank: "", number: 0 },
+                intuition: { initialRoll: "", initialRank: "", rank: "", number: 0 },
+                psyche: { initialRoll: "", initialRank: "", rank: "", number: 0 }
+            };
+        }
+
+        // Initialize secondary abilities if not set
+        if (!system.secondaryAbilities) {
+            system.secondaryAbilities = {
+                health: { value: 0, max: 0 },
+                karma: { value: 0, max: 0 },
+                resources: { rank: "", number: 0 },
+                popularity: { hero: 0, secret: 0 }
+            };
+        }
+
+        // Initialize karma tracking if not set
+        if (!system.karmaTracking) {
+            system.karmaTracking = {
+                karmaPool: 0,
+                advancementFund: 0,
+                history: []
+            };
+        }
+
         // Get the active tab from flags or default to 'special'
         const activeTab = this.actor.getFlag('marvel-faserip', 'activeTab') || 'special';
         context.activeTab = activeTab;
 
         // Set up tabs context properly
         context.tabs = {
-        special: activeTab === 'special',
-        stunts: activeTab === 'stunts',
-        attacks: activeTab === 'attacks',
-        equipment: activeTab === 'equipment',
-        headquarters: activeTab === 'headquarters',
-        vehicles: activeTab === 'vehicles'
+            special: activeTab === 'special',
+            stunts: activeTab === 'stunts',
+            attacks: activeTab === 'attacks',
+            equipment: activeTab === 'equipment',
+            headquarters: activeTab === 'headquarters',
+            vehicles: activeTab === 'vehicles'
         };
         
         // Get attacks
@@ -43,22 +75,57 @@ export class MarvelActorSheet extends ActorSheet {
             }, {})
         };
         
-        // Ensure lists exist and are initialized properly
-        // Initialize powers if needed
-        if (!system.powers) system.powers = { list: [], limitation: "" };
-        if (!Array.isArray(system.powers.list)) system.powers.list = [];
+        // Initialize powers according to template.json schema
+        if (!system.powers) {
+            system.powers = {
+                templates: ["base"],
+                list: [],
+                schema: {
+                    name: "",
+                    rank: "",
+                    rankNumber: 0,
+                    damage: 0,
+                    range: 0,
+                    description: "",
+                    limitations: "",
+                    type: ""
+                }
+            };
+        }
 
-        // Initialize stunts if needed
-        if (!system.stunts) system.stunts = { list: [] };
-        if (!Array.isArray(system.stunts.list)) system.stunts.list = [];
+        // Initialize stunts according to template.json schema
+        if (!system.stunts) {
+            system.stunts = {
+                list: [],
+                templates: ["base"],
+                description: "",
+                schema: {
+                    name: "",
+                    associatedPower: "",
+                    attempts: 0,
+                    status: "untried",
+                    description: ""
+                }
+            };
+        }
         
-        // Initialize talents if needed
-        if (!system.talents) system.talents = { list: [] };
-        if (!Array.isArray(system.talents.list)) system.talents.list = [];
+        // Initialize talents according to template.json schema
+        if (!system.talents) {
+            system.talents = {
+                talents: {
+                    list: []
+                }
+            };
+        }
         
-        // Initialize contacts if needed
-        if (!system.contacts) system.contacts = { list: [] };
-        if (!Array.isArray(system.contacts.list)) system.contacts.list = [];
+        // Initialize contacts according to template.json schema
+        if (!system.contacts) {
+            system.contacts = {
+                contacts: {
+                    list: []
+                }
+            };
+        }
     
         // Update context with initialized system
         context.actor.system = system;
@@ -98,7 +165,7 @@ export class MarvelActorSheet extends ActorSheet {
                 html.find(selector).click(method.bind(this));
             });
     
-            // Navigation tabs (separate because it uses a different binding pattern)
+            // Navigation tabs
             html.find('.nav-item').off('click').on('click', this._onTabChange.bind(this));
     
             // Attack roll button
@@ -123,7 +190,7 @@ export class MarvelActorSheet extends ActorSheet {
                 return item.sheet.render(true);
             });
     
-            // Delete button handling
+            // Delete item handling updated to match template.json structure
             html.find('.item-delete').click(async ev => {
                 const element = ev.currentTarget;
                 const type = element.dataset.type;
@@ -131,9 +198,29 @@ export class MarvelActorSheet extends ActorSheet {
     
                 let itemName = "";
                 if (type && id !== undefined) {
-                    const path = `system.${type}.list`;
-                    const items = foundry.utils.getProperty(this.actor, path) || [];
-                    itemName = items[id]?.name || `${type} entry`;
+                    // Handle deleting from list arrays based on template.json structure
+                    let path;
+                    switch(type) {
+                        case 'powers':
+                            path = 'system.powers.list';
+                            break;
+                        case 'stunts':
+                            path = 'system.stunts.list';
+                            break;
+                        case 'talents':
+                            path = 'system.talents.talents.list';
+                            break;
+                        case 'contacts':
+                            path = 'system.contacts.contacts.list';
+                            break;
+                        default:
+                            path = null;
+                    }
+                    
+                    if (path) {
+                        const items = foundry.utils.getProperty(this.actor, path) || [];
+                        itemName = items[id]?.name || `${type} entry`;
+                    }
                 } else {
                     const li = $(element).parents(".attack-row");
                     const item = this.actor.items.get(li.data("itemId"));
@@ -149,7 +236,25 @@ export class MarvelActorSheet extends ActorSheet {
                 if (!confirmDelete) return;
     
                 if (type && id !== undefined) {
-                    const path = `system.${type}.list`;
+                    // Handle deleting from list arrays based on template.json structure
+                    let path;
+                    switch(type) {
+                        case 'powers':
+                            path = 'system.powers.list';
+                            break;
+                        case 'stunts':
+                            path = 'system.stunts.list';
+                            break;
+                        case 'talents':
+                            path = 'system.talents.talents.list';
+                            break;
+                        case 'contacts':
+                            path = 'system.contacts.contacts.list';
+                            break;
+                        default:
+                            return;
+                    }
+                    
                     const items = foundry.utils.getProperty(this.actor, path) || [];
                     const updatedItems = items.filter((_, idx) => idx !== Number(id));
                     return this.actor.update({[path]: updatedItems});
@@ -187,8 +292,8 @@ export class MarvelActorSheet extends ActorSheet {
     async _onKarmaTracking(event) {
         event.preventDefault();
         
-        // Get karma history from flags
-        const karmaHistory = this.actor.getFlag("marvel-faserip", "karmaHistory") || [];
+        // Get karma history from flags, matching template.json karmaTracking structure
+        const karmaHistory = this.actor.system.karmaTracking.history || [];
         
         const html = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/karma-tracking.html",
@@ -213,21 +318,21 @@ export class MarvelActorSheet extends ActorSheet {
                             return;
                         }
     
-                        // Create new karma entry
+                        // Create new karma entry following template.json structure
                         const newEntry = {
                             date: new Date().toLocaleString(),
                             amount: amount,
                             description: description
                         };
     
-                        // Update karma history
+                        // Update karma history in system data
                         const updatedHistory = [...karmaHistory, newEntry];
-                        await this.actor.setFlag("marvel-faserip", "karmaHistory", updatedHistory);
-    
-                        // Update karma pool
+                        
+                        // Update both karma pool and history according to template.json
                         const currentPool = this.actor.system.karmaTracking.karmaPool || 0;
                         await this.actor.update({
-                            "system.karmaTracking.karmaPool": currentPool + amount
+                            "system.karmaTracking.karmaPool": currentPool + amount,
+                            "system.karmaTracking.history": updatedHistory
                         });
     
                         // Create chat message
@@ -248,7 +353,7 @@ export class MarvelActorSheet extends ActorSheet {
                 },
                 clear: {
                     label: "Clear History",
-                    callback: async (html) => {
+                    callback: async () => {
                         const confirm = await Dialog.confirm({
                             title: "Clear Karma History",
                             content: "Are you sure you want to clear the karma history? This cannot be undone.",
@@ -256,7 +361,9 @@ export class MarvelActorSheet extends ActorSheet {
                         });
     
                         if (confirm) {
-                            await this.actor.setFlag("marvel-faserip", "karmaHistory", []);
+                            await this.actor.update({
+                                "system.karmaTracking.history": []
+                            });
                         }
                     }
                 },
@@ -270,25 +377,31 @@ export class MarvelActorSheet extends ActorSheet {
     
     /** @override */
     async _updateObject(event, formData) {
-        // Ensure the lists are properly handled
+        // Handle nested data structure from template.json
         const expandedData = foundry.utils.expandObject(formData);
         
-        // Handle powers list
+        // Handle powers list according to template.json structure
         if (expandedData.system?.powers?.list) {
             const powers = Object.values(expandedData.system.powers.list);
             expandedData.system.powers.list = powers;
         }
         
         // Handle talents list
-        if (expandedData.system?.talents?.list) {
-            const talents = Object.values(expandedData.system.talents.list);
-            expandedData.system.talents.list = talents;
+        if (expandedData.system?.talents?.talents?.list) {
+            const talents = Object.values(expandedData.system.talents.talents.list);
+            expandedData.system.talents.talents.list = talents;
         }
         
         // Handle contacts list
-        if (expandedData.system?.contacts?.list) {
-            const contacts = Object.values(expandedData.system.contacts.list);
-            expandedData.system.contacts.list = contacts;
+        if (expandedData.system?.contacts?.contacts?.list) {
+            const contacts = Object.values(expandedData.system.contacts.contacts.list);
+            expandedData.system.contacts.contacts.list = contacts;
+        }
+
+        // Handle stunts list according to template.json structure
+        if (expandedData.system?.stunts?.list) {
+            const stunts = Object.values(expandedData.system.stunts.list);
+            expandedData.system.stunts.list = stunts;
         }
         
         // Update the actor
@@ -306,13 +419,6 @@ export class MarvelActorSheet extends ActorSheet {
         }
     }
 
-    /**
-     * Handle clicking the edit button for a power
-     * @param {Event} event The originating click event
-     * @private
-     */
-
-
     async _onPowerEdit(event) {
         event.preventDefault();
         const powerIndex = event.currentTarget.dataset.id;
@@ -321,18 +427,18 @@ export class MarvelActorSheet extends ActorSheet {
         
         if (!power) return;
     
-        const template = "systems/marvel-faserip/templates/dialogs/edit-power.html";
-        const ranks = Object.entries(CONFIG.marvel.ranks).reduce((obj, [key]) => {
-            obj[key] = game.i18n.localize(`MARVEL.Rank${key.replace(/\s+/g, '')}`);
-            return obj;
-        }, {});
-        
-        const html = await renderTemplate(template, {
-            power: power,
-            config: {
-                ranks: ranks
+        const html = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/edit-power.html", 
+            {
+                power: power,
+                config: {
+                    ranks: Object.entries(CONFIG.marvel.ranks).reduce((obj, [key, value]) => {
+                        obj[key] = game.i18n.localize(`MARVEL.Rank${key.replace(/\s+/g, '')}`);
+                        return obj;
+                    }, {})
+                }
             }
-        });
+        );
     
         return new Dialog({
             title: "Edit Power",
@@ -344,63 +450,28 @@ export class MarvelActorSheet extends ActorSheet {
                         const form = html[0].querySelector("form");
                         if (!form) return;
                         
-                        // Get the power's current rank number from CONFIG
                         const rankKey = form.querySelector('[name="rank"]').value;
                         const rankNumber = CONFIG.marvel.ranks[rankKey]?.standard || 0;
                         
-                        // Create updated power data
-                        const updatedPower = foundry.utils.deepClone(power);
-                        
-                        // Get all form values with logging
-                        const nameInput = form.querySelector('[name="name"]');
-                        const rankSelect = form.querySelector('[name="rank"]');
-                        const damageInput = form.querySelector('[name="damage"]');
-                        const rangeInput = form.querySelector('[name="range"]');
-                        const descriptionInput = form.querySelector('[name="description"]');
-                        const limitationsInput = form.querySelector('[name="limitations"]');
-                        const typeSelect = form.querySelector('[name="type"]');
-                        
-                        console.log('Form values:', {
-                            name: nameInput?.value,
-                            rank: rankSelect?.value,
-                            damage: damageInput?.value,
-                            range: rangeInput?.value,
-                            description: descriptionInput?.value,
-                            limitations: limitationsInput?.value,
-                            type: typeSelect?.value
-                        });
-                        
-                        // Update with new values, using null coalescing for safety
-                        updatedPower.name = nameInput?.value || updatedPower.name;
-                        updatedPower.rank = rankSelect?.value || updatedPower.rank;
-                        updatedPower.rankNumber = rankNumber;
-                        updatedPower.damage = parseInt(damageInput?.value) || 0;
-                        updatedPower.range = parseInt(rangeInput?.value) || 0;
-                        updatedPower.description = descriptionInput?.value || '';
-                        updatedPower.limitations = limitationsInput?.value || '';
-                        updatedPower.type = typeSelect?.value || '';
-                        
-                        console.log('Updated power:', updatedPower);
-                
-                        // Create a copy of the powers list and update the specific power
-                        const updatedPowers = foundry.utils.deepClone(powers);
+                        // Create updated power data matching template.json schema
+                        const updatedPower = {
+                            name: form.querySelector('[name="name"]').value || "",
+                            rank: rankKey,
+                            rankNumber: rankNumber,
+                            damage: parseInt(form.querySelector('[name="damage"]').value) || 0,
+                            range: parseInt(form.querySelector('[name="range"]').value) || 0,
+                            description: form.querySelector('[name="description"]').value || "",
+                            limitations: form.querySelector('[name="limitations"]').value || "",
+                            type: form.querySelector('[name="type"]').value || ""
+                        };
+    
+                        // Update the powers list
+                        const updatedPowers = duplicate(powers);
                         updatedPowers[powerIndex] = updatedPower;
-                
-                        // Update the actor with logging
-                        try {
-                            console.log('Updating actor with:', {
-                                "system.powers.list": updatedPowers
-                            });
-                            
-                            await this.actor.update({
-                                "system.powers.list": updatedPowers
-                            });
-                            
-                            ui.notifications.info(`Updated power: ${updatedPower.name}`);
-                        } catch (error) {
-                            console.error("Error updating power:", error);
-                            ui.notifications.error("Failed to update power");
-                        }
+                        
+                        await this.actor.update({
+                            "system.powers.list": updatedPowers
+                        });
                     }
                 },
                 cancel: {
@@ -446,47 +517,44 @@ export class MarvelActorSheet extends ActorSheet {
                             karmaPoints: parseInt(form.karmaPoints.value) || 0
                         };
     
-                        // Store values for next time
                         await game.user.setFlag("world", "marvelRollOptions", options);
     
-                        // Roll using the power's rank
                         const roll = await new Roll("1d100").evaluate();
                         const finalRoll = Math.min(100, roll.total + options.karmaPoints);
                         
                         const baseRank = power.rank;
                         const shiftedRank = this.actor.applyColumnShift(baseRank, options.columnShift);
                         const color = this.actor.getColorResult(finalRoll, shiftedRank);
-    
+
                         const messageContent = `
-                            <div class="marvel-roll">
-                                <h3>${this.actor.name} - ${power.name} Power FEAT</h3>
-                                <div class="roll-details">
-                                    <div>Power Rank: ${baseRank}</div>
-                                    ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                                    <div>Roll: ${roll.total}${options.karmaPoints ? ` + ${options.karmaPoints} Karma = ${finalRoll}` : ''}</div>
-                                </div>
-                                <div style="text-align: center; font-weight: bold; padding: 5px; background-color: ${color};">
-                                    ${color.toUpperCase()}
-                                </div>
-                            </div>`;
-    
-                        await ChatMessage.create({
-                            speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-                            content: messageContent,
-                            rolls: [roll],
-                            sound: CONFIG.sounds.dice
-                        });
-                    }
-                },
-                cancel: {
-                    label: "Cancel"
+                        <div class="marvel-roll">
+                            <h3>${this.actor.name} - ${power.name} Power FEAT</h3>
+                            <div class="roll-details">
+                                <div>Power Rank: ${baseRank}</div>
+                                ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
+                                <div>Roll: ${roll.total}${options.karmaPoints ? ` + ${options.karmaPoints} Karma = ${finalRoll}` : ''}</div>
+                            </div>
+                            <div style="text-align: center; font-weight: bold; padding: 5px; background-color: ${color};">
+                                ${color.toUpperCase()}
+                            </div>
+                        </div>`;
+
+                    await ChatMessage.create({
+                        speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+                        content: messageContent,
+                        rolls: [roll],
+                        sound: CONFIG.sounds.dice
+                    });
                 }
             },
-            default: "roll"
-        }).render(true);
-    }
+            cancel: {
+                label: "Cancel"
+            }
+        },
+        default: "roll"
+    }).render(true);
+}
 
-    // In MarvelActorSheet.js
 async _onAddAttack(event) {
     event.preventDefault();
 
@@ -519,23 +587,23 @@ async _onAddAttack(event) {
                         return;
                     }
 
-                    // Get form values
                     const formData = new FormData(form);
-                    console.log("Form values:", Object.fromEntries(formData.entries()));
-
+                    
+                    // Create attack data matching template.json Item.attack schema
                     const data = {
                         name: formData.get("attackName"),
                         type: "attack",
                         system: {
                             ability: formData.get("ability").toLowerCase(),
-                            attackType: formData.get("attackType"),  // Should be BA, EA, etc.
+                            attackType: formData.get("attackType"),
                             weaponDamage: parseInt(formData.get("weaponDamage")) || 0,
                             range: parseInt(formData.get("range")) || 0,
-                            columnShift: parseInt(formData.get("columnShift")) || 0
+                            columnShift: parseInt(formData.get("columnShift")) || 0,
+                            description: "",
+                            rules: ""
                         }
                     };
 
-                    console.log("Creating attack with data:", data);
                     await this.actor.createEmbeddedDocuments("Item", [data]);
                 }
             },
@@ -547,200 +615,185 @@ async _onAddAttack(event) {
     }).render(true);
 }
 
-    async _onRollAttack(event) {
-        event.preventDefault();
-        const itemId = event.currentTarget.closest(".attack-row").dataset.itemId;
-        if (!itemId) {
-            console.error("No item ID found");
-            return;
-        }
-        const item = this.actor.items.get(itemId);
-        if (!item) {
-            console.error(`No item found with ID ${itemId}`);
-            return;
-        }
-        console.log("Rolling attack with item:", item);
-        await item.roll();
-    }
+async _onAddPower(event) {
+    event.preventDefault();
+    const powers = foundry.utils.getProperty(this.actor.system, "powers.list") || [];
+    
+    // Create new power matching template.json power schema
+    const newPower = {
+        name: "",
+        rank: "Feeble",
+        rankNumber: CONFIG.marvel.ranks["Feeble"]?.standard || 2,
+        damage: 0,
+        range: 0,
+        description: "",
+        limitations: "",
+        type: ""
+    };
+    
+    const newPowers = powers.map(p => duplicate(p));
+    newPowers.push(newPower);
+    
+    await this.actor.update({
+        "system.powers.list": newPowers
+    });
+}                        
 
+async _onAddTalent(event) {
+    event.preventDefault();
+    // Update path to match template.json structure
+    const talents = foundry.utils.getProperty(this.actor.system, "talents.talents.list") || [];
+    const newTalents = talents.concat([{ 
+        name: "",
+        description: "",
+        rules: ""  // Added to match template.json Item.talent schema
+    }]);
+    await this.actor.update({ "system.talents.talents.list": newTalents });
+}
 
-    // File: module/sheets/MarvelActorSheet.js
-    async _onAddPower(event) {
-        event.preventDefault();
-        const powers = foundry.utils.getProperty(this.actor.system, "powers.list") || [];
-        
-        // Create new power with all fields
-        const newPower = {
-            _id: foundry.utils.randomID(),  // Changed this line
-            name: "",
-            rank: "Feeble",
-            rankNumber: CONFIG.marvel.ranks["Feeble"]?.standard || 2,
-            damage: 0,
-            range: 0,
-            description: "",
-            limitations: "",
-            type: ""
-        };
-        
-        // Make a clean copy of the powers array
-        const newPowers = powers.map(p => duplicate(p));
-        newPowers.push(newPower);
-        
-        // Update the actor
+async _onAddContact(event) {
+    event.preventDefault();
+    // Update path to match template.json structure
+    const contacts = foundry.utils.getProperty(this.actor.system, "contacts.contacts.list") || [];
+    const newContacts = contacts.concat([{ 
+        name: "",
+        type: "",     // Added to match template.json Item.contact schema
+        reliability: "", // Added to match template.json Item.contact schema
+        description: "",
+        rules: ""
+    }]);
+    await this.actor.update({ "system.contacts.contacts.list": newContacts });
+}
+
+async _onNumberChange(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const abilityPath = element.dataset.ability;
+    const newNumber = parseInt(element.value) || 0;
+    const cleanPath = abilityPath.replace('primaryAbilities.', '');
+    const newRank = this.actor.getRankFromValue(newNumber);
+
+    // Create update data matching template.json primaryAbilities structure
+    const updateData = {
+        [`system.primaryAbilities.${cleanPath}.rank`]: newRank,
+        [`system.primaryAbilities.${cleanPath}.number`]: newNumber
+    };
+
+    await this.actor.update(updateData);
+    await this.actor.prepareData();
+    this.render(false);
+}
+
+async _onRankChange(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const abilityPath = element.dataset.ability;
+    const newRank = element.value;
+    const cleanPath = abilityPath.replace('primaryAbilities.', '');
+    const currentAbility = this.actor.system.primaryAbilities[cleanPath];
+    
+    // Update according to template.json primaryAbilities structure
+    if (element.classList.contains('initial-rank-select')) {
         await this.actor.update({
-            "system.powers.list": newPowers
+            [`system.primaryAbilities.${cleanPath}.initialRank`]: newRank,
+            [`system.primaryAbilities.${cleanPath}.initialRoll`]: "",
+            [`system.primaryAbilities.${cleanPath}.number`]: MARVEL_RANKS[newRank]?.standard || 0
+        });
+    } else {
+        const rankNumber = MARVEL_RANKS[newRank]?.standard || currentAbility.number || 0;
+        await this.actor.update({
+            [`system.primaryAbilities.${cleanPath}.rank`]: newRank,
+            [`system.primaryAbilities.${cleanPath}.number`]: rankNumber
         });
     }
+}
 
-    async _onAddTalent(event) {
-        event.preventDefault();
-        const talents = foundry.utils.getProperty(this.actor.system, "talents.list") || [];
-        const newTalents = talents.concat([{ _id: foundry.utils.randomID(), name: "" }]);
-        await this.actor.update({ "system.talents.list": newTalents });
-    }
+async _onPopularityRoll(event) {
+    event.preventDefault();
+    const popularityType = event.currentTarget.dataset.popularityType;
     
-    async _onAddContact(event) {
-        event.preventDefault();
-        const contacts = foundry.utils.getProperty(this.actor.system, "contacts.list") || [];
-        const newContacts = contacts.concat([{ _id: foundry.utils.randomID(), name: "" }]);
-        await this.actor.update({ "system.contacts.list": newContacts });
-    }
-
-    async _onNumberChange(event) {
-        event.preventDefault();
-        const element = event.currentTarget;
-        const abilityPath = element.dataset.ability;
-        const newNumber = parseInt(element.value) || 0;
-        const cleanPath = abilityPath.replace('primaryAbilities.', '');
-        const newRank = this.actor.getRankFromValue(newNumber);
-
-        // Create update data
-        const updateData = {
-            [`system.primaryAbilities.${cleanPath}.rank`]: newRank,
-            [`system.primaryAbilities.${cleanPath}.number`]: newNumber
-        };
-
-        // Update the actor
-        await this.actor.update(updateData);
-
-        // Force a recalculation of derived values
-        await this.actor.prepareData();
-        this.render(false);
-    }
-
-    async _onRankChange(event) {
-        event.preventDefault();
-        const element = event.currentTarget;
-        const abilityPath = element.dataset.ability;
-        const newRank = element.value;
-        const cleanPath = abilityPath.replace('primaryAbilities.', '');
-        const currentAbility = this.actor.system.primaryAbilities[cleanPath];
-        
-        if (element.classList.contains('initial-rank-select')) {
-            await this.actor.update({
-                [`system.primaryAbilities.${cleanPath}.initialRank`]: newRank,
-                [`system.primaryAbilities.${cleanPath}.initialNumber`]: MARVEL_RANKS[newRank]?.standard || 0
-            });
-        } else {
-            const rankNumber = MARVEL_RANKS[newRank]?.standard || currentAbility.number || 0;
-            await this.actor.update({
-                [`system.primaryAbilities.${cleanPath}.rank`]: newRank,
-                [`system.primaryAbilities.${cleanPath}.number`]: rankNumber
-            });
-        }
-    }
-
-    // Add this method before _onAbilityRoll
-    async _onPopularityRoll(event) {
-        event.preventDefault();
-        const popularityType = event.currentTarget.dataset.popularityType;
-        
-        const stored = await game.user.getFlag("world", "marvelPopularityOptions") || {
-            disposition: "neutral",
+    const stored = await game.user.getFlag("world", "marvelPopularityOptions") || {
+        disposition: "neutral",
+        modifiers: {
             benefits: false,
             danger: false,
             goodValue: false,
             remarkableValue: false,
             noReturn: false,
-            unique: false,
-            additionalShift: 0,
-            karmaPoints: 0
-        };
+            unique: false
+        },
+        additionalShift: 0,
+        karmaPoints: 0
+    };
 
-        const templateData = {
-            config: CONFIG.marvel,
-            stored: stored
-        };
+    const templateData = {
+        config: CONFIG.marvel,
+        stored: stored,
+        popularity: this.actor.system.secondaryAbilities.popularity // Using correct path from template.json
+    };
 
-        const html = await renderTemplate(
-            "systems/marvel-faserip/templates/dialogs/popularity-roll.html",
-            templateData
-        );
+    const html = await renderTemplate(
+        "systems/marvel-faserip/templates/dialogs/popularity-roll.html",
+        templateData
+    );
 
-        return new Promise(resolve => {
-            new Dialog({
-                title: "Popularity FEAT Roll",
-                content: html,
-                buttons: {
-                    roll: {
-                        label: "Roll",
-                        callback: async (html) => {
-                            const form = html[0].querySelector("form");
-                            const formData = new FormData(form);
-                            
-                            const options = {
-                                disposition: formData.get("disposition"),
-                                modifiers: {
-                                    benefits: formData.get("benefits") ? parseInt(formData.get("benefits")) : 0,
-                                    danger: formData.get("danger") ? parseInt(formData.get("danger")) : 0,
-                                    goodValue: formData.get("goodValue") ? parseInt(formData.get("goodValue")) : 0,
-                                    remarkableValue: formData.get("remarkableValue") ? parseInt(formData.get("remarkableValue")) : 0,
-                                    noReturn: formData.get("noReturn") ? parseInt(formData.get("noReturn")) : 0,
-                                    unique: formData.get("unique") ? parseInt(formData.get("unique")) : 0
-                                },
-                                additionalShift: parseInt(formData.get("additionalShift")) || 0,
-                                karmaPoints: parseInt(formData.get("karmaPoints")) || 0
-                            };
+    return new Promise(resolve => {
+        new Dialog({
+            title: "Popularity FEAT Roll",
+            content: html,
+            buttons: {
+                roll: {
+                    label: "Roll",
+                    callback: async (html) => {
+                        const form = html[0].querySelector("form");
+                        const formData = new FormData(form);
+                        
+                        const options = {
+                            disposition: formData.get("disposition"),
+                            modifiers: {
+                                benefits: formData.get("benefits") === "on",
+                                danger: formData.get("danger") === "on",
+                                goodValue: formData.get("goodValue") === "on",
+                                remarkableValue: formData.get("remarkableValue") === "on",
+                                noReturn: formData.get("noReturn") === "on",
+                                unique: formData.get("unique") === "on"
+                            },
+                            additionalShift: parseInt(formData.get("additionalShift")) || 0,
+                            karmaPoints: parseInt(formData.get("karmaPoints")) || 0
+                        };
 
-                            await game.user.setFlag("world", "marvelPopularityOptions", options);
-                            await this.actor.rollPopularityFeat(popularityType, options);
-                            resolve(true);
-                        }
-                    },
-                    cancel: {
-                        label: "Cancel",
-                        callback: () => resolve(false)
+                        await game.user.setFlag("world", "marvelPopularityOptions", options);
+                        await this.actor.rollPopularityFeat(popularityType, options);
+                        resolve(true);
                     }
                 },
-                default: "roll"
-            }).render(true);
-        });
-    }
-
-        // Resource FEAT roll method 
-        // In MarvelActorSheet.js, update the _onResourceRoll method:
-
-// In MarvelActorSheet.js, update the _onResourceRoll method:
+                cancel: {
+                    label: "Cancel",
+                    callback: () => resolve(false)
+                }
+            },
+            default: "roll"
+        }).render(true);
+    });
+}
 
 async _onResourceRoll(event) {
     event.preventDefault();
 
-    // Check if Simple Calendar is active
     if (!game.modules.get("simple-calendar")?.active) {
         ui.notifications.warn("Simple Calendar module is required for proper Resource FEAT timing restrictions.");
     }
     
+    // Get resources from proper template.json path
     const resourceRank = this.actor.system.secondaryAbilities.resources.rank || "Shift 0";
     const resourceNumber = this.actor.system.secondaryAbilities.resources.number || 0;
 
-    // Get stored values
     const stored = await game.user.getFlag("world", "marvelResourceOptions") || {
         itemRank: "Typical",
         columnShift: 0,
         karmaPoints: 0
     };
 
-    // Get timing information
     const lastAttempt = this.actor.getFlag("marvel-faserip", "lastResourceAttempt");
     const lastFailure = this.actor.getFlag("marvel-faserip", "lastResourceFailure");
 
@@ -782,10 +835,8 @@ async _onResourceRoll(event) {
                             karmaPoints: parseInt(form.karmaPoints.value) || 0
                         };
 
-                        // Store values for next time
                         await game.user.setFlag("world", "marvelResourceOptions", options);
 
-                        // Check if the attempt is allowed
                         const canAttempt = await this.actor._canAttemptResourceFeat(options.itemRank);
                         if (!canAttempt.allowed) {
                             ui.notifications.warn(canAttempt.message);
@@ -808,193 +859,254 @@ async _onResourceRoll(event) {
     });
 }
 
-    async _onAbilityRoll(event) {
-        event.preventDefault();
-        const element = event.currentTarget;
-        const abilityId = element.closest('.ability-row').dataset.ability;
-        
-        // Get stored values
-        const stored = await game.user.getFlag("world", "marvelRollOptions") || {
-            featType: "ability",
-            actionType: "BA",
-            columnShift: 0,
-            karmaPoints: 0
-        };
-        
-        // Prepare template data
-        const templateData = {
-            config: CONFIG.marvel,
-            defaultFeatType: stored.featType,
-            defaultAction: stored.actionType,
-            columnShift: stored.columnShift,
-            karmaPoints: stored.karmaPoints,
-            showActionSelect: stored.featType === "combat",
-            actionTypes: CONFIG.marvel.actionResults
-        };
-        
-        // Render dialog
-        const html = await renderTemplate(
-            "systems/marvel-faserip/templates/dialogs/ability-roll.html",
-            templateData
-        );
-        
-        return new Promise(resolve => {
-            const dialog = new Dialog({
-                title: "FEAT Roll",
-                content: html,
-                buttons: {
-                    roll: {
-                        label: "Roll",
-                        callback: async (html) => {
-                            const form = html[0].querySelector("form");
-                            const featType = form.querySelector('input[name="featType"]:checked').value;
-                            const options = {
-                                featType: featType,
-                                actionType: featType === "combat" ? form.actionType.value : null,
-                                columnShift: parseInt(form.columnShift.value) || 0,
-                                karmaPoints: parseInt(form.karmaPoints.value) || 0
-                            };
+async _onAbilityRoll(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const abilityId = element.closest('.ability-row').dataset.ability;
+    
+    // Get stored values
+    const stored = await game.user.getFlag("world", "marvelRollOptions") || {
+        featType: "ability",
+        actionType: "BA",
+        columnShift: 0,
+        karmaPoints: 0
+    };
+    
+    // Prepare template data using template.json ability structure
+    const ability = this.actor.system.primaryAbilities[abilityId];
+    const templateData = {
+        config: CONFIG.marvel,
+        defaultFeatType: stored.featType,
+        defaultAction: stored.actionType,
+        columnShift: stored.columnShift,
+        karmaPoints: stored.karmaPoints,
+        showActionSelect: stored.featType === "combat",
+        actionTypes: CONFIG.marvel.actionResults,
+        ability: ability
+    };
+    
+    const html = await renderTemplate(
+        "systems/marvel-faserip/templates/dialogs/ability-roll.html",
+        templateData
+    );
+    
+    return new Promise(resolve => {
+        const dialog = new Dialog({
+            title: "FEAT Roll",
+            content: html,
+            buttons: {
+                roll: {
+                    label: "Roll",
+                    callback: async (html) => {
+                        const form = html[0].querySelector("form");
+                        const featType = form.querySelector('input[name="featType"]:checked').value;
+                        const options = {
+                            featType: featType,
+                            actionType: featType === "combat" ? form.actionType.value : null,
+                            columnShift: parseInt(form.columnShift.value) || 0,
+                            karmaPoints: parseInt(form.karmaPoints.value) || 0
+                        };
+                        
+                        // Store values for next time
+                        await game.user.setFlag("world", "marvelRollOptions", options);
+                        
+                        // Update karma tracking if karma points were spent
+                        if (options.karmaPoints > 0) {
+                            const currentKarma = this.actor.system.karmaTracking.karmaPool;
+                            const newHistory = [...(this.actor.system.karmaTracking.history || []), {
+                                date: new Date().toLocaleString(),
+                                amount: -options.karmaPoints,
+                                description: `Spent on ${abilityId.toUpperCase()} FEAT roll`
+                            }];
                             
-                            // Store values for next time
-                            await game.user.setFlag("world", "marvelRollOptions", options);
-                            
-                            // Perform the roll
-                            await this.actor.rollAbility(abilityId, options);
-                            resolve(true);
+                            await this.actor.update({
+                                "system.karmaTracking.karmaPool": currentKarma - options.karmaPoints,
+                                "system.karmaTracking.history": newHistory
+                            });
                         }
-                    },
-                    cancel: {
-                        label: "Cancel",
-                        callback: () => resolve(false)
+                        
+                        // Perform the roll
+                        await this.actor.rollAbility(abilityId, options);
+                        resolve(true);
                     }
                 },
-                default: "roll",
-                render: (html) => {
-                    // Add listeners for feat type changes
-                    const radioButtons = html[0].querySelectorAll('input[name="featType"]');
-                    radioButtons.forEach(radio => {
-                        radio.addEventListener('change', (event) => {
-                            const actionSelect = html[0].querySelector('.action-select');
-                            if (event.currentTarget.value === "combat") {
-                                actionSelect.style.display = "";
-                            } else {
-                                actionSelect.style.display = "none";
-                            }
-                        });
-                    });
+                cancel: {
+                    label: "Cancel",
+                    callback: () => resolve(false)
                 }
-            }).render(true);
-        });
-    }
-
-    async _onPowerInfo(event) {
-        event.preventDefault();
-        const powerIndex = event.currentTarget.dataset.index;
-        const power = this.actor.system.powers.list[powerIndex];
-        
-        if (!power) return;
-    
-        // Format description text or use name if no description
-        const description = power.description || power.name;
-        const formattedDesc = description.replace(/\n/g, '<br>');
-    
-        // Create chat message
-        const messageContent = `
-            <div class="marvel-power-info">
-                <h2 style="color: #782e22; border-bottom: 2px solid #782e22; margin-bottom: 5px;">
-                    ${power.name}
-                </h2>
-                <div class="power-details">
-                    <div style="margin-bottom: 5px;">
-                        <strong>Rank:</strong> ${power.rank}
-                    </div>
-                    <div class="power-description">
-                        ${formattedDesc}
-                    </div>
-                </div>
-            </div>
-        `;
-    
-        await ChatMessage.create({
-            speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-            content: messageContent
-        });
-    }
-
-    // create power stunt
-    async _onCreatePowerStunt(event) {
-        event.preventDefault();
-        
-        const powers = this.actor.system.powers?.list || [];
-        if (powers.length === 0) {
-            ui.notifications.warn("You need at least one power to create a stunt");
-            return;
-        }
-    
-        // Initialize stunts array if it doesn't exist
-        const stunts = foundry.utils.getProperty(this.actor.system, "stunts.list") || [];
-        
-        // Create new stunt with all required properties
-        const newStunt = {
-            name: "",
-            associatedPower: powers[0]?.name || "",  // Reference first power's name
-            attempts: 0,
-            description: "",
-            status: "untried"  // Add a status tracker
-        };
-    
-        // Add the new stunt to the list
-        const newStunts = [...stunts, newStunt];
-    
-        // Update the actor with the new stunts list
-        await this.actor.update({"system.stunts.list": newStunts});
-    }
-
-    async _onRollPowerStunt(event) {
-        event.preventDefault();
-        const stuntIndex = event.currentTarget.closest('.stunt-row').dataset.index;
-        const stunt = this.actor.system.stunts.list[stuntIndex];
-        
-        // Check karma
-        if (this.actor.system.karmaTracking.karmaPool < 100) {
-            ui.notifications.error("Not enough Karma (100 required)");
-            return;
-        }
-
-        // Roll based on attempts
-        let difficulty;
-        if (stunt.attempts === 0) difficulty = "red";
-        else if (stunt.attempts < 4) difficulty = "yellow";
-        else if (stunt.attempts < 11) difficulty = "green";
-        else {
-            ui.notifications.info("This stunt is now automatic!");
-            return;
-        }
-
-    // Proceed with roll logic...
-}
-    // Add this method to the MarvelActorSheet class:
-    _onTabChange(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        const target = event.currentTarget;
-        const category = target.dataset.tab;
-        
-        // Update DOM directly first
-        $(this.element).find('.nav-item').removeClass('active');
-        $(this.element).find(`.nav-item[data-tab="${category}"]`).addClass('active');
-        
-        $(this.element).find('.tab-panel').hide();
-        $(this.element).find(`.tab-panel[data-tab="${category}"]`).show();
-        
-        // Store active tab without triggering a re-render
-        this.actor.setFlag('marvel-faserip', 'activeTab', category).then(() => {
-            // Only re-render if absolutely necessary
-            if (this._tabs === undefined) {
-                this.render(false);
+            },
+            default: "roll",
+            
+            render: (html) => {
+                // Add listeners for feat type changes
+                const radioButtons = html[0].querySelectorAll('input[name="featType"]');
+                radioButtons.forEach(radio => {
+                    radio.addEventListener('change', (event) => {
+                        const actionSelect = html[0].querySelector('.action-select');
+                        if (event.currentTarget.value === "combat") {
+                            actionSelect.style.display = "";
+                        } else {
+                            actionSelect.style.display = "none";
+                        }
+                    });
+                });
             }
-        });
+        }).render(true);
+    });
+}
+
+async _onPowerInfo(event) {
+    event.preventDefault();
+    const powerIndex = event.currentTarget.dataset.index;
+    const power = this.actor.system.powers.list[powerIndex];
+    
+    if (!power) return;
+
+    // Format description text or use name if no description
+    const description = power.description || power.name;
+    const formattedDesc = description.replace(/\n/g, '<br>');
+    const limitations = power.limitations ? `<div class="power-limitations">Limitations: ${power.limitations}</div>` : '';
+
+    // Create chat message with template.json power structure
+    const messageContent = `
+        <div class="marvel-power-info">
+            <h2 style="color: #782e22; border-bottom: 2px solid #782e22; margin-bottom: 5px;">
+                ${power.name}
+            </h2>
+            <div class="power-details">
+                <div style="margin-bottom: 5px;">
+                    <strong>Rank:</strong> ${power.rank}
+                    ${power.damage ? `<br><strong>Damage:</strong> ${power.damage}` : ''}
+                    ${power.range ? `<br><strong>Range:</strong> ${power.range}` : ''}
+                    ${power.type ? `<br><strong>Type:</strong> ${power.type}` : ''}
+                </div>
+                <div class="power-description">
+                    ${formattedDesc}
+                </div>
+                ${limitations}
+            </div>
+        </div>
+    `;
+
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+        content: messageContent
+    });
+}
+
+async _onCreatePowerStunt(event) {
+    event.preventDefault();
+    
+    const powers = this.actor.system.powers?.list || [];
+    if (powers.length === 0) {
+        ui.notifications.warn("You need at least one power to create a stunt");
+        return;
     }
 
+    // Initialize stunts according to template.json schema
+    const stunts = foundry.utils.getProperty(this.actor.system, "stunts.list") || [];
+    
+    // Create new stunt with template.json stunt schema
+    const newStunt = {
+        name: "",
+        associatedPower: powers[0]?.name || "",
+        attempts: 0,
+        status: "untried",
+        description: ""
+    };
+
+    const newStunts = [...stunts, newStunt];
+
+    await this.actor.update({"system.stunts.list": newStunts});
+}
+
+async _onRollPowerStunt(event) {
+    event.preventDefault();
+    const stuntIndex = event.currentTarget.closest('.stunt-row').dataset.index;
+    const stunt = this.actor.system.stunts.list[stuntIndex];
+    
+    // Check karma pool from karmaTracking structure
+    if (this.actor.system.karmaTracking.karmaPool < 100) {
+        ui.notifications.error("Not enough Karma (100 required)");
+        return;
+    }
+    
+    // Calculate difficulty based on stunt attempts
+    let difficulty;
+    if (stunt.attempts === 0) difficulty = "red";
+    else if (stunt.attempts < 4) difficulty = "yellow";
+    else if (stunt.attempts < 11) difficulty = "green";
+    else {
+        ui.notifications.info("This stunt is now automatic!");
+        return;
+    }
+
+    // Perform the roll and update karma tracking
+    const roll = await new Roll("1d100").evaluate();
+    const color = this.actor.getColorResult(roll.total, difficulty);
+
+    // Update stunt attempts and status in template.json structure
+    const stunts = duplicate(this.actor.system.stunts.list);
+    stunts[stuntIndex].attempts += 1;
+    stunts[stuntIndex].status = color === "white" ? "mastered" : "attempted";
+
+    // Update karma tracking according to template.json structure
+    const currentKarma = this.actor.system.karmaTracking.karmaPool;
+    const newHistory = [...(this.actor.system.karmaTracking.history || []), {
+        date: new Date().toLocaleString(),
+        amount: -100,
+        description: `Attempted Power Stunt: ${stunt.name}`
+    }];
+
+    await this.actor.update({
+        "system.stunts.list": stunts,
+        "system.karmaTracking.karmaPool": currentKarma - 100,
+        "system.karmaTracking.history": newHistory
+    });
+
+    // Create chat message
+    const messageContent = `
+        <div class="marvel-stunt-roll">
+            <h3>${this.actor.name} - Power Stunt Attempt</h3>
+            <div class="stunt-details">
+                <div>Stunt: ${stunt.name}</div>
+                <div>Associated Power: ${stunt.associatedPower}</div>
+                <div>Attempt #${stunt.attempts}</div>
+                <div>Roll: ${roll.total}</div>
+            </div>
+            <div style="text-align: center; font-weight: bold; padding: 5px; background-color: ${color};">
+                ${color.toUpperCase()}
+            </div>
+        </div>
+    `;
+
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+        content: messageContent,
+        rolls: [roll],
+        sound: CONFIG.sounds.dice
+    });
+}
+
+_onTabChange(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const target = event.currentTarget;
+    const category = target.dataset.tab;
+    
+    // Update DOM
+    $(this.element).find('.nav-item').removeClass('active');
+    $(this.element).find(`.nav-item[data-tab="${category}"]`).addClass('active');
+    
+    $(this.element).find('.tab-panel').hide();
+    $(this.element).find(`.tab-panel[data-tab="${category}"]`).show();
+    
+    // Store active tab
+    this.actor.setFlag('marvel-faserip', 'activeTab', category).then(() => {
+        if (this._tabs === undefined) {
+            this.render(false);
+        }
+    });
+}
 }
