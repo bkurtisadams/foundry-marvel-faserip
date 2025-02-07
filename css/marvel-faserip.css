@@ -1190,21 +1190,6 @@ select:focus {
     gap: 10px;
 }
 
-.generate-character {
-    height: 24px;
-    width: 24px;
-    padding: 2px;
-    line-height: 1;
-    border: 1px solid #782e22;
-    border-radius: 4px;
-    background: rgba(120, 46, 34, 0.1);
-    color: #782e22;
-    cursor: pointer;
-}
-
-.generate-character:hover {
-    background: rgba(120, 46, 34, 0.2);
-}
 .header-top-row {
     display: flex;
     justify-content: space-between;
@@ -1218,25 +1203,48 @@ select:focus {
     gap: 8px;
 }
 
+.abilities-header {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    margin-bottom: 0.5em;
+}
+
+.header-with-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-bottom: 0.5em;
+}
+
 .generate-character {
-    height: 24px;
-    width: 24px;
+    height: 20px;
+    width: 20px;
     padding: 2px;
     line-height: 1;
     border: 1px solid #782e22;
-    border-radius: 4px;
+    border-radius: 3px;
     background: rgba(120, 46, 34, 0.1);
     color: #782e22;
     cursor: pointer;
-    flex-shrink: 0;
-    margin-left: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
 }
 
 .generate-character:hover {
     background: rgba(120, 46, 34, 0.2);
 }
 
-.marvel-logo {
-    max-width: 200px;
-    height: auto;
+.generate-character i {
+    font-size: 10px;
+}
+
+.generate-character:hover {
+    background: rgba(120, 46, 34, 0.2);
+}
+
+.generate-character i {
+    font-size: 10px;
 }

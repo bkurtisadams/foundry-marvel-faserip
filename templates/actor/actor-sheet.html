@@ -8,11 +8,6 @@
                     <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}"/>
                     <div class="header-right">
                         <img src="systems/marvel-faserip/assets/marvel-logo-bw.png" class="marvel-logo"/>
-                        {{#if (eq actor.type "hero")}}
-                        <button type="button" class="generate-character" title="Generate Random Character">
-                            <i class="fas fa-dice"></i>
-                        </button>
-                        {{/if}}
                     </div>
                 </div>
                 <div class="field-group">
@@ -80,11 +75,17 @@
         </div>
     </div> -->
 
-        <div class="powers-list">
     <section class="sheet-body">
         <div class="abilities-grid">
             <div class="primary-abilities">
-                <h2>Primary Abilities</h2>
+                <div class="header-with-button">
+                    <h2>Primary Abilities</h2>
+                    {{#if (eq actor.type "hero")}}
+                    <button type="button" class="generate-character" title="Generate Random Character">
+                        <i class="fas fa-dice"></i>
+                    </button>
+                    {{/if}}
+                </div>
                 <table>
                     <thead>
                         <tr>
@@ -112,34 +113,33 @@
                     </tbody>
                 </table>
             </div>
-
+    
             <div class="secondary-abilities">
                 <h2>Secondary Abilities</h2>
                 <div class="secondary-grid">
-                    <!-- make sure of bindings -->
-                <div class="ability-block">
-                    <label>Health (F+A+S+E)</label>
-                    <div class="value-pair">
-                        <input type="number" name="system.secondaryAbilities.health.value" value="{{actor.system.secondaryAbilities.health.value}}"/>
-                        <span>/</span>
-                        <input type="number" name="system.secondaryAbilities.health.max" value="{{actor.system.secondaryAbilities.health.max}}" readonly/>
+                    <div class="ability-block">
+                        <label>Health (F+A+S+E)</label>
+                        <div class="value-pair">
+                            <input type="number" name="system.secondaryAbilities.health.value" value="{{actor.system.secondaryAbilities.health.value}}"/>
+                            <span>/</span>
+                            <input type="number" name="system.secondaryAbilities.health.max" value="{{actor.system.secondaryAbilities.health.max}}" readonly/>
+                        </div>
                     </div>
-                </div>
-
-                <div class="ability-block">
-                    <label>Karma (R+I+P)</label>
-                    <div class="value-pair">
-                        <input type="number" name="system.secondaryAbilities.karma.value" value="{{actor.system.secondaryAbilities.karma.value}}"/>
-                        <span>/</span>
-                        <input type="number" name="system.secondaryAbilities.karma.max" value="{{actor.system.secondaryAbilities.karma.max}}" readonly/>
+    
+                    <div class="ability-block">
+                        <label>Karma (R+I+P)</label>
+                        <div class="value-pair">
+                            <input type="number" name="system.secondaryAbilities.karma.value" value="{{actor.system.secondaryAbilities.karma.value}}"/>
+                            <span>/</span>
+                            <input type="number" name="system.secondaryAbilities.karma.max" value="{{actor.system.secondaryAbilities.karma.max}}" readonly/>
+                        </div>
                     </div>
-                </div>
-
+    
                     <div class="ability-block">
                         <label class="clickable-resources">Resources</label>
                         <input type="number" name="system.secondaryAbilities.resources.number" value="{{actor.system.secondaryAbilities.resources.number}}"/>
                     </div>
-
+    
                     <div class="popularity-block">
                         <div class="popularity-labels">
                             <label class="clickable-popularity" data-popularity-type="hero">Hero Popularity</label>
@@ -148,10 +148,12 @@
                         <div class="popularity-inputs">
                             <input type="number" name="system.secondaryAbilities.popularity.hero" value="{{actor.system.secondaryAbilities.popularity.hero}}"/>
                             <input type="number" name="system.secondaryAbilities.popularity.secret" value="{{actor.system.secondaryAbilities.popularity.secret}}"/>
-                        </div>                    </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </section>
 
 <!-- Navigation Bar -->
 <nav class="nav-categories" role="tablist">
