@@ -5,6 +5,7 @@ import { MarvelActor } from "./documents/MarvelActor.js";
 import { MarvelActorSheet } from "./sheets/MarvelActorSheet.js";
 import { MarvelAttackItem } from "./documents/items/MarvelAttackItem.js";
 import { MarvelAttackItemSheet } from "./sheets/items/MarvelAttackItemSheet.js";
+import { MarvelCharacterGenerator } from "./generators/CharacterGenerator.js";
 
 // Define Combat Phases
 const COMBAT_PHASES = {
@@ -352,3 +353,9 @@ Hooks.on("hotbarDrop", async (bar, data, slot) => {
     await game.user.assignHotbarMacro(macro, slot);
     return false;
 });
+
+// Make generator available globally
+game.marvel = {
+    ...game.marvel,
+    MarvelCharacterGenerator
+};

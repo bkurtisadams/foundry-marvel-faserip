@@ -1183,3 +1183,60 @@ select:focus {
 .stunt-controls .item-delete {
     color: #782e22;
 }
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.generate-character {
+    height: 24px;
+    width: 24px;
+    padding: 2px;
+    line-height: 1;
+    border: 1px solid #782e22;
+    border-radius: 4px;
+    background: rgba(120, 46, 34, 0.1);
+    color: #782e22;
+    cursor: pointer;
+}
+
+.generate-character:hover {
+    background: rgba(120, 46, 34, 0.2);
+}
+.header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.generate-character {
+    height: 24px;
+    width: 24px;
+    padding: 2px;
+    line-height: 1;
+    border: 1px solid #782e22;
+    border-radius: 4px;
+    background: rgba(120, 46, 34, 0.1);
+    color: #782e22;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-left: 4px;
+}
+
+.generate-character:hover {
+    background: rgba(120, 46, 34, 0.2);
+}
+
+.marvel-logo {
+    max-width: 200px;
+    height: auto;
+}

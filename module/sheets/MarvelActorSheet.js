@@ -1,5 +1,5 @@
 import { MARVEL_RANKS } from "../config.js";
-
+import { MarvelCharacterGenerator } from "../generators/CharacterGenerator.js";
 export class MarvelActorSheet extends ActorSheet {
     /** @override */
     static get defaultOptions() {
@@ -153,7 +153,8 @@ export class MarvelActorSheet extends ActorSheet {
                 { selector: '.power-info-icon', method: this._onPowerInfo },
                 { selector: '.karma-history-button', method: this._onKarmaTracking },
                 { selector: '.add-power-stunt', method: this._onCreatePowerStunt },
-                { selector: '.roll-power-stunt', method: this._onRollPowerStunt }
+                { selector: '.roll-power-stunt', method: this._onRollPowerStunt },
+                
             ];
     
             // Check each binding
@@ -265,6 +266,14 @@ export class MarvelActorSheet extends ActorSheet {
                 }
             });
         }
+        html.find('.generate-character').click(this._onGenerateCharacter.bind(this));
+    }
+
+    async _onGenerateCharacter(event) {
+        event.preventDefault();
+        
+        const data = await MarvelCharacterGenerator.generateCharacter();
+        await this.actor.update(data);
     }
 
     _onCategoryChange(event) {
