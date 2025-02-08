@@ -476,12 +476,13 @@ export class MarvelActorSheet extends ActorSheet {
                         };
     
                         // Update the powers list
-                        const updatedPowers = duplicate(powers);
+                        const updatedPowers = duplicate(this.actor.system.powers.list);
                         updatedPowers[powerIndex] = updatedPower;
-                        
+
                         await this.actor.update({
                             "system.powers.list": updatedPowers
                         });
+
                     }
                 },
                 cancel: {
