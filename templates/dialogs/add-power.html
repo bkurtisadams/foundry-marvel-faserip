@@ -1,0 +1,47 @@
+<form>
+    <div class="form-group">
+        <label for="name">Power Name</label>
+        <input type="text" name="name" value="New Power" />
+    </div>
+    
+    <div class="form-group">
+        <label for="rank">Rank</label>
+        <select name="rank">
+            {{#each config.ranks as |label key|}}
+            <option value="{{key}}">{{label}}</option>
+            {{/each}}
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="damage">Damage</label>
+        <input type="number" name="damage" value="0" />
+    </div>
+
+    <div class="form-group">
+        <label for="range">Range</label>
+        <input type="number" name="range" value="0" />
+    </div>
+    
+    <div class="form-group">
+        <label for="description">Description</label>
+        <textarea name="description"></textarea>
+    </div>
+    
+    <div class="form-group">
+        <label for="limitations">Limitations</label>
+        <textarea name="limitations"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="type">Type</label>
+        <select name="type">
+            <option value="attack">Attack</option>
+            <option value="defense">Defense</option>
+            <option value="movement">Movement</option>
+            <option value="sensory">Sensory</option>
+            <option value="control">Control</option>
+            <option value="utility">Utility</option>
+        </select>
+    </div>
+</form>

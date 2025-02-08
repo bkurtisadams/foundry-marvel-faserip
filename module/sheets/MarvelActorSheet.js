@@ -12,11 +12,13 @@ export class MarvelActorSheet extends ActorSheet {
         });
     }
 
-    async getData(options={}) {
+    async getData(options = {}) {
         const context = await super.getData(options);
         
         // Ensure context.actor.system exists and initialize if needed
         const system = context.actor.system || {};
+
+        console.log("Current actor items:", this.actor.items);
         
         // Initialize primary abilities if not set
         if (!system.primaryAbilities) {
@@ -30,7 +32,7 @@ export class MarvelActorSheet extends ActorSheet {
                 psyche: { initialRoll: "", initialRank: "", rank: "", number: 0 }
             };
         }
-
+    
         // Initialize secondary abilities if not set
         if (!system.secondaryAbilities) {
             system.secondaryAbilities = {
@@ -40,7 +42,7 @@ export class MarvelActorSheet extends ActorSheet {
                 popularity: { hero: 0, secret: 0 }
             };
         }
-
+    
         // Initialize karma tracking if not set
         if (!system.karmaTracking) {
             system.karmaTracking = {
@@ -49,11 +51,11 @@ export class MarvelActorSheet extends ActorSheet {
                 history: []
             };
         }
-
+    
         // Get the active tab from flags or default to 'special'
         const activeTab = this.actor.getFlag('marvel-faserip', 'activeTab') || 'special';
         context.activeTab = activeTab;
-
+    
         // Set up tabs context properly
         context.tabs = {
             special: activeTab === 'special',
@@ -64,11 +66,15 @@ export class MarvelActorSheet extends ActorSheet {
             vehicles: activeTab === 'vehicles'
         };
         
+        // Get all powers as items and log the process
+        console.log("All actor items:", this.actor.items);
+        context.powers = this.actor.items.filter(item => item.type === "power");
+        console.log("Filtered powers:", context.powers);
+    
         // Get attacks
-        //context.attacks = context.items.filter(item => item.type === "attack");
         context.attacks = context.items.filter(item => item.type === "attack");
     
-        // Add configuration
+        // Add configuration for ranks
         context.config = {
             ranks: Object.entries(CONFIG.marvel.ranks).reduce((obj, [key]) => {
                 obj[key] = game.i18n.localize(`MARVEL.Rank${key.replace(/\s+/g, '')}`);
@@ -76,24 +82,6 @@ export class MarvelActorSheet extends ActorSheet {
             }, {})
         };
         
-        // Initialize powers according to template.json schema
-        if (!system.powers) {
-            system.powers = {
-                templates: ["base"],
-                list: [],
-                schema: {
-                    name: "",
-                    rank: "",
-                    rankNumber: 0,
-                    damage: 0,
-                    range: 0,
-                    description: "",
-                    limitations: "",
-                    type: ""
-                }
-            };
-        }
-
         // Initialize stunts according to template.json schema
         if (!system.stunts) {
             system.stunts = {
@@ -116,19 +104,23 @@ export class MarvelActorSheet extends ActorSheet {
                 list: []
             };
         }
-
+    
         // Initialize contacts according to template.json schema
         if (!system.contacts) {
             system.contacts = {
                 list: []
             };
         }
-    
+        
         // Update context with initialized system
         context.actor.system = system;
-    
+
+        console.log("Actor items:", this.actor.items);
+        console.log("Filtered powers:", context.powers);
+        
         return context;
     }
+    
 
     activateListeners(html) {
         super.activateListeners(html);
@@ -157,11 +149,17 @@ export class MarvelActorSheet extends ActorSheet {
             // Add power button binding
             html.find('.add-power').click(async (ev) => this._onAddPower(ev));
 
-            // Power-related button bindings (these are correct but should be first)
-            html.find('.power-info-icon').click(async (ev) => this._onPowerInfo(ev));
-            html.find('.power-edit').click(async (ev) => this._onPowerEdit(ev));
-            html.find('.roll-power').click(async (ev) => this._onPowerRoll(ev));
-            html.find('.item-delete[data-type="powers"]').click(async (ev) => {});
+            html.find('.power-info-icon').click(ev => this._onPowerInfo(ev));
+            html.find('.power-edit').click(ev => this._onPowerEdit(ev));
+            html.find('.roll-power').click(ev => this._onPowerRoll(ev));
+            html.find('.item-delete[data-type="power"]').click(ev => this._onDeletePower(ev));
+            // Add console logs for debugging
+            console.log("Power buttons found:", {
+                info: html.find('.power-info-icon').length,
+                edit: html.find('.power-edit').length,
+                roll: html.find('.roll-power').length,
+                delete: html.find('.item-delete[data-type="power"]').length
+            });
 
             // Add event listeners for ability, popularity, and resource rolls
             html.find('.ability-label').click(async (ev) => this._onAbilityRoll(ev));
@@ -457,14 +455,20 @@ export class MarvelActorSheet extends ActorSheet {
 
     async _onPowerEdit(event) {
         event.preventDefault();
-        const powerIndex = event.currentTarget.dataset.id;
-        const powers = this.actor.system.powers.list;
-        const power = powers[powerIndex];
         
-        if (!power) return;
-
-        console.log("Power being edited:", power);
+        const powerIndex = event.currentTarget.dataset.index;
+        console.log("Power Index:", powerIndex);
+        
+        // Fetch the power using the index
+        const powerID = event.currentTarget.dataset.id;
+        const power = this.actor.items.get(powerID);
+        console.log("Editing power:", power);
+        if (!power) {
+            ui.notifications.error("Power not found");
+            return;
+        }
     
+        // Proceed to render the edit dialog
         const html = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/edit-power.html", 
             {
@@ -477,7 +481,7 @@ export class MarvelActorSheet extends ActorSheet {
                 }
             }
         );
-    
+        
         return new Dialog({
             title: "Edit Power",
             content: html,
@@ -485,24 +489,24 @@ export class MarvelActorSheet extends ActorSheet {
                 save: {
                     label: "Save",
                     callback: async (html) => {
+                        // Get form values and prepare updated power data
                         const form = html[0].querySelector("form");
                         if (!form) return;
                         
-                        const rankKey = form.querySelector('[name="rank"]').value;
-                        const rankNumber = CONFIG.marvel.ranks[rankKey]?.standard || 0;
-
-                        // Added debug logs
+                        // Log form values for debugging
                         console.log("Form values:", {
                             name: form.querySelector('[name="name"]').value,
-                            rank: rankKey,
+                            rank: form.querySelector('[name="rank"]').value,
                             damage: form.querySelector('[name="damage"]').value,
                             range: form.querySelector('[name="range"]').value,
                             description: form.querySelector('[name="description"]').value,
                             limitations: form.querySelector('[name="limitations"]').value,
                             type: form.querySelector('[name="type"]').value
                         });
-                        
-                        // Create updated power data matching template.json schema
+    
+                        // Prepare the updated power data
+                        const rankKey = form.querySelector('[name="rank"]').value;
+                        const rankNumber = CONFIG.marvel.ranks[rankKey]?.standard || 0;
                         const updatedPower = {
                             name: form.querySelector('[name="name"]').value || "",
                             rank: rankKey,
@@ -513,16 +517,17 @@ export class MarvelActorSheet extends ActorSheet {
                             limitations: form.querySelector('[name="limitations"]').value || "",
                             type: form.querySelector('[name="type"]').value || ""
                         };
-                    
-                        // Update the powers list
-                        //const updatedPowers = duplicate(this.actor.system.powers.list);
-                        const updatedPowers = foundry.utils.duplicate(this.actor.system.powers.list);
-                        updatedPowers[powerIndex] = updatedPower;
-                    
-                        await this.actor.update({
-                            "system.powers.list": updatedPowers
-                        });
-                        console.log("After update - Actor powers:", this.actor.system.powers.list);
+    
+                        console.log("Updated Power Data:", updatedPower);  // Log the updated power data
+
+                        // Update the power in the actor's items
+                        await this.actor.updateEmbeddedDocuments("Item", [{
+                            _id: power.id,
+                            ...updatedPower
+                        }]);
+    
+                        console.log("Power updated successfully:", updatedPower);
+                        console.log("Updated power in actor:", this.actor.items.contents); // Log the updated actor items
                     }
                 },
                 cancel: {
@@ -532,13 +537,18 @@ export class MarvelActorSheet extends ActorSheet {
             default: "save"
         }).render(true);
     }
-
+    
     async _onPowerRoll(event) {
         event.preventDefault();
-        const powerIndex = event.currentTarget.dataset.id;
-        const power = this.actor.system.powers.list[powerIndex];
+        const powerID = event.currentTarget.dataset.id;
+        console.log("Rolling power with ID:", powerID);
         
-        if (!power) return;
+        const power = this.actor.items.get(powerID);
+        if (!power) {
+            console.error("Power not found:", powerID);
+            ui.notifications.error("Power not found");
+            return;
+        }
     
         const stored = await game.user.getFlag("world", "marvelRollOptions") || {
             columnShift: 0,
@@ -548,8 +558,8 @@ export class MarvelActorSheet extends ActorSheet {
         const template = "systems/marvel-faserip/templates/dialogs/ability-roll.html";
         const templateData = {
             config: CONFIG.marvel,
-            columnShift: stored.columnShift,
-            karmaPoints: stored.karmaPoints,
+            columnShift: stored.columnShift || 0,
+            karmaPoints: stored.karmaPoints || 0,
             power: power
         };
     
@@ -563,47 +573,113 @@ export class MarvelActorSheet extends ActorSheet {
                     label: "Roll",
                     callback: async (html) => {
                         const form = html[0].querySelector("form");
+                        if (!form) {
+                            console.error("Form not found in dialog");
+                            return;
+                        }
+    
                         const options = {
-                            columnShift: parseInt(form.columnShift.value) || 0,
-                            karmaPoints: parseInt(form.karmaPoints.value) || 0
+                            columnShift: parseInt(form.querySelector('[name="columnShift"]')?.value || "0"),
+                            karmaPoints: parseInt(form.querySelector('[name="karmaPoints"]')?.value || "0")
                         };
     
+                        console.log("Roll options:", options);
                         await game.user.setFlag("world", "marvelRollOptions", options);
     
-                        const roll = await new Roll("1d100").evaluate();
-                        const finalRoll = Math.min(100, roll.total + options.karmaPoints);
-                        
-                        const baseRank = power.rank;
-                        const shiftedRank = this.actor.applyColumnShift(baseRank, options.columnShift);
-                        const color = this.actor.getColorResult(finalRoll, shiftedRank);
-
-                        const messageContent = `
-                        <div class="marvel-roll">
-                            <h3>${this.actor.name} - ${power.name} Power FEAT</h3>
-                            <div class="roll-details">
-                                <div>Power Rank: ${baseRank}</div>
-                                ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                                <div>Roll: ${roll.total}${options.karmaPoints ? ` + ${options.karmaPoints} Karma = ${finalRoll}` : ''}</div>
-                            </div>
-                            <div style="text-align: center; font-weight: bold; padding: 5px; background-color: ${color};">
-                                ${color.toUpperCase()}
-                            </div>
-                        </div>`;
-
-                    await ChatMessage.create({
-                        speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-                        content: messageContent,
-                        rolls: [roll],
-                        sound: CONFIG.sounds.dice
-                    });
+                        try {
+                            await this.actor.rollPower(powerID, options);
+                        } catch (error) {
+                            console.error("Error rolling power:", error);
+                            ui.notifications.error("Error rolling power");
+                        }
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
                 }
             },
-            cancel: {
-                label: "Cancel"
-            }
-        },
-        default: "roll"
-    }).render(true);
+            default: "roll"
+        }).render(true);
+    }
+
+    /* async rollPower(powerID, options = {}) {
+        // Get the power item by ID
+        const power = this.items.get(powerID);
+        if (!power) {
+            console.error(`Power with ID ${powerID} not found`);
+            throw new Error(`Power not found`);
+        }
+        console.log("Rolling power:", power);
+    
+        const baseRank = power.system.rank;
+        const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
+        
+        // Roll and add karma
+        const roll = await new Roll("1d100").evaluate({async: true});
+        const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
+        const finalRoll = Math.min(100, roll.total + karmaPoints);
+        
+        // Deduct karma if used
+        if (karmaPoints > 0) {
+            await this.update({
+                "system.secondaryAbilities.karma.value": this.system.secondaryAbilities.karma.value - karmaPoints
+            });
+        }
+        
+        // Get the color result
+        const color = this.getColorResult(finalRoll, shiftedRank);
+        
+        // Create chat message content
+        const messageContent = `
+            <div class="marvel-roll">
+                <h3>${this.name} - ${power.name} Power FEAT</h3>
+                <div class="roll-details">
+                    <div>Power Rank: ${baseRank}</div>
+                    ${options.columnShift ? 
+                        `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
+                    <div>Roll: ${roll.total}${karmaPoints ? 
+                        ` + ${karmaPoints} Karma = ${finalRoll}` : ''}</div>
+                    ${power.system.damage ? `<div>Damage: ${power.system.damage}</div>` : ''}
+                    ${power.system.range ? `<div>Range: ${power.system.range} areas</div>` : ''}
+                </div>
+                <div class="roll-result ${this._getColorClass(color)}">
+                    ${color.toUpperCase()}
+                </div>
+            </div>`;
+    
+        // Create chat message
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this }),
+            content: messageContent,
+            rolls: [roll],
+            sound: CONFIG.sounds.dice
+        });
+    
+        return { roll, color };
+    } */
+    
+
+async _onDeletePower(event) {
+    event.preventDefault();
+    const powerID = event.currentTarget.dataset.id;
+    console.log("Deleting power with ID:", powerID);
+    
+    const power = this.actor.items.get(powerID);
+    if (!power) {
+        console.error("Power not found:", powerID);
+        return;
+    }
+
+    const confirmDelete = await Dialog.confirm({
+        title: "Confirm Deletion",
+        content: `<p>Are you sure you want to delete "${power.name}"?</p>`,
+        defaultYes: false
+    });
+
+    if (confirmDelete) {
+        await power.delete();
+        console.log("Power deleted");
+    }
 }
 
 async _onAddAttack(event) {
@@ -675,23 +751,94 @@ async _onAddAttack(event) {
 
 async _onAddPower(event) {
     event.preventDefault();
-    
-    const powerData = {
-        name: "New Power",
-        type: "power",
-        system: {
-            rank: "Feeble",
-            rankNumber: CONFIG.marvel.ranks["Feeble"]?.standard || 2,
-            damage: 0,
-            range: 0,
-            description: "",
-            limitations: "",
-            type: ""
+    const dialogHtml = await renderTemplate(
+        "systems/marvel-faserip/templates/dialogs/add-power.html",
+        {
+            config: {
+                ranks: Object.entries(CONFIG.marvel.ranks).reduce((obj, [key]) => {
+                    obj[key] = game.i18n.localize(`MARVEL.Rank${key.replace(/\s+/g, '')}`);
+                    return obj;
+                }, {})
+            }
         }
-    };
-    
-    await this.actor.createEmbeddedDocuments("Item", [powerData]);
-}                        
+    );
+
+    new Dialog({
+        title: "Add New Power",
+        content: dialogHtml,
+        buttons: {
+            create: {
+                label: "Create",
+                callback: async (html) => {
+                    // Add error checking for form
+                    const form = html[0]?.querySelector("form");
+                    if (!form) {
+                        console.error("Form not found");
+                        return;
+                    }
+
+                    // Add null checks for each form field
+                    const nameInput = form.querySelector('[name="name"]');
+                    const rankInput = form.querySelector('[name="rank"]');
+                    const damageInput = form.querySelector('[name="damage"]');
+                    const rangeInput = form.querySelector('[name="range"]');
+                    const descriptionInput = form.querySelector('[name="description"]');
+                    const limitationsInput = form.querySelector('[name="limitations"]');
+                    const typeInput = form.querySelector('[name="type"]');
+
+                    // Log form elements to help debug
+                    console.log("Form elements:", {
+                        nameInput,
+                        rankInput,
+                        damageInput,
+                        rangeInput,
+                        descriptionInput,
+                        limitationsInput,
+                        typeInput
+                    });
+
+                    const name = nameInput?.value || "New Power";
+                    const rank = rankInput?.value || "Feeble";
+                    const rankNumber = CONFIG.marvel.ranks[rank]?.standard || 2;
+                    const damage = parseInt(damageInput?.value) || 0;
+                    const range = parseInt(rangeInput?.value) || 0;
+                    const description = descriptionInput?.value || "";
+                    const limitations = limitationsInput?.value || "";
+                    const type = typeInput?.value || "utility";
+
+                    const powerData = {
+                        name: name,
+                        type: "power",
+                        img: "systems/marvel-faserip/assets/icons/ability.webp",
+                        system: {
+                            rank: rank,
+                            rankNumber: rankNumber,
+                            damage: damage,
+                            range: range,
+                            description: description,
+                            limitations: limitations,
+                            type: type
+                        }
+                    };
+
+                    console.log("Creating new power:", powerData);
+                    try {
+                        const created = await this.actor.createEmbeddedDocuments("Item", [powerData]);
+                        console.log("Power created:", created);
+                    } catch (error) {
+                        console.error("Error creating power:", error);
+                        ui.notifications.error("Error creating power");
+                    }
+                }
+            },
+            cancel: {
+                label: "Cancel"
+            }
+        },
+        default: "create"
+    }).render(true);
+}
+                        
 
 async _onAddTalent(event) {
     console.log("Add talent clicked");
@@ -1029,17 +1176,22 @@ async _onAbilityRoll(event) {
 
 async _onPowerInfo(event) {
     event.preventDefault();
-    const powerIndex = event.currentTarget.dataset.id;
-    const power = this.actor.system.powers.list[powerIndex];
+    const powerID = event.currentTarget.dataset.id;
+    console.log("Getting power info for ID:", powerID);
     
-    if (!power) return;
+    const power = this.actor.items.get(powerID);
+    if (!power) {
+        console.error("Power not found:", powerID);
+        return;
+    }
 
     // Format description text or use name if no description
-    const description = power.description || power.name;
+    const description = power.system.description || power.name;
     const formattedDesc = description.replace(/\n/g, '<br>');
-    const limitations = power.limitations ? `<div class="power-limitations">Limitations: ${power.limitations}</div>` : '';
+    const limitations = power.system.limitations ? 
+        `<div class="power-limitations">Limitations: ${power.system.limitations}</div>` : '';
 
-    // Create chat message with template.json power structure
+    // Create chat message with power info
     const messageContent = `
         <div class="marvel-power-info">
             <h2 style="color: #782e22; border-bottom: 2px solid #782e22; margin-bottom: 5px;">
@@ -1047,10 +1199,10 @@ async _onPowerInfo(event) {
             </h2>
             <div class="power-details">
                 <div style="margin-bottom: 5px;">
-                    <strong>Rank:</strong> ${power.rank}
-                    ${power.damage ? `<br><strong>Damage:</strong> ${power.damage}` : ''}
-                    ${power.range ? `<br><strong>Range:</strong> ${power.range}` : ''}
-                    ${power.type ? `<br><strong>Type:</strong> ${power.type}` : ''}
+                    <strong>Rank:</strong> ${power.system.rank}
+                    ${power.system.damage ? `<br><strong>Damage:</strong> ${power.system.damage}` : ''}
+                    ${power.system.range ? `<br><strong>Range:</strong> ${power.system.range}` : ''}
+                    ${power.system.type ? `<br><strong>Type:</strong> ${power.system.type}` : ''}
                 </div>
                 <div class="power-description">
                     ${formattedDesc}

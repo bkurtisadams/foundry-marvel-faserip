@@ -121,42 +121,41 @@
       "base": {
         "description": "",
         "rules": ""
-      },
-      "power": {
-        "templates": ["base"],
-        "name": "",
-        "rank": "",
-        "rankNumber": 0,
-        "damage": 0,
-        "range": 0,
-        "description": "",
-        "limitations": "",
-        "type": ""
-      },
-      "talent": {
-        "templates": ["base"]
-      },
-      "contact": {
-        "templates": ["base"],
-        "type": "",
-        "reliability": ""
-      },
-      "equipment": {
-        "templates": ["base"],
-        "rank": "",
-        "number": 0,
-        "type": "",
-        "durability": "",
-        "material": ""
-      },
-      "attack": {
-        "templates": ["base"],
-        "ability": "",
-        "attackType": "",
-        "weaponDamage": 0,
-        "range": 0,
-        "columnShift": 0
       }
+    },
+    "power": {
+      "templates": ["base"],
+      "rank": "",
+      "rankNumber": 0,
+      "damage": 0,
+      "range": 0,
+      "description": "",
+      "limitations": "",
+      "type": ""
+    },
+    "talent": {
+      "templates": ["base"]
+    },
+    "contact": {
+      "templates": ["base"],
+      "type": "",
+      "reliability": ""
+    },
+    "equipment": {
+      "templates": ["base"],
+      "rank": "",
+      "number": 0,
+      "type": "",
+      "durability": "",
+      "material": ""
+    },
+    "attack": {
+      "templates": ["base"],
+      "ability": "",
+      "attackType": "",
+      "weaponDamage": 0,
+      "range": 0,
+      "columnShift": 0
     }
-  }
+}
 }

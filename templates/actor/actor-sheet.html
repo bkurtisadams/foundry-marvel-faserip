@@ -160,36 +160,36 @@
     <div class="tab-panel {{#if tabs.special}}active{{/if}}" data-tab="special" {{#unless tabs.special}}style="display: none;"{{/unless}}>
         <button type="button" class="add-power add-ability-button">+ Add Special Ability (Powers/Equipment/Stunts)</button>
         <div class="powers-list">
-            {{#each actor.system.powers.list as |power idx|}}
-            <div class="power-row">
+            {{#each powers as |power|}}
+            <div class="power-row" data-item-id="{{power._id}}">
                 <img src="systems/marvel-faserip/assets/icons/ability.webp" 
-                     width="14" 
-                     height="14" 
-                     class="power-info-icon" 
-                     data-id="{{idx}}"
-                     style="cursor: pointer;"/>
-                <input type="text" name="system.powers.list.{{idx}}.name" value="{{power.name}}"/>
-                <select name="system.powers.list.{{idx}}.rank" class="rank-select">
-                    {{selectOptions @root.config.ranks selected=power.rank}}
+                    width="14" 
+                    height="14" 
+                    class="power-info-icon" 
+                    data-id="{{power._id}}"
+                    style="cursor: pointer;"/>
+                <input type="text" value="{{power.name}}" disabled/>
+                <select class="rank-select" disabled>
+                    {{#each @root.config.ranks as |label key|}}
+                    <option value="{{key}}" {{#if (eq ../power.system.rank key)}}selected{{/if}}>{{label}}</option>
+                    {{/each}}
                 </select>
                 <div class="power-controls">
                     <input type="number" 
-                           name="system.powers.list.{{idx}}.damage" 
-                           value="{{power.damage}}" 
-                           class="power-damage"
-                           data-dtype="Number"/>
+                        value="{{power.system.damage}}" 
+                        class="power-damage"
+                        disabled/>
                     <input type="number" 
-                           name="system.powers.list.{{idx}}.range" 
-                           value="{{power.range}}" 
-                           class="power-range"
-                           data-dtype="Number"/>
-                    <a class="item-control power-edit" title="Edit Power" data-id="{{idx}}">
+                        value="{{power.system.range}}" 
+                        class="power-range"
+                        disabled/>
+                    <a class="item-control power-edit" title="Edit Power" data-id="{{power._id}}">
                         <i class="fas fa-edit"></i>
                     </a>
-                    <button type="button" class="roll-power" title="Roll Power" data-id="{{idx}}">
+                    <button type="button" class="roll-power" title="Roll Power" data-id="{{power._id}}">
                         <i class="fas fa-dice-d20"></i>
                     </button>
-                    <a class="item-control item-delete" title="Delete Power" data-type="powers" data-id="{{idx}}">
+                    <a class="item-control item-delete" title="Delete Power" data-type="power" data-id="{{power._id}}">
                         <i class="fas fa-trash"></i>
                     </a>
                 </div>
@@ -197,6 +197,9 @@
             {{/each}}
         </div>
     </div>
+    
+
+<!-- </section> -->
 
     <!-- Attacks Tab -->
     <div class="tab-panel {{#if tabs.attacks}}active{{/if}}" data-tab="attacks" {{#unless tabs.attacks}}style="display: none;"{{/unless}}>
@@ -234,7 +237,7 @@
                        placeholder="Stunt Description"/>
                 <select name="system.stunts.list.{{idx}}.associatedPower" 
                         class="associated-power">
-                    {{#each ../actor.system.powers.list as |power pidx|}}
+                        {{#each powers as |power idx|}}
                     <option value="{{power.name}}" 
                             {{#if (eq ../stunt.associatedPower power.name)}}selected{{/if}}>
                         {{power.name}}

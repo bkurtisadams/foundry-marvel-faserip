@@ -357,13 +357,16 @@ export class MarvelActor extends Actor {
      * @param {Object} options - Roll options
      * @returns {Promise<Roll>} The roll result
      */
-    async rollPower(powerIndex, options = {}) {
-        const power = this.system.powers.list[powerIndex];
+    async rollPower(powerID, options = {}) {
+        // Get the power item by ID
+        const power = this.items.get(powerID);
         if (!power) {
-            throw new Error(`Power at index ${powerIndex} not found`);
+            console.error(`Power with ID ${powerID} not found`);
+            throw new Error(`Power not found`);
         }
-
-        const baseRank = power.rank;
+        console.log("Rolling power:", power);
+    
+        const baseRank = power.system.rank;
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
         
         // Roll and add karma
@@ -391,14 +394,14 @@ export class MarvelActor extends Actor {
                         `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
                     <div>Roll: ${roll.total}${karmaPoints ? 
                         ` + ${karmaPoints} Karma = ${finalRoll}` : ''}</div>
-                    ${power.damage ? `<div>Damage: ${power.damage}</div>` : ''}
-                    ${power.range ? `<div>Range: ${power.range} areas</div>` : ''}
+                    ${power.system.damage ? `<div>Damage: ${power.system.damage}</div>` : ''}
+                    ${power.system.range ? `<div>Range: ${power.system.range} areas</div>` : ''}
                 </div>
                 <div class="roll-result ${this._getColorClass(color)}">
                     ${color.toUpperCase()}
                 </div>
             </div>`;
-
+    
         // Create chat message
         await ChatMessage.create({
             speaker: ChatMessage.getSpeaker({ actor: this }),
@@ -406,7 +409,7 @@ export class MarvelActor extends Actor {
             rolls: [roll],
             sound: CONFIG.sounds.dice
         });
-
+    
         return { roll, color };
     }
     
