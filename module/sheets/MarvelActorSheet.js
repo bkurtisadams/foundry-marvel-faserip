@@ -462,6 +462,8 @@ export class MarvelActorSheet extends ActorSheet {
         const power = powers[powerIndex];
         
         if (!power) return;
+
+        console.log("Power being edited:", power);
     
         const html = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/edit-power.html", 
@@ -488,6 +490,17 @@ export class MarvelActorSheet extends ActorSheet {
                         
                         const rankKey = form.querySelector('[name="rank"]').value;
                         const rankNumber = CONFIG.marvel.ranks[rankKey]?.standard || 0;
+
+                        // Added debug logs
+                        console.log("Form values:", {
+                            name: form.querySelector('[name="name"]').value,
+                            rank: rankKey,
+                            damage: form.querySelector('[name="damage"]').value,
+                            range: form.querySelector('[name="range"]').value,
+                            description: form.querySelector('[name="description"]').value,
+                            limitations: form.querySelector('[name="limitations"]').value,
+                            type: form.querySelector('[name="type"]').value
+                        });
                         
                         // Create updated power data matching template.json schema
                         const updatedPower = {
@@ -500,15 +513,16 @@ export class MarvelActorSheet extends ActorSheet {
                             limitations: form.querySelector('[name="limitations"]').value || "",
                             type: form.querySelector('[name="type"]').value || ""
                         };
-    
+                    
                         // Update the powers list
-                        const updatedPowers = duplicate(this.actor.system.powers.list);
+                        //const updatedPowers = duplicate(this.actor.system.powers.list);
+                        const updatedPowers = foundry.utils.duplicate(this.actor.system.powers.list);
                         updatedPowers[powerIndex] = updatedPower;
-
+                    
                         await this.actor.update({
                             "system.powers.list": updatedPowers
                         });
-
+                        console.log("After update - Actor powers:", this.actor.system.powers.list);
                     }
                 },
                 cancel: {
