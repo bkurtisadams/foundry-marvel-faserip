@@ -166,6 +166,11 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.roll-power').click(async (ev) => this._onPowerRoll(ev));
             html.find('.item-delete[data-type="powers"]').click(async (ev) => {});
 
+            // Add event listeners for ability, popularity, and resource rolls
+            html.find('.ability-label').click(async (ev) => this._onAbilityRoll(ev));
+            html.find('.clickable-popularity').click(async (ev) => this._onPopularityRoll(ev));
+            html.find('.clickable-resources').click(async (ev) => this._onResourceRoll(ev));
+
             // Alternative approach using arrow functions
             html.find('.add-talent').on('click', (ev) => this._onAddTalent(ev));
             html.find('.add-contact').on('click', (ev) => this._onAddContact(ev));
