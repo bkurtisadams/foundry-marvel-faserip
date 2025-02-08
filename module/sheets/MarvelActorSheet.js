@@ -157,16 +157,15 @@ export class MarvelActorSheet extends ActorSheet {
                 { selector: '.roll-power-stunt', method: this._onRollPowerStunt }
             ];
     
-            /* // Check each binding
-            bindings.forEach(({selector, method}) => {
-                if (method === undefined) {
-                    console.error(`Missing method for selector: ${selector}`);
-                    return;
-                }
-                console.log(`Binding click handler for ${selector}`); // Add this line
-                html.find(selector).click(method.bind(this));
-            }); */
-            // Direct event binding
+            // Add power button binding
+            html.find('.add-power').click(async (ev) => this._onAddPower(ev));
+
+            // Power-related button bindings (these are correct but should be first)
+            html.find('.power-info-icon').click(async (ev) => this._onPowerInfo(ev));
+            html.find('.power-edit').click(async (ev) => this._onPowerEdit(ev));
+            html.find('.roll-power').click(async (ev) => this._onPowerRoll(ev));
+            html.find('.item-delete[data-type="powers"]').click(async (ev) => {});
+
             // Alternative approach using arrow functions
             html.find('.add-talent').on('click', (ev) => this._onAddTalent(ev));
             html.find('.add-contact').on('click', (ev) => this._onAddContact(ev));
@@ -668,29 +667,6 @@ async _onAddContact(event) {
     this.render(false); // Add this line
 }
 
-async _onAddContact(event) {
-    console.log("Add contact clicked");
-    event.preventDefault();
-    const contacts = this.actor.system.contacts?.contacts?.list || [];
-    const newContacts = contacts.concat([{ 
-        name: "",
-        type: "",
-        reliability: "",
-        description: "",
-        rules: ""
-    }]);
-    await this.actor.update({
-        "system": {
-            "contacts": {
-                "contacts": {
-                    "list": newContacts
-                }
-            }
-        }
-    });
-    this.render(false); // Add this line
-}
-
 async _onNumberChange(event) {
     event.preventDefault();
     const element = event.currentTarget;
@@ -983,7 +959,7 @@ async _onAbilityRoll(event) {
 
 async _onPowerInfo(event) {
     event.preventDefault();
-    const powerIndex = event.currentTarget.dataset.index;
+    const powerIndex = event.currentTarget.dataset.id;
     const power = this.actor.system.powers.list[powerIndex];
     
     if (!power) return;
