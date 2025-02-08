@@ -112,18 +112,14 @@ export class MarvelActorSheet extends ActorSheet {
         // Initialize talents according to template.json schema
         if (!system.talents) {
             system.talents = {
-                talents: {
-                    list: []
-                }
+                list: []
             };
         }
-        
+
         // Initialize contacts according to template.json schema
         if (!system.contacts) {
             system.contacts = {
-                contacts: {
-                    list: []
-                }
+                list: []
             };
         }
     
@@ -396,16 +392,16 @@ export class MarvelActorSheet extends ActorSheet {
             expandedData.system.powers.list = powers;
         }
         
-        // Handle talents list
-        if (expandedData.system?.talents?.talents?.list) {
-            const talents = Object.values(expandedData.system.talents.talents.list);
-            expandedData.system.talents.talents.list = talents;
+        // Handle talents list according to template.json structure
+        if (expandedData.system?.talents?.list) {
+            const talents = Object.values(expandedData.system.talents.list);
+            expandedData.system.talents.list = talents;
         }
         
-        // Handle contacts list
-        if (expandedData.system?.contacts?.contacts?.list) {
-            const contacts = Object.values(expandedData.system.contacts.contacts.list);
-            expandedData.system.contacts.contacts.list = contacts;
+        // Handle contacts list according to template.json structure
+        if (expandedData.system?.contacts?.list) {
+            const contacts = Object.values(expandedData.system.contacts.list);
+            expandedData.system.contacts.list = contacts;
         }
 
         // Handle stunts list according to template.json structure
@@ -650,25 +646,46 @@ async _onAddPower(event) {
     });
 }                        
 
+async _onAddTalent(event) {
+    console.log("Add talent clicked");
+    event.preventDefault();
+    //const talents = this.actor.system.talents?.talents?.list || [];
+    const talents = foundry.utils.getProperty(this.actor.system, "talents.list") || [];
+
+    // Create new talent matching template.json schema
+    const newTalent = {
+        name: "",
+        description: "",
+        rules: ""
+    };
+    
+    const updatedTalents = [...talents, newTalent];
+    
+    await this.actor.update({
+        "system.talents.list": updatedTalents
+    });
+    this.render(false); // Add this line
+}
+
 async _onAddContact(event) {
     console.log("Add contact clicked");
     event.preventDefault();
-    const contacts = this.actor.system.contacts?.contacts?.list || [];
-    const newContacts = contacts.concat([{ 
+    //const contacts = this.actor.system.contacts?.contacts?.list || [];
+    const contacts = foundry.utils.getProperty(this.actor.system, "contacts.list") || [];
+
+    // Create new contact matching template.json schema
+    const newContact = {
         name: "",
         type: "",
         reliability: "",
         description: "",
         rules: ""
-    }]);
+    };
+    
+    const updatedContacts = [...contacts, newContact];
+    
     await this.actor.update({
-        "system": {
-            "contacts": {
-                "contacts": {
-                    "list": newContacts
-                }
-            }
-        }
+        "system.contacts.list": updatedContacts
     });
     this.render(false); // Add this line
 }
