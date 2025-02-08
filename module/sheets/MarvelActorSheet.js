@@ -137,6 +137,7 @@ export class MarvelActorSheet extends ActorSheet {
         super.activateListeners(html);
     
         if (this.isEditable) {
+            console.log("Setting up listeners"); // Add this line
             // Test each method exists before binding
             const bindings = [
                 { selector: '.add-power', method: this._onAddPower },
@@ -156,14 +157,19 @@ export class MarvelActorSheet extends ActorSheet {
                 { selector: '.roll-power-stunt', method: this._onRollPowerStunt }
             ];
     
-            // Check each binding
+            /* // Check each binding
             bindings.forEach(({selector, method}) => {
                 if (method === undefined) {
                     console.error(`Missing method for selector: ${selector}`);
                     return;
                 }
+                console.log(`Binding click handler for ${selector}`); // Add this line
                 html.find(selector).click(method.bind(this));
-            });
+            }); */
+            // Direct event binding
+            // Alternative approach using arrow functions
+            html.find('.add-talent').on('click', (ev) => this._onAddTalent(ev));
+            html.find('.add-contact').on('click', (ev) => this._onAddContact(ev));
     
             // Navigation tabs
             html.find('.nav-item').off('click').on('click', this._onTabChange.bind(this));
@@ -639,30 +645,50 @@ async _onAddPower(event) {
     });
 }                        
 
-async _onAddTalent(event) {
-    event.preventDefault();
-    // Update path to match template.json structure
-    const talents = foundry.utils.getProperty(this.actor.system, "talents.talents.list") || [];
-    const newTalents = talents.concat([{ 
-        name: "",
-        description: "",
-        rules: ""  // Added to match template.json Item.talent schema
-    }]);
-    await this.actor.update({ "system.talents.talents.list": newTalents });
-}
-
 async _onAddContact(event) {
+    console.log("Add contact clicked");
     event.preventDefault();
-    // Update path to match template.json structure
-    const contacts = foundry.utils.getProperty(this.actor.system, "contacts.contacts.list") || [];
+    const contacts = this.actor.system.contacts?.contacts?.list || [];
     const newContacts = contacts.concat([{ 
         name: "",
-        type: "",     // Added to match template.json Item.contact schema
-        reliability: "", // Added to match template.json Item.contact schema
+        type: "",
+        reliability: "",
         description: "",
         rules: ""
     }]);
-    await this.actor.update({ "system.contacts.contacts.list": newContacts });
+    await this.actor.update({
+        "system": {
+            "contacts": {
+                "contacts": {
+                    "list": newContacts
+                }
+            }
+        }
+    });
+    this.render(false); // Add this line
+}
+
+async _onAddContact(event) {
+    console.log("Add contact clicked");
+    event.preventDefault();
+    const contacts = this.actor.system.contacts?.contacts?.list || [];
+    const newContacts = contacts.concat([{ 
+        name: "",
+        type: "",
+        reliability: "",
+        description: "",
+        rules: ""
+    }]);
+    await this.actor.update({
+        "system": {
+            "contacts": {
+                "contacts": {
+                    "list": newContacts
+                }
+            }
+        }
+    });
+    this.render(false); // Add this line
 }
 
 async _onNumberChange(event) {
