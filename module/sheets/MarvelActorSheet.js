@@ -199,7 +199,33 @@ export class MarvelActorSheet extends ActorSheet {
                 item.sheet.render(true);
             });
 
-    
+            // make attack row icon button clickable
+            html.find('.attack-row img').click(async (ev) => {
+                ev.preventDefault();
+                const itemId = ev.currentTarget.closest(".attack-row").dataset.itemId;
+                if (!itemId) return;
+                const item = this.actor.items.get(itemId);
+                if (!item) return;
+                
+                // Create chat message with attack description
+                const messageContent = `
+                    <div class="marvel-roll">
+                        <h3>${item.name} - Attack Details</h3>
+                        <div class="roll-details">
+                            <div>Ability: ${item.system.ability}</div>
+                            <div>Attack Type: ${item.system.attackType}</div>
+                            ${item.system.weaponDamage ? `<div>Weapon Damage: ${item.system.weaponDamage}</div>` : ''}
+                            ${item.system.range ? `<div>Range: ${item.system.range}</div>` : ''}
+                            ${item.system.description ? `<div class="description">${item.system.description}</div>` : ''}
+                        </div>
+                    </div>`;
+
+                await ChatMessage.create({
+                    speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+                    content: messageContent
+                });
+            });
+
             // Delete item handling updated to match template.json structure
             html.find('.item-delete').click(async ev => {
                 const element = ev.currentTarget;

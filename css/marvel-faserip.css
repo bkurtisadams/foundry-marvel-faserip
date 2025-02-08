@@ -456,6 +456,16 @@ select:focus {
 }
 
 /* Attacks Section */
+.attack-row img {
+    cursor: pointer;
+}
+
+.attack-row img:hover {
+    filter: brightness(1.2);
+    transform: scale(1.1);
+    transition: all 0.2s ease;
+}
+
 .attacks-section {
     margin-bottom: 10px;
 }
