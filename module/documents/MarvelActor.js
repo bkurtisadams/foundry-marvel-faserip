@@ -409,6 +409,69 @@ export class MarvelActor extends Actor {
 
         return { roll, color };
     }
+    
+    // roll attack method 
+    async rollAttack(ability, attackType, options = {}) {
+        // Get the ability data
+        const abilityData = this.system.primaryAbilities[ability.toLowerCase()];
+        if (!abilityData) {
+            throw new Error(`Ability ${ability} not found`);
+        }
+    
+        // Get stored roll options or use defaults
+        const stored = await game.user.getFlag("world", "marvelRollOptions") || {
+            columnShift: 0,
+            karmaPoints: 0
+        };
+    
+        // Merge stored options with provided options
+        options = foundry.utils.mergeObject(stored, options);
+    
+        // Get base rank and apply column shift
+        const baseRank = abilityData.rank || this.getRankFromValue(abilityData.number);
+        const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
+    
+        // Roll and add karma
+        const roll = await new Roll("1d100").evaluate({async: true});
+        const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
+        const finalRoll = Math.min(100, roll.total + karmaPoints);
+    
+        // Deduct karma if used
+        if (karmaPoints > 0) {
+            await this.update({
+                "system.secondaryAbilities.karma.value": this.system.secondaryAbilities.karma.value - karmaPoints
+            });
+        }
+    
+        // Get the color result and specific attack outcome
+        const color = this.getColorResult(finalRoll, shiftedRank);
+        const action = CONFIG.marvel.actionResults[attackType];
+        const resultText = action?.results[color] || color.toUpperCase();
+    
+        // Create chat message content
+        const messageContent = `
+            <div class="marvel-roll">
+                <h3>${this.name} - ${action?.name || "Attack"}</h3>
+                <div class="roll-details">
+                    <div>${ability}: ${abilityData.number} (${baseRank})</div>
+                    ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
+                    <div>Roll: ${roll.total}${karmaPoints ? ` + ${karmaPoints} Karma = ${finalRoll}` : ''}</div>
+                </div>
+                <div class="roll-result ${this._getColorClass(color)}">
+                    ${resultText}
+                </div>
+            </div>`;
+    
+        // Create chat message
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this }),
+            content: messageContent,
+            rolls: [roll],
+            sound: CONFIG.sounds.dice
+        });
+    
+        return { roll, color, result: resultText };
+    }
 
     /**
      * Get CSS class for color formatting

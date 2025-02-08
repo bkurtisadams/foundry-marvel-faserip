@@ -19,36 +19,87 @@ export class MarvelAttackItem extends Item {
      */
     async roll() {
         if (!this.actor) {
-            console.error("This item is not owned by an actor.");
+            ui.notifications.error("This item is not owned by an actor.");
             return null;
         }
 
         // Validate we have the required data
         if (!this.system.ability) {
-            console.error("Attack item is missing ability.");
+            ui.notifications.error("Attack item is missing ability.");
             return null;
         }
         if (!this.system.attackType) {
-            console.error("Attack item is missing attack type.");
+            ui.notifications.error("Attack item is missing attack type.");
             return null;
         }
 
-        // Get the ability from the item's system data
-        const ability = this.system.ability.toLowerCase();
-                
-        // Get the attack type from the item's system data
-        const attackType = this.system.attackType;
+        try {
+            // Get stored roll options
+            const stored = await game.user.getFlag("world", "marvelRollOptions") || {
+                columnShift: this.system.columnShift || 0,
+                karmaPoints: 0
+            };
 
-        console.log(`Rolling attack with ability ${ability} and type ${attackType}`);
+            // Show roll dialog
+            const template = "systems/marvel-faserip/templates/dialogs/ability-roll.html";
+            const dialogData = {
+                config: CONFIG.marvel,
+                columnShift: stored.columnShift,
+                karmaPoints: stored.karmaPoints,
+                showActionSelect: false,
+                item: this
+            };
 
-        // Roll the attack
-        const result = await this.actor.rollAttack(ability, attackType, {
-            weaponDamage: this.system.weaponDamage,
-            columnShift: this.system.columnShift,
-            range: this.system.range
-        });
+            const html = await renderTemplate(template, dialogData);
 
-        return result;
+            return new Promise(resolve => {
+                new Dialog({
+                    title: `${this.name} Attack Roll`,
+                    content: html,
+                    buttons: {
+                        roll: {
+                            label: "Roll",
+                            callback: async (html) => {
+                                //const form = html.querySelector("form");
+                                const form = html.find("form")[0];
+                                const options = {
+                                    columnShift: (parseInt(form.columnShift.value) || 0) + (this.system.columnShift || 0),
+                                    karmaPoints: parseInt(form.karmaPoints.value) || 0,
+                                    weaponDamage: this.system.weaponDamage,
+                                    range: this.system.range
+                                };
+
+                                // Store options for next time
+                                await game.user.setFlag("world", "marvelRollOptions", {
+                                    columnShift: parseInt(form.columnShift.value) || 0,
+                                    karmaPoints: parseInt(form.karmaPoints.value) || 0
+                                });
+
+                                // Get the ability from the item's system data
+                                const ability = this.system.ability.toLowerCase();
+                                
+                                // Get the attack type from the item's system data
+                                const attackType = this.system.attackType;
+                                console.log(`Rolling attack with ability ${ability} and type ${attackType}`);
+
+                                // Roll the attack
+                                const result = await this.actor.rollAttack(ability, attackType, options);
+                                resolve(result);
+                            }
+                        },
+                        cancel: {
+                            label: "Cancel",
+                            callback: () => resolve(null)
+                        }
+                    },
+                    default: "roll"
+                }).render(true);
+            });
+        } catch (error) {
+            console.error("Error rolling attack:", error);
+            ui.notifications.error("Error rolling attack. Check console for details.");
+            return null;
+        }
     }
 
     /** @override */
@@ -59,7 +110,7 @@ export class MarvelAttackItem extends Item {
     /** @override */
     prepareData() {
         super.prepareData();
-        
+       
         // Ensure system data exists
         if (!this.system) this.system = {};
         if (!this.system.ability) this.system.ability = "fighting";
