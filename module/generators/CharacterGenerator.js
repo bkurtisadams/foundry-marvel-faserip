@@ -80,11 +80,13 @@ export class MarvelCharacterGenerator {
         const abilities = {};
 
         ["fighting", "agility", "strength", "endurance", "reason", "intuition", "psyche"].forEach(ability => {
+            const roll = Math.floor(Math.random() * 100) + 1;
+            const initialRank = this.rollRank(column);
             abilities[ability] = {
-                initialRoll: "",
-                initialRank: this.rollRank(column),
-                rank: "",
-                number: CONFIG.marvel.ranks[this.rollRank(column)]?.standard || 0
+                initialRoll: roll,
+                initialRank: initialRank,
+                rank: initialRank,  // Set current rank same as initial
+                number: CONFIG.marvel.ranks[initialRank]?.standard || 0
             };
         });
 
