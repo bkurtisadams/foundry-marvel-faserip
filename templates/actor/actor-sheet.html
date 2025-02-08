@@ -46,9 +46,14 @@
                     <div class="field-group origin-field">
                         <label class="input-label">Origin</label>
                         <input type="text" name="system.biography.origin" value="{{actor.system.biography.origin}}"/>
+                        <!-- Add the Generate Character Button here -->
+                        <button type="button" class="generate-character" title="Generate Random Character">
+                            Generate Character
+                        </button>
                     </div>
                 </div>
             </div>
+
         </div>
     </header>
 
@@ -81,9 +86,9 @@
                 <div class="header-with-button">
                     <h2>Primary Abilities</h2>
                     {{#if (eq actor.type "hero")}}
-                    <button type="button" class="generate-character" title="Generate Random Character">
+                    <!-- <button type="button" class="generate-character" title="Generate Random Character">
                         <i class="fas fa-dice"></i>
-                    </button>
+                    </button> -->
                     {{/if}}
                 </div>
                 <table>

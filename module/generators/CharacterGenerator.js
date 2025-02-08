@@ -4,54 +4,53 @@ export class MarvelCharacterGenerator {
     static RANDOM_RANKS_TABLE = {
         1: { // Mutants, Altered Humans
             ranges: [
-                { max: 5, rank: "Feeble" },
-                { max: 10, rank: "Poor" },
-                { max: 20, rank: "Typical" },
-                { max: 40, rank: "Good" },
-                { max: 60, rank: "Excellent" },
-                { max: 80, rank: "Remarkable" },
-                { max: 96, rank: "Incredible" },
-                { max: 100, rank: "Amazing" }
+                { max: 5, rank: "Feeble", number: 1 },
+                { max: 10, rank: "Poor", number: 3 },
+                { max: 20, rank: "Typical", number: 5 },
+                { max: 40, rank: "Good", number: 8 },
+                { max: 60, rank: "Excellent", number: 16 },
+                { max: 80, rank: "Remarkable", number: 26 },
+                { max: 96, rank: "Incredible", number: 36 },
+                { max: 100, rank: "Amazing", number: 46 }
             ]
         },
         3: { // High Technology
             ranges: [
-                { max: 5, rank: "Feeble" },
-                { max: 10, rank: "Poor" },
-                { max: 40, rank: "Typical" },
-                { max: 80, rank: "Good" },
-                { max: 95, rank: "Excellent" },
-                { max: 100, rank: "Remarkable" }
+                { max: 5, rank: "Feeble", number: 1 },
+                { max: 10, rank: "Poor", number: 3 },
+                { max: 40, rank: "Typical", number: 5 },
+                { max: 80, rank: "Good", number: 8 },
+                { max: 95, rank: "Excellent", number: 16 },
+                { max: 100, rank: "Remarkable", number: 26 }
             ]
         },
         4: { // Robots
             ranges: [
-                { max: 5, rank: "Feeble" },
-                { max: 10, rank: "Poor" },
-                { max: 15, rank: "Typical" },
-                { max: 40, rank: "Good" },
-                { max: 50, rank: "Excellent" },
-                { max: 70, rank: "Remarkable" },
-                { max: 90, rank: "Incredible" },
-                { max: 98, rank: "Amazing" },
-                { max: 100, rank: "Monstrous" }
+                { max: 5, rank: "Feeble", number: 1 },
+                { max: 10, rank: "Poor", number: 3 },
+                { max: 15, rank: "Typical", number: 5 },
+                { max: 40, rank: "Good", number: 8 },
+                { max: 50, rank: "Excellent", number: 16 },
+                { max: 70, rank: "Remarkable", number: 26 },
+                { max: 90, rank: "Incredible", number: 36 },
+                { max: 98, rank: "Amazing", number: 46 },
+                { max: 100, rank: "Monstrous", number: 63 }
             ]
         },
         5: { // Aliens
             ranges: [
-                { max: 10, rank: "Feeble" },
-                { max: 20, rank: "Poor" },
-                { max: 30, rank: "Typical" },
-                { max: 40, rank: "Good" },
-                { max: 60, rank: "Excellent" },
-                { max: 70, rank: "Remarkable" },
-                { max: 80, rank: "Incredible" },
-                { max: 95, rank: "Amazing" },
-                { max: 100, rank: "Monstrous" }
+                { max: 10, rank: "Feeble", number: 1 },
+                { max: 20, rank: "Poor", number: 3 },
+                { max: 30, rank: "Typical", number: 5 },
+                { max: 40, rank: "Good", number: 8 },
+                { max: 60, rank: "Excellent", number: 16 },
+                { max: 70, rank: "Remarkable", number: 26 },
+                { max: 80, rank: "Incredible", number: 36 },
+                { max: 95, rank: "Amazing", number: 46 },
+                { max: 100, rank: "Monstrous", number: 63 }
             ]
         }
     };
-
     static rollOrigin() {
         const roll = Math.floor(Math.random() * 100) + 1;
         if (roll <= 30) return "Altered Human";
