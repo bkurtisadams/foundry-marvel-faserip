@@ -65,6 +65,7 @@ export class MarvelActorSheet extends ActorSheet {
         };
         
         // Get attacks
+        //context.attacks = context.items.filter(item => item.type === "attack");
         context.attacks = context.items.filter(item => item.type === "attack");
     
         // Add configuration
@@ -174,18 +175,20 @@ export class MarvelActorSheet extends ActorSheet {
             // Navigation tabs
             html.find('.nav-item').off('click').on('click', this._onTabChange.bind(this));
     
+            // Add attack button
+            html.find('.add-attack').click(async (ev) => this._onAddAttack(ev));
+
             // Attack roll button
             html.find('.roll-attack').click(async (ev) => {
                 ev.preventDefault();
-                ev.stopPropagation();
                 const itemId = ev.currentTarget.closest(".attack-row").dataset.itemId;
                 if (!itemId) return;
                 const item = this.actor.items.get(itemId);
                 if (!item) return;
                 return await item.roll();
             });
-    
-            // Edit item button
+            
+             // Edit attack button
             html.find('.item-edit').click(ev => {
                 ev.preventDefault();
                 const attackRow = ev.currentTarget.closest(".attack-row");
@@ -193,8 +196,9 @@ export class MarvelActorSheet extends ActorSheet {
                 const itemId = attackRow.dataset.itemId;
                 const item = this.actor.items.get(itemId);
                 if (!item) return;
-                return item.sheet.render(true);
+                item.sheet.render(true);
             });
+
     
             // Delete item handling updated to match template.json structure
             html.find('.item-delete').click(async ev => {
@@ -597,9 +601,10 @@ async _onAddAttack(event) {
                     const formData = new FormData(form);
                     
                     // Create attack data matching template.json Item.attack schema
-                    const data = {
+                    const attackData = {
                         name: formData.get("attackName"),
                         type: "attack",
+                        img: "icons/svg/sword.svg",  // Default icon
                         system: {
                             ability: formData.get("ability").toLowerCase(),
                             attackType: formData.get("attackType"),
@@ -611,7 +616,13 @@ async _onAddAttack(event) {
                         }
                     };
 
-                    await this.actor.createEmbeddedDocuments("Item", [data]);
+                    try {
+                        await this.actor.createEmbeddedDocuments("Item", [attackData]);
+                        ui.notifications.info(`Created attack: ${attackData.name}`);
+                    } catch (error) {
+                        console.error("Error creating attack:", error);
+                        ui.notifications.error("Error creating attack. Check console for details.");
+                    }
                 }
             },
             cancel: {
