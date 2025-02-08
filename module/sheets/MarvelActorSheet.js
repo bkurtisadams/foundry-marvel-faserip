@@ -675,26 +675,22 @@ async _onAddAttack(event) {
 
 async _onAddPower(event) {
     event.preventDefault();
-    const powers = foundry.utils.getProperty(this.actor.system, "powers.list") || [];
     
-    // Create new power matching template.json power schema
-    const newPower = {
-        name: "",
-        rank: "Feeble",
-        rankNumber: CONFIG.marvel.ranks["Feeble"]?.standard || 2,
-        damage: 0,
-        range: 0,
-        description: "",
-        limitations: "",
-        type: ""
+    const powerData = {
+        name: "New Power",
+        type: "power",
+        system: {
+            rank: "Feeble",
+            rankNumber: CONFIG.marvel.ranks["Feeble"]?.standard || 2,
+            damage: 0,
+            range: 0,
+            description: "",
+            limitations: "",
+            type: ""
+        }
     };
     
-    const newPowers = powers.map(p => duplicate(p));
-    newPowers.push(newPower);
-    
-    await this.actor.update({
-        "system.powers.list": newPowers
-    });
+    await this.actor.createEmbeddedDocuments("Item", [powerData]);
 }                        
 
 async _onAddTalent(event) {

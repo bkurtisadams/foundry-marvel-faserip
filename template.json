@@ -81,20 +81,6 @@
           "history": []
         }
       },
-      "powers": {
-          "templates": ["base"],
-          "list": [],         
-          "schema": {         
-              "name": "",
-              "rank": "",
-              "rankNumber": 0,
-              "damage": 0,
-              "range": 0,
-              "description": "",
-              "limitations": "",
-              "type": ""
-          }
-      },
       "stunts": {
           "list": [],
           "templates": ["base"],
@@ -119,57 +105,58 @@
       }
     },
     "hero": {
-        "templates": ["base", "powers", "contacts", "talents", "stunts"]
+        "templates": ["base", "contacts", "talents", "stunts"]
     },
     "villain": {
-        "templates": ["base", "powers", "stunts"]
+        "templates": ["base", "stunts"]
     },
     "npc": {
       "templates": ["base"]
     }
   },
+
   "Item": {
     "types": ["power", "talent", "contact", "equipment", "attack"],
     "templates": {
       "base": {
         "description": "",
         "rules": ""
+      },
+      "power": {
+        "templates": ["base"],
+        "name": "",
+        "rank": "",
+        "rankNumber": 0,
+        "damage": 0,
+        "range": 0,
+        "description": "",
+        "limitations": "",
+        "type": ""
+      },
+      "talent": {
+        "templates": ["base"]
+      },
+      "contact": {
+        "templates": ["base"],
+        "type": "",
+        "reliability": ""
+      },
+      "equipment": {
+        "templates": ["base"],
+        "rank": "",
+        "number": 0,
+        "type": "",
+        "durability": "",
+        "material": ""
+      },
+      "attack": {
+        "templates": ["base"],
+        "ability": "",
+        "attackType": "",
+        "weaponDamage": 0,
+        "range": 0,
+        "columnShift": 0
       }
-    },
-    "power": {
-      "templates": ["base"],
-      "name": "",
-      "rank": "",
-      "rankNumber": 0,
-      "damage": 0,
-      "range": 0,
-      "description": "",
-      "limitations": "",
-      "type": ""
-    },
-    "talent": {
-      "templates": ["base"]
-    },
-    "contact": {
-      "templates": ["base"],
-      "type": "",
-      "reliability": ""
-    },
-"equipment": {
-      "templates": ["base"],
-      "rank": "",
-      "number": 0,
-      "type": "",
-      "durability": "",
-      "material": ""
-    },
-    "attack": {
-      "templates": ["base"],
-      "ability": "",
-      "attackType": "",
-      "weaponDamage": 0,
-      "range": 0,
-      "columnShift": 0
     }
   }
 }
