@@ -431,70 +431,66 @@ export class MarvelActorSheet extends ActorSheet {
     }
     
     // Add this method to handle adding new karma entries
-    async _onAddKarmaEntry(event) {
-        event.preventDefault();
-        
-        const addEntryContent = await renderTemplate(
-            "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
-            {}
-        );
-        
-        new Dialog({
-            title: "Add Karma Entry",
-            content: addEntryContent,
-            buttons: {
-                add: {
-                    label: "Add Entry",
-                    callback: async (html) => {
-                        const form = html.find('form')[0];
-                        const amount = parseInt(form.amount.value);
-                        const description = form.description.value;
-
-                        // Around line 445, add:
-                        console.log("Form values:", {
-                            amount: form.amount?.value,
-                            description: form.description?.value
-                        });
-                        
-                        if (!amount || !description) {
-                            ui.notifications.error("Please fill in all fields");
-                            return;
-                        }
-                        
-                        // Create new entry
-                        const newEntry = {
-                            date: new Date().toLocaleString(),
-                            amount: amount,
-                            description: description
-                        };
-                        
-                        // Get current history
-                        const currentHistory = this.actor.system.karmaTracking.history || [];
-                        const currentKarma = this.actor.system.secondaryAbilities.karma.value;
-                        
-                        // Update actor
-                        await this.actor.update({
-                            "system.karmaTracking.history": [...currentHistory, newEntry],
-                            "system.secondaryAbilities.karma.value": currentKarma + amount
-                        });
-                        
-                        // Refresh the karma history window
-                        await this.actor.update({
-                            "system.karmaTracking.history": [...currentHistory, newEntry],
-                            "system.secondaryAbilities.karma.value": currentKarma + amount
-                        }).then(() => {
-                            // Force a re-render of the karma history dialog
-                            this._onKarmaHistoryClick(event);
-                        });
+    // In MarvelActorSheet.js, in the _onAddKarmaEntry method
+async _onAddKarmaEntry(event) {
+    event.preventDefault();
+    
+    const addEntryContent = await renderTemplate(
+        "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
+        { entry: { amount: '', description: '' } }  // Add default values
+    );
+    
+    new Dialog({
+        title: "Add Karma Entry",
+        content: addEntryContent,
+        buttons: {
+            add: {
+                label: "Add Entry",
+                callback: async (html) => {
+                    const form = html.find('form')[0];
+                    // Use Number instead of parseInt to handle decimals if needed
+                    const amount = Number(form.amount.value);
+                    const description = form.description.value;
+                    
+                    // Better validation
+                    if (isNaN(amount) || !description) {
+                        ui.notifications.error("Please enter a valid amount and description");
+                        return;
                     }
-                },
-                cancel: {
-                    label: "Cancel"
+                    
+                    // Create new entry
+                    const newEntry = {
+                        date: new Date().toLocaleString(),
+                        amount: amount,
+                        description: description
+                    };
+                    
+                    // Get current history
+                    const currentHistory = this.actor.system.karmaTracking.history || [];
+                    const currentKarma = this.actor.system.secondaryAbilities.karma.value;
+                    
+                    // Update actor
+                    await this.actor.update({
+                        "system.karmaTracking.history": [...currentHistory, newEntry],
+                        "system.secondaryAbilities.karma.value": currentKarma + amount
+                    });
+                    
+                    // Refresh the karma history window
+                    this._onKarmaHistoryClick(event);
                 }
             },
-            default: "add"
-        }).render(true);
-    }
+            cancel: {
+                label: "Cancel"
+            }
+        },
+        default: "add",
+        render: (html) => {
+            // Ensure number input is focused and working
+            const amountInput = html.find('input[name="amount"]');
+            amountInput.focus();
+        }
+    }).render(true);
+}
     
     async _onEditKarmaEntry(event, entry) {
         event.preventDefault();

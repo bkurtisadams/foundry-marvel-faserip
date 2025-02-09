@@ -1415,57 +1415,74 @@ select:focus {
 
 /* Controls Row */
 .controls-row {
-    display: flex;
-    gap: 5px;
+    display: grid;
+    grid-template-columns: 150px 1fr auto;
+    gap: 8px;
     margin-bottom: 10px;
     align-items: center;
 }
 
 .karma-type-filter {
-    width: 120px;
     height: 24px;
     border: 1px solid #782e22;
     border-radius: 3px;
+    background: white;
+    width: 100%;
 }
 
 .karma-search {
-    flex: 1;
     height: 24px;
     border: 1px solid #782e22;
     border-radius: 3px;
-    padding: 0 5px;
+    padding: 0 8px;
+    width: 100%;
+    background: white;
+}
+
+.controls-buttons {
+    display: flex;
+    gap: 4px;
 }
 
 /* Control Buttons */
-.add-entry {
-    width: 24px;
+.add-entry, .export-button {
     height: 24px;
+    padding: 0;
     background: #782e22;
     color: white;
     border: none;
     border-radius: 3px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+}
+
+.add-entry {
+    width: 24px;
 }
 
 .export-button {
-    height: 24px;
-    padding: 0 10px;
-    background: #782e22;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    width: 24px;
 }
 
 .add-entry:hover,
 .export-button:hover {
     background: #9e3c2d;
+}
+
+* Remove any previous button styles that might conflict */
+.add-entry.add-ability-button {
+    width: 24px;
+    background: #782e22;
+    color: white;
+}
+
+/* Make sure icons are visible */
+.add-entry i,
+.export-button i {
+    font-size: 12px;
+    line-height: 1;
 }
 
 /* Karma List Structure */
@@ -1605,7 +1622,7 @@ select:focus {
     font-style: italic;
 }
 
-.karma-entry-form input[type="number"],
+/* .karma-entry-form input[type="number"],
 .karma-entry-form input[type="text"] {
     width: 100%;
     padding: 5px;
@@ -1619,4 +1636,21 @@ select:focus {
     border-color: #782e22;
     outline: none;
     box-shadow: 0 0 3px rgba(120, 46, 34, 0.3);
+} */
+
+/* Add this to marvel-faserip.css */
+.karma-entry-form input[type="number"] {
+    -moz-appearance: textfield; /* Firefox */
+    appearance: textfield;
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background: white;
+}
+
+.karma-entry-form input[type="number"]::-webkit-outer-spin-button,
+.karma-entry-form input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }

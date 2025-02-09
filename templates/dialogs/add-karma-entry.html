@@ -1,9 +1,10 @@
+<!-- templates/dialogs/add-karma-entry.html -->
 <form class="karma-entry-form">
     <div class="form-group">
         <label>Amount</label>
         <div class="input-hint">(positive for karma earned, negative for karma spent)</div>
-        <!-- <input type="number" name="amount" value="{{entry.amount}}" required/> -->
-        <input type="number" name="amount" value="{{entry.amount}}" required min="-1000" max="1000"/>
+        <!-- Add step="any" and modify type -->
+        <input type="number" name="amount" step="any" value="{{entry.amount}}" required/>
     </div>
     <div class="form-group">
         <label>Description</label>
