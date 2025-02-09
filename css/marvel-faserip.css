@@ -1392,24 +1392,184 @@ select:focus {
     content: "\f0dd";  /* down arrow */
 }
 
-.karma-entries {
-    max-height: 400px;
-    overflow-y: auto;
+/* Karma History Dialog */
+.karma-history-dialog {
+    padding: 0;
+}
+
+/* Karma Summary Section */
+.karma-summary {
+    background: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 3px;
+}
+
+.karma-totals {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    text-align: center;
+}
+
+.karma-totals h3 {
+    color: #782e22;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.karma-totals .value {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Search and Controls */
+.search-controls {
+    display: flex;
+    gap: 10px;
+    padding: 0 10px 10px 10px;
+    align-items: center;
+}
+
+.karma-type-filter {
+    width: 150px;
+    height: 28px;
+    border: 1px solid #782e22;
+    border-radius: 3px;
+}
+
+.karma-search {
+    flex: 1;
+    height: 28px;
+    border: 1px solid #782e22;
+    border-radius: 3px;
+    padding: 0 8px;
 }
 
 /* Buttons */
-.karma-buttons button {
+.add-entry,
+.export-button {
     background: #782e22;
     color: white;
     border: none;
-    padding: 5px 10px;
     border-radius: 3px;
+    height: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.add-entry {
+    width: 28px;
+    padding: 0;
+    justify-content: center;
+}
+
+.export-button {
+    padding: 0 10px;
+    gap: 5px;
+}
+
+.add-entry:hover,
+.export-button:hover {
+    background: #9e3c2d;
+}
+
+/* Karma Table */
+.karma-table {
+    margin-top: 10px;
+}
+
+.karma-header {
+    background: #782e22;
+    color: white;
+    display: grid;
+    grid-template-columns: 200px 100px 1fr;
+    padding: 8px 10px;
+}
+
+.header-cell {
+    font-weight: bold;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 5px;
 }
 
-.karma-buttons button:hover {
-    background: #9e3c2d;
+.header-cell:hover {
+    color: #ddd;
+}
+
+.karma-entries {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.karma-entry {
+    display: grid;
+    grid-template-columns: 200px 100px 1fr;
+    padding: 8px 10px;
+    border-bottom: 1px solid #ddd;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.karma-entry:nth-child(odd) {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.karma-date {
+    color: #666;
+}
+
+.karma-amount {
+    font-weight: bold;
+}
+
+.karma-amount.positive {
+    color: #4CAF50;
+}
+
+.karma-amount.negative {
+    color: #F44336;
+}
+
+/* Karma Entry Form */
+.karma-entry-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 10px;
+}
+
+.karma-entry-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.karma-entry-form label {
+    font-weight: bold;
+    color: #782e22;
+}
+
+.karma-entry-form .input-hint {
+    font-size: 0.9em;
+    color: #666;
+    font-style: italic;
+}
+
+.karma-entry-form input[type="number"],
+.karma-entry-form input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background: white;
+}
+
+.karma-entry-form input[type="number"]:focus,
+.karma-entry-form input[type="text"]:focus {
+    border-color: #782e22;
+    outline: none;
+    box-shadow: 0 0 3px rgba(120, 46, 34, 0.3);
 }

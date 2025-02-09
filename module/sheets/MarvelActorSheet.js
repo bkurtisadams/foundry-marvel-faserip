@@ -374,8 +374,11 @@ export class MarvelActorSheet extends ActorSheet {
                 // Export
                 html.find('.export-karma').click(() => this._exportKarmaHistory(karmaHistory));
     
-                // Add Entry button handler (previous implementation)
-                html.find('.add-karma-entry').click(this._onAddKarmaEntry.bind(this));
+                // Add Entry
+                html.find('.add-karma-entry').click(async (ev) => {
+                    ev.preventDefault();
+                    await this._onAddKarmaEntry(ev);
+                });
             }
         }, {
             width: 600,
@@ -385,7 +388,164 @@ export class MarvelActorSheet extends ActorSheet {
         dialog.render(true);
     }
     
-    // Helper methods
+    // Add this method to handle adding new karma entries
+    async _onAddKarmaEntry(event) {
+        event.preventDefault();
+        
+        const addEntryContent = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
+            {}
+        );
+        
+        new Dialog({
+            title: "Add Karma Entry",
+            content: addEntryContent,
+            buttons: {
+                add: {
+                    label: "Add Entry",
+                    callback: async (html) => {
+                        const form = html.find('form')[0];
+                        const amount = parseInt(form.amount.value);
+                        const description = form.description.value;
+                        
+                        if (!amount || !description) {
+                            ui.notifications.error("Please fill in all fields");
+                            return;
+                        }
+                        
+                        // Create new entry
+                        const newEntry = {
+                            date: new Date().toLocaleString(),
+                            amount: amount,
+                            description: description
+                        };
+                        
+                        // Get current history
+                        const currentHistory = this.actor.system.karmaTracking.history || [];
+                        const currentKarma = this.actor.system.secondaryAbilities.karma.value;
+                        
+                        // Update actor
+                        await this.actor.update({
+                            "system.karmaTracking.history": [...currentHistory, newEntry],
+                            "system.secondaryAbilities.karma.value": currentKarma + amount
+                        });
+                        
+                        // Refresh the karma history window
+                        this._onKarmaHistoryClick(event);
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
+                }
+            },
+            default: "add"
+        }).render(true);
+    }
+    
+    async _onEditKarmaEntry(event, entry) {
+        event.preventDefault();
+        
+        const addEntryContent = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
+            { entry }  // Pass the entry to the template
+        );
+        
+        new Dialog({
+            title: "Edit Karma Entry",
+            content: addEntryContent,
+            buttons: {
+                save: {
+                    label: "Save Changes",
+                    callback: async (html) => {
+                        const form = html.find('form')[0];
+                        const newAmount = parseInt(form.amount.value);
+                        const newDescription = form.description.value;
+                        
+                        if (!newAmount || !newDescription) {
+                            ui.notifications.error("Please fill in all fields");
+                            return;
+                        }
+    
+                        // Get current history
+                        const currentHistory = this.actor.system.karmaTracking.history || [];
+                        const currentKarma = this.actor.system.secondaryAbilities.karma.value;
+                        
+                        // Find the entry and update it
+                        const index = currentHistory.findIndex(e => 
+                            e.date === entry.date && 
+                            e.amount === entry.amount && 
+                            e.description === entry.description
+                        );
+    
+                        if (index !== -1) {
+                            // Calculate karma difference
+                            const karmaDiff = newAmount - entry.amount;
+                            
+                            // Update the entry
+                            const updatedHistory = [...currentHistory];
+                            updatedHistory[index] = {
+                                date: entry.date,
+                                amount: newAmount,
+                                description: newDescription
+                            };
+    
+                            // Update actor
+                            await this.actor.update({
+                                "system.karmaTracking.history": updatedHistory,
+                                "system.secondaryAbilities.karma.value": currentKarma + karmaDiff
+                            });
+                            
+                            // Refresh the karma history window
+                            this._onKarmaHistoryClick(event);
+                        }
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
+                }
+            },
+            default: "save",
+            render: (html) => {
+                // Pre-fill the form with existing values
+                const form = html.find('form')[0];
+                form.amount.value = entry.amount;
+                form.description.value = entry.description;
+            }
+        }).render(true);
+    }
+    
+    async _onDeleteKarmaEntry(event, index) {
+        event.preventDefault();
+    
+        // Confirm deletion
+        const confirm = await Dialog.confirm({
+            title: "Delete Karma Entry",
+            content: "Are you sure you want to delete this karma entry? This cannot be undone.",
+            yes: () => true,
+            no: () => false,
+            defaultYes: false
+        });
+    
+        if (!confirm) return;
+    
+        // Get current history
+        const currentHistory = this.actor.system.karmaTracking.history || [];
+        const currentKarma = this.actor.system.secondaryAbilities.karma.value;
+        
+        // Remove the entry and adjust karma
+        const deletedEntry = currentHistory[index];
+        const updatedHistory = currentHistory.filter((_, i) => i !== index);
+        
+        // Update actor
+        await this.actor.update({
+            "system.karmaTracking.history": updatedHistory,
+            "system.secondaryAbilities.karma.value": currentKarma - deletedEntry.amount
+        });
+        
+        // Refresh the karma history window
+        this._onKarmaHistoryClick(event);
+    }
+    
     _sortKarmaHistory(history, sort) {
         return [...history].sort((a, b) => {
             let comparison = 0;
@@ -419,17 +579,38 @@ export class MarvelActorSheet extends ActorSheet {
         const entriesContainer = html.find('.karma-entries');
         entriesContainer.empty();
         
-        history.forEach(entry => {
+        history.forEach((entry, index) => {
             const entryHtml = `
-                <div class="karma-entry">
+                <div class="karma-entry" data-entry-index="${index}">
                     <div class="karma-date">${entry.date}</div>
                     <div class="karma-amount ${entry.amount > 0 ? 'karma-earned' : 'karma-spent'}">
                         ${entry.amount > 0 ? '+' : ''}${entry.amount}
                     </div>
                     <div class="karma-description">${entry.description}</div>
+                    <div class="karma-controls">
+                        <button type="button" class="edit-karma" title="Edit Entry">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="delete-karma" title="Delete Entry">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
             `;
             entriesContainer.append(entryHtml);
+        });
+    
+        // Add click handlers for the new buttons
+        entriesContainer.find('.edit-karma').click(async (ev) => {
+            ev.preventDefault();
+            const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
+            await this._onEditKarmaEntry(ev, history[index]);
+        });
+    
+        entriesContainer.find('.delete-karma').click(async (ev) => {
+            ev.preventDefault();
+            const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
+            await this._onDeleteKarmaEntry(ev, index);
         });
     }
     
