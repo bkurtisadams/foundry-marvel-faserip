@@ -36,7 +36,7 @@
         
         <div class="karma-entries">
             {{#each karmaHistory}}
-            <div class="karma-entry">
+            <div class="karma-entry" data-entry-index="{{@index}}">
                 <div class="entry-date">{{date}}</div>
                 <div class="entry-amount {{#if (gt amount 0)}}positive{{else}}negative{{/if}}">
                     {{#if (gt amount 0)}}+{{/if}}{{amount}}

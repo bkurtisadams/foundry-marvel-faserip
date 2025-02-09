@@ -79,62 +79,22 @@
           "karmaPool": 0,
           "advancementFund": 0,
           "history": []
-        }
-      },
-        "resistances": {
-          "list": [],
-          /* "physical": {
-            "rank": "",
-            "number": 0
-          },
-          "energy": {
-            "rank": "",
-            "number": 0
-          },
-          "force": {
-            "rank": "",
-            "number": 0
-          },
-          "heat": {
-            "rank": "",
-            "number": 0
-          },
-          "cold": {
-            "rank": "",
-            "number": 0
-          },
-          "electricity": {
-            "rank": "",
-            "number": 0
-          },
-          "radiation": {
-            "rank": "",
-            "number": 0
-          },
-          "toxins": {
-            "rank": "",
-            "number": 0
-          },
-          "psychic": {
-            "rank": "",
-            "number": 0
-          },
-          "magic": {
-            "rank": "",
-            "number": 0
-          } */
         },
-      "stunts": {
+        "resistances": {
+          "list": []
+        },
+        "stunts": {
           "list": [],
           "templates": ["base"],
           "description": "",
           "schema": {
-              "name": "",
-              "associatedPower": "",
-              "attempts": 0,
-              "status": "untried",
-              "description": ""
+            "name": "",
+            "associatedPower": "",
+            "attempts": 0,
+            "status": "untried",
+            "description": ""
           }
+        }
       },
       "contacts": {
         "contacts": {
@@ -148,18 +108,17 @@
       }
     },
     "hero": {
-        "templates": ["base", "contacts", "talents", "stunts"]
+      "templates": ["base", "contacts", "talents", "stunts"]
     },
     "villain": {
-        "templates": ["base", "stunts"]
+      "templates": ["base", "stunts"]
     },
     "npc": {
       "templates": ["base"]
     }
   },
-
   "Item": {
-    "types": ["power", "talent", "contact", "equipment", "attack"],
+    "types": ["power", "talent", "contact", "equipment", "attack", "stunt"],
     "templates": {
       "base": {
         "description": "",
@@ -199,6 +158,14 @@
       "weaponDamage": 0,
       "range": 0,
       "columnShift": 0
+    },
+    "stunt": {
+      "templates": ["base"],
+      "name": "",
+      "associatedPower": "",
+      "attempts": 0,
+      "status": "untried",
+      "description": ""
     }
-}
+  }
 }

@@ -150,7 +150,7 @@ export class MarvelActorSheet extends ActorSheet {
                 { selector: '.add-power-stunt', method: this._onCreatePowerStunt },
                 { selector: '.roll-power-stunt', method: this._onRollPowerStunt }
             ];
-    
+            
             // Add power button binding
             html.find('.add-power').click(async (ev) => this._onAddPower(ev));
 
@@ -167,7 +167,23 @@ export class MarvelActorSheet extends ActorSheet {
             });
 
             // clickable karma history
+            this._onDeleteKarmaEntry = this._onDeleteKarmaEntry.bind(this);
+            this._onEditKarmaEntry = this._onEditKarmaEntry.bind(this);
+
             html.find('.clickable-karma').click(this._onKarmaHistoryClick.bind(this));
+            html.find('.delete-entry').click(async (ev) => {
+                const index = $(ev.currentTarget).data('index');
+                if (this._onDeleteKarmaEntry) {
+                    await this._onDeleteKarmaEntry(ev, index);
+                } else {
+                    console.error("Delete Karma Entry function is missing!");
+                }
+            });
+            html.find('.edit-entry').click(async (ev) => {
+                const index = $(ev.currentTarget).data('index');
+                const entry = filteredHistory[index];
+                await this._onEditKarmaEntry(ev, entry);
+              });
 
             // Add event listeners for ability, popularity, and resource rolls
             html.find('.ability-label').click(async (ev) => this._onAbilityRoll(ev));
@@ -322,15 +338,16 @@ export class MarvelActorSheet extends ActorSheet {
     async _onKarmaHistoryClick(event) {
         event.preventDefault();
         
-        const karmaHistory = this.actor.system.karmaTracking.history || [];
-        let filteredHistory = [...karmaHistory];
-        let currentSort = { field: 'date', direction: 'desc' };
+        // Initialize properties
+        this._karmaHistory = this.actor.system.karmaTracking.history || [];
+        this._filteredHistory = [...this._karmaHistory];
+        this._currentSort = { field: 'date', direction: 'desc' };
         
         const content = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/karma-history.html",
             {
                 actor: this.actor,
-                karmaHistory: this._sortKarmaHistory(filteredHistory, currentSort)
+                karmaHistory: this._sortKarmaHistory(this._filteredHistory, this._currentSort)
             }
         );
     
@@ -342,58 +359,67 @@ export class MarvelActorSheet extends ActorSheet {
                     label: "Close"
                 }
             },
-            render: function(html) {  // Change is here - proper function declaration
-                // Sorting
-                html.find('.sortable').click(ev => {
-                    const field = ev.currentTarget.dataset.sort;
-                    if (currentSort.field === field) {
-                        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        currentSort = { field, direction: 'asc' };
-                    }
-                    this._updateKarmaDisplay(html, this._sortKarmaHistory(filteredHistory, currentSort));
-                    this._updateSortIndicators(html, currentSort);
-                });
-        
-                // Filtering
-                html.find('.karma-type-filter').change(ev => {
-                    const filterType = ev.target.value;
-                    filteredHistory = this._filterKarmaHistory(karmaHistory, filterType);
-                    this._updateKarmaDisplay(html, this._sortKarmaHistory(filteredHistory, currentSort));
-                });
-        
-                // Search
-                html.find('.karma-search').on('input', ev => {
-                    const searchTerm = ev.target.value.toLowerCase();
-                    filteredHistory = karmaHistory.filter(entry => 
-                        entry.description.toLowerCase().includes(searchTerm)
-                    );
-                    this._updateKarmaDisplay(html, this._sortKarmaHistory(filteredHistory, currentSort));
-                });
-        
-                // Add the event listeners for edit and delete buttons
-                html.find('.karma-entries').on('click', '.edit-entry', async (ev) => {
-                    ev.preventDefault();
-                    const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
-                    const entry = filteredHistory[index];
-                    await this._onEditKarmaEntry(ev, entry);
-                });
-        
-                html.find('.karma-entries').on('click', '.delete-entry', async (ev) => {
-                    ev.preventDefault();
-                    const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
+            // Around line 406, replace the render function with:
+        render: (html) => {  // Change to arrow function to preserve 'this' context
+            const dialog = this;
+            
+            // Sorting
+            html.find('.sortable').click(ev => {
+                const field = ev.currentTarget.dataset.sort;
+                if (dialog._currentSort.field === field) {
+                    dialog._currentSort.direction = dialog._currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    dialog._currentSort = { field, direction: 'asc' };
+                }
+                dialog._updateKarmaDisplay(html, dialog._sortKarmaHistory(dialog._filteredHistory, dialog._currentSort));
+                dialog._updateSortIndicators(html, dialog._currentSort);
+            });
+
+            // Filtering
+            html.find('.karma-type-filter').change(ev => {
+                const filterType = ev.target.value;
+                dialog._filteredHistory = dialog._filterKarmaHistory(dialog._karmaHistory, filterType);
+                dialog._updateKarmaDisplay(html, dialog._sortKarmaHistory(dialog._filteredHistory, dialog._currentSort));
+            });
+
+            // Search
+            html.find('.karma-search').on('input', ev => {
+                const searchTerm = ev.target.value.toLowerCase();
+                dialog._filteredHistory = dialog._karmaHistory.filter(entry => 
+                    entry.description.toLowerCase().includes(searchTerm)
+                );
+                dialog._updateKarmaDisplay(html, dialog._sortKarmaHistory(dialog._filteredHistory, dialog._currentSort));
+            });
+
+            // Add the event listeners for edit and delete buttons
+            html.find('.karma-entries').on('click', '.edit-entry', async (ev) => {
+                ev.preventDefault();
+                const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
+                const entry = dialog._filteredHistory[index];
+                await dialog._onEditKarmaEntry(ev, entry);
+            });
+
+            html.find('.karma-entries').on('click', '.delete-entry', async (ev) => {
+                ev.preventDefault();
+                const entryDiv = $(ev.currentTarget).closest('.karma-entry');
+                const index = entryDiv.data('entry-index');
+                console.log("Deleting entry at index:", index); // Add logging
+                if (typeof index !== 'undefined') {
                     await this._onDeleteKarmaEntry(ev, index);
-                });
-        
-                // Export
-                html.find('.export-button').click(() => this._exportKarmaHistory(karmaHistory));
-        
-                // Add Entry
-                html.find('.add-entry').click(async (ev) => {
-                    ev.preventDefault();
-                    await this._onAddKarmaEntry(ev);
-                });
-            }
+                } else {
+                    console.error("Could not find index for karma entry");
+                }
+            });
+
+            // Export
+            html.find('.export-button').click(() => dialog._exportKarmaHistory(dialog._karmaHistory));
+
+            // Add Entry
+            html.find('.add-entry').click(async (ev) => {
+                ev.preventDefault();
+                await dialog._onAddKarmaEntry(ev);
+            });
+        }
         }, {
             classes: ["karma-history"],
             width: 600,
@@ -423,6 +449,12 @@ export class MarvelActorSheet extends ActorSheet {
                         const form = html.find('form')[0];
                         const amount = parseInt(form.amount.value);
                         const description = form.description.value;
+
+                        // Around line 445, add:
+                        console.log("Form values:", {
+                            amount: form.amount?.value,
+                            description: form.description?.value
+                        });
                         
                         if (!amount || !description) {
                             ui.notifications.error("Please fill in all fields");
@@ -447,7 +479,13 @@ export class MarvelActorSheet extends ActorSheet {
                         });
                         
                         // Refresh the karma history window
-                        this._onKarmaHistoryClick(event);
+                        await this.actor.update({
+                            "system.karmaTracking.history": [...currentHistory, newEntry],
+                            "system.secondaryAbilities.karma.value": currentKarma + amount
+                        }).then(() => {
+                            // Force a re-render of the karma history dialog
+                            this._onKarmaHistoryClick(event);
+                        });
                     }
                 },
                 cancel: {
@@ -535,9 +573,10 @@ export class MarvelActorSheet extends ActorSheet {
         }).render(true);
     }
     
+    // delete karma entry
     async _onDeleteKarmaEntry(event, index) {
         event.preventDefault();
-    
+
         // Confirm deletion
         const confirm = await Dialog.confirm({
             title: "Delete Karma Entry",
@@ -546,27 +585,31 @@ export class MarvelActorSheet extends ActorSheet {
             no: () => false,
             defaultYes: false
         });
-    
+
         if (!confirm) return;
-    
+
         // Get current history
         const currentHistory = duplicate(this.actor.system.karmaTracking.history);
-        const currentKarma = this.actor.system.karmaTracking.karmaPool;
         
-        // Get the entry to be deleted
+        // Get the entry to be deleted - this was the issue
         const deletedEntry = currentHistory[index];
-        
+        if (!deletedEntry) {
+            console.error("Could not find karma entry at index:", index);
+            return;
+        }
+
         // Remove the entry
         currentHistory.splice(index, 1);
         
-        // Update actor
+        // Update actor with both the history and karma pool
+        const currentKarma = this.actor.system.secondaryAbilities.karma.value;
         await this.actor.update({
             "system.karmaTracking.history": currentHistory,
-            "system.karmaTracking.karmaPool": currentKarma - deletedEntry.amount
+            "system.secondaryAbilities.karma.value": currentKarma - deletedEntry.amount
         });
         
         // Refresh the karma history window
-        this._onKarmaHistoryClick(event);
+        await this._onKarmaHistoryClick(event);
     }
     
     _sortKarmaHistory(history, sort) {
@@ -617,18 +660,6 @@ export class MarvelActorSheet extends ActorSheet {
                 </div>
             `;
             entriesContainer.append(entryHtml);
-        });
-    
-        // Add click handlers for edit and delete
-        entriesContainer.find('.edit-entry').click(async (ev) => {
-            const index = $(ev.currentTarget).data('index');
-            const entry = history[index];
-            await this._onEditKarmaEntry(ev, entry);
-        });
-    
-        entriesContainer.find('.delete-entry').click(async (ev) => {
-            const index = $(ev.currentTarget).data('index');
-            await this._onDeleteKarmaEntry(ev, index);
         });
     }
     

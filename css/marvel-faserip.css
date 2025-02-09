@@ -221,6 +221,7 @@
     font-weight: bold;
     padding-right: 3px;
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .ability-number::-webkit-outer-spin-button,
@@ -1232,6 +1233,7 @@ select:focus {
     font-weight: bold;
     padding-right: 3px;
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .resistance-number::-webkit-outer-spin-button,
