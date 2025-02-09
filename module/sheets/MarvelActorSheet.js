@@ -381,8 +381,10 @@ export class MarvelActorSheet extends ActorSheet {
                 });
             }
         }, {
+            classes: ["karma-history"],
             width: 600,
-            height: 700
+            height: 400,
+            resizable: true
         });
     
         dialog.render(true);
@@ -447,7 +449,7 @@ export class MarvelActorSheet extends ActorSheet {
         
         const addEntryContent = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
-            { entry }  // Pass the entry to the template
+            { entry }
         );
         
         new Dialog({
@@ -470,7 +472,7 @@ export class MarvelActorSheet extends ActorSheet {
                         const currentHistory = this.actor.system.karmaTracking.history || [];
                         const currentKarma = this.actor.system.secondaryAbilities.karma.value;
                         
-                        // Find the entry and update it
+                        // Find and update the entry
                         const index = currentHistory.findIndex(e => 
                             e.date === entry.date && 
                             e.amount === entry.amount && 
@@ -532,8 +534,10 @@ export class MarvelActorSheet extends ActorSheet {
         const currentHistory = this.actor.system.karmaTracking.history || [];
         const currentKarma = this.actor.system.secondaryAbilities.karma.value;
         
-        // Remove the entry and adjust karma
+        // Get the entry to be deleted
         const deletedEntry = currentHistory[index];
+        
+        // Remove the entry and adjust karma
         const updatedHistory = currentHistory.filter((_, i) => i !== index);
         
         // Update actor
@@ -582,34 +586,29 @@ export class MarvelActorSheet extends ActorSheet {
         history.forEach((entry, index) => {
             const entryHtml = `
                 <div class="karma-entry" data-entry-index="${index}">
-                    <div class="karma-date">${entry.date}</div>
-                    <div class="karma-amount ${entry.amount > 0 ? 'karma-earned' : 'karma-spent'}">
+                    <div class="entry-date">${entry.date}</div>
+                    <div class="entry-amount ${entry.amount > 0 ? 'positive' : 'negative'}">
                         ${entry.amount > 0 ? '+' : ''}${entry.amount}
                     </div>
-                    <div class="karma-description">${entry.description}</div>
-                    <div class="karma-controls">
-                        <button type="button" class="edit-karma" title="Edit Entry">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button type="button" class="delete-karma" title="Delete Entry">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                    <div class="entry-description">${entry.description}</div>
+                    <div class="entry-actions">
+                        <a class="edit-entry" data-index="${index}"><i class="fas fa-edit"></i></a>
+                        <a class="delete-entry" data-index="${index}"><i class="fas fa-trash"></i></a>
                     </div>
                 </div>
             `;
             entriesContainer.append(entryHtml);
         });
     
-        // Add click handlers for the new buttons
-        entriesContainer.find('.edit-karma').click(async (ev) => {
-            ev.preventDefault();
-            const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
-            await this._onEditKarmaEntry(ev, history[index]);
+        // Add click handlers for edit and delete
+        entriesContainer.find('.edit-entry').click(async (ev) => {
+            const index = $(ev.currentTarget).data('index');
+            const entry = history[index];
+            await this._onEditKarmaEntry(ev, entry);
         });
     
-        entriesContainer.find('.delete-karma').click(async (ev) => {
-            ev.preventDefault();
-            const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
+        entriesContainer.find('.delete-entry').click(async (ev) => {
+            const index = $(ev.currentTarget).data('index');
             await this._onDeleteKarmaEntry(ev, index);
         });
     }
