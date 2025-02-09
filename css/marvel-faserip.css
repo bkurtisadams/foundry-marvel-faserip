@@ -930,14 +930,6 @@ select:focus {
     border-radius: 3px;
 }
 
-.karma-entry {
-    display: grid;
-    grid-template-columns: auto 80px 1fr;
-    gap: 10px;
-    padding: 5px;
-    border-bottom: 1px solid #ddd;
-}
-
 .karma-entry:last-child {
     border-bottom: none;
 }
@@ -1295,14 +1287,6 @@ select:focus {
     border-radius: 5px;
 }
 
-.karma-entry {
-    display: grid;
-    grid-template-columns: auto 80px 1fr;
-    gap: 10px;
-    padding: 8px;
-    border-bottom: 1px solid #eee;
-}
-
 .karma-entry:last-child {
     border-bottom: none;
 }
@@ -1394,79 +1378,86 @@ select:focus {
 
 /* Karma History Dialog */
 .karma-history-dialog {
-    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background: #e0ddd5;
 }
 
 /* Karma Summary Section */
-.karma-summary {
-    background: white;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 3px;
-}
-
 .karma-totals {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
     text-align: center;
+    background: white;
+    padding: 10px;
+    border-radius: 3px;
+    margin-bottom: 10px;
 }
 
-.karma-totals h3 {
+.karma-totals h2 {
     color: #782e22;
-    font-size: 16px;
+    font-size: 14px;
+    border-bottom: 2px solid #782e22;
     margin-bottom: 5px;
+    text-align: center;
 }
 
 .karma-totals .value {
     font-size: 24px;
     font-weight: bold;
+    text-align: center;
 }
 
-/* Search and Controls */
-.search-controls {
+/* Controls Row */
+.controls-row {
     display: flex;
-    gap: 10px;
-    padding: 0 10px 10px 10px;
+    gap: 5px;
+    margin-bottom: 10px;
     align-items: center;
 }
 
 .karma-type-filter {
-    width: 150px;
-    height: 28px;
+    width: 120px;
+    height: 24px;
     border: 1px solid #782e22;
     border-radius: 3px;
 }
 
 .karma-search {
     flex: 1;
-    height: 28px;
+    height: 24px;
     border: 1px solid #782e22;
     border-radius: 3px;
-    padding: 0 8px;
+    padding: 0 5px;
 }
 
-/* Buttons */
-.add-entry,
-.export-button {
+/* Control Buttons */
+.add-entry {
+    width: 24px;
+    height: 24px;
     background: #782e22;
     color: white;
     border: none;
     border-radius: 3px;
-    height: 28px;
-    cursor: pointer;
     display: flex;
     align-items: center;
-}
-
-.add-entry {
-    width: 28px;
-    padding: 0;
     justify-content: center;
+    cursor: pointer;
 }
 
 .export-button {
+    height: 24px;
     padding: 0 10px;
+    background: #782e22;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
     gap: 5px;
 }
 
@@ -1475,62 +1466,116 @@ select:focus {
     background: #9e3c2d;
 }
 
-/* Karma Table */
-.karma-table {
-    margin-top: 10px;
+/* Karma List Structure */
+.karma-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
-.karma-header {
+/* Headers */
+.karma-headers {
+    display: grid;
+    grid-template-columns: 180px 80px 1fr 60px;
+    gap: 10px;
+    padding: 8px;
     background: #782e22;
     color: white;
-    display: grid;
-    grid-template-columns: 200px 100px 1fr;
-    padding: 8px 10px;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.header-cell {
-    font-weight: bold;
+.header-date,
+.header-amount,
+.header-description {
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 5px;
 }
 
-.header-cell:hover {
+.header-date:hover,
+.header-amount:hover,
+.header-description:hover {
     color: #ddd;
 }
 
+/* Entries Container */
 .karma-entries {
-    max-height: 400px;
+    flex: 1;
     overflow-y: auto;
+    background: white;
+    max-height: 400px;
 }
 
+/* Individual Entries */
 .karma-entry {
     display: grid;
-    grid-template-columns: 200px 100px 1fr;
-    padding: 8px 10px;
+    grid-template-columns: 180px 80px 1fr 60px;
+    gap: 10px;
+    padding: 8px;
     border-bottom: 1px solid #ddd;
-    background: rgba(255, 255, 255, 0.8);
 }
 
-.karma-entry:nth-child(odd) {
-    background: rgba(255, 255, 255, 0.9);
+.karma-entry:nth-child(even) {
+    background: rgba(0, 0, 0, 0.05);
 }
 
-.karma-date {
+.karma-entry:hover {
+    background: rgba(120, 46, 34, 0.05);
+}
+
+.entry-date {
     color: #666;
 }
 
-.karma-amount {
+.entry-amount {
     font-weight: bold;
 }
 
-.karma-amount.positive {
+.entry-amount.positive {
     color: #4CAF50;
 }
 
-.karma-amount.negative {
+.entry-amount.negative {
     color: #F44336;
+}
+
+/* Entry Actions */
+.entry-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.entry-actions a {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.entry-actions .edit-entry {
+    color: #005e8a;
+}
+
+.entry-actions .delete-entry {
+    color: #782e22;
+}
+
+.entry-actions .edit-entry:hover {
+    color: #0076ad;
+    background: rgba(0, 94, 138, 0.1);
+}
+
+.entry-actions .delete-entry:hover {
+    color: #9e3c2d;
+    background: rgba(120, 46, 34, 0.1);
 }
 
 /* Karma Entry Form */
@@ -1572,165 +1617,4 @@ select:focus {
     border-color: #782e22;
     outline: none;
     box-shadow: 0 0 3px rgba(120, 46, 34, 0.3);
-}
-
-.karma-history-dialog {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    background: #e0ddd5;
-}
-
-.karma-totals {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    background: white;
-    padding: 10px;
-    border-radius: 3px;
-    margin-bottom: 10px;
-}
-
-.karma-totals h2 {
-    color: #782e22;
-    font-size: 14px;
-    border-bottom: 2px solid #782e22;
-    margin-bottom: 5px;
-    text-align: center;
-}
-
-.karma-totals .value {
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
-}
-
-.controls-row {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 10px;
-    align-items: center;
-}
-
-.karma-type-filter {
-    width: 120px;
-    height: 24px;
-    border: 1px solid #782e22;
-    border-radius: 3px;
-}
-
-.karma-search {
-    flex: 1;
-    height: 24px;
-    border: 1px solid #782e22;
-    border-radius: 3px;
-    padding: 0 5px;
-}
-
-.add-entry {
-    width: 24px;
-    height: 24px;
-    background: #782e22;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.export-button {
-    height: 24px;
-    padding: 0 10px;
-    background: #782e22;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.karma-list {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;  /* Important for scrolling */
-}
-
-.karma-headers {
-    display: grid;
-    grid-template-columns: 180px 80px 1fr 60px;
-    gap: 10px;
-    padding: 8px;
-    background: #782e22;
-    color: white;
-    font-weight: bold;
-}
-
-.karma-entries {
-    flex: 1;
-    overflow-y: auto;
-    background: white;
-}
-
-.karma-entry {
-    display: grid;
-    grid-template-columns: 180px 80px 1fr 60px;
-    gap: 10px;
-    padding: 8px;
-    border-bottom: 1px solid #ddd;
-}
-
-.karma-entry:nth-child(even) {
-    background: rgba(0, 0, 0, 0.05);
-}
-
-.entry-date {
-    color: #666;
-}
-
-.entry-amount {
-    font-weight: bold;
-}
-
-.entry-amount.positive {
-    color: #4CAF50;
-}
-
-.entry-amount.negative {
-    color: #F44336;
-}
-
-.entry-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-}
-
-.entry-actions a {
-    color: #666;
-    cursor: pointer;
-}
-
-.entry-actions a:hover {
-    color: #782e22;
-}
-
-.header-date,
-.header-amount,
-.header-description {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.header-date:hover,
-.header-amount:hover,
-.header-description:hover {
-    color: #ddd;
 }
