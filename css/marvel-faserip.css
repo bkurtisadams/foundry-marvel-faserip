@@ -1195,3 +1195,43 @@ select:focus {
 .stunt-controls .item-delete {
     color: #782e22;
 }
+
+/* Resistances Section */
+.resistances-section {
+    margin: 10px 0;
+}
+
+.resistances-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.resistance-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.resistance-type {
+    flex: 2;
+}
+
+.rank-select {
+    flex: 2;
+}
+
+.resistance-number {
+    width: 60px;
+    text-align: right;
+    font-weight: bold;
+    padding-right: 3px;
+    -moz-appearance: textfield;
+}
+
+.resistance-number::-webkit-outer-spin-button,
+.resistance-number::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}

@@ -62,6 +62,12 @@ export class MarvelActor extends Actor {
             };
         }
 
+        if (!this.system.resistances) {
+            this.system.resistances = {
+                list: []
+            };
+        }
+
         if (!this.system.karmaTracking) {
             this.system.karmaTracking = {
                 karmaPool: 0,

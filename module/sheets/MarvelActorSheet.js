@@ -174,6 +174,12 @@ export class MarvelActorSheet extends ActorSheet {
             // Alternative approach using arrow functions
             html.find('.add-talent').on('click', (ev) => this._onAddTalent(ev));
             html.find('.add-contact').on('click', (ev) => this._onAddContact(ev));
+
+            // Add resistance change handlers
+            html.find('.resistance-number').change(this._onResistanceNumberChange.bind(this));
+            html.find('.rank-select').change(this._onResistanceRankChange.bind(this));
+            // Add resistance controls
+            html.find('.add-resistance').click(this._onAddResistance.bind(this));
     
             // Navigation tabs
             html.find('.nav-item').off('click').on('click', this._onTabChange.bind(this));
@@ -251,6 +257,9 @@ export class MarvelActorSheet extends ActorSheet {
                             break;
                         case 'contacts':
                             path = 'system.contacts.contacts.list';
+                            break;
+                        case 'resistances':
+                            path = 'system.resistances.list';
                             break;
                         default:
                             path = null;
@@ -1346,5 +1355,66 @@ _onTabChange(event) {
             this.render(false);
         }
     });
+}
+
+async _onAddResistance(event) {
+    console.log("Adding new resistance");
+    event.preventDefault();
+    
+    const resistances = foundry.utils.getProperty(this.actor.system, "resistances.list") || [];
+    
+    // Create new resistance entry
+    const newResistance = {
+        type: "",
+        rank: "",
+        number: 0
+    };
+    
+    const updatedResistances = [...resistances, newResistance];
+    
+    await this.actor.update({
+        "system.resistances.list": updatedResistances
+    });
+    
+    console.log("New resistance added", newResistance);
+    this.render(false);
+}
+
+async _onResistanceNumberChange(event) {
+    console.log("Resistance number change triggered");
+    event.preventDefault();
+    const element = event.currentTarget;
+    const resistancePath = element.dataset.resistance;
+    const newNumber = parseInt(element.value) || 0;
+    const newRank = this.actor.getRankFromValue(newNumber);
+
+    // Create update data
+    const updateData = {
+        [`system.resistances.${resistancePath}.rank`]: newRank,
+        [`system.resistances.${resistancePath}.number`]: newNumber
+    };
+
+    console.log("Updating resistance with data:", updateData);
+    await this.actor.update(updateData);
+    this.render(false);
+}
+
+async _onResistanceRankChange(event) {
+    console.log("Resistance rank change triggered");
+    event.preventDefault();
+    const element = event.currentTarget;
+    const resistancePath = element.dataset.resistance;
+    const newRank = element.value;
+    const rankNumber = CONFIG.marvel.ranks[newRank]?.standard || 0;
+
+    // Create update data
+    const updateData = {
+        [`system.resistances.${resistancePath}.rank`]: newRank,
+        [`system.resistances.${resistancePath}.number`]: rankNumber
+    };
+
+    console.log("Updating resistance with data:", updateData);
+    await this.actor.update(updateData);
+    this.render(false);
 }
 }

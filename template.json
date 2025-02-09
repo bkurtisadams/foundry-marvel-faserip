@@ -81,6 +81,49 @@
           "history": []
         }
       },
+        "resistances": {
+          "list": [],
+          /* "physical": {
+            "rank": "",
+            "number": 0
+          },
+          "energy": {
+            "rank": "",
+            "number": 0
+          },
+          "force": {
+            "rank": "",
+            "number": 0
+          },
+          "heat": {
+            "rank": "",
+            "number": 0
+          },
+          "cold": {
+            "rank": "",
+            "number": 0
+          },
+          "electricity": {
+            "rank": "",
+            "number": 0
+          },
+          "radiation": {
+            "rank": "",
+            "number": 0
+          },
+          "toxins": {
+            "rank": "",
+            "number": 0
+          },
+          "psychic": {
+            "rank": "",
+            "number": 0
+          },
+          "magic": {
+            "rank": "",
+            "number": 0
+          } */
+        },
       "stunts": {
           "list": [],
           "templates": ["base"],

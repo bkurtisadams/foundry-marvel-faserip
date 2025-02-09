@@ -145,6 +145,43 @@
             </div>
         </div>
 
+        <!-- resistances section -->
+        <div class="resistances-section">
+        <h2>Resistances</h2>
+        <button type="button" class="add-resistance add-ability-button">+ Add Resistance</button>
+        <div class="resistances-list">
+            {{#each actor.system.resistances.list as |resistance idx|}}
+            <div class="resistance-row">
+            <select name="system.resistances.list.{{idx}}.type" class="resistance-type">
+                {{#select resistance.type}}
+                <option value="">Select Type</option>
+                <option value="physical">Physical</option>
+                <option value="energy">Energy</option>
+                <option value="force">Force</option>
+                <option value="heat">Heat</option>
+                <option value="cold">Cold</option>
+                <option value="electricity">Electricity</option>
+                <option value="radiation">Radiation</option>
+                <option value="toxins">Toxins</option>
+                <option value="psychic">Psychic</option>
+                <option value="magic">Magic</option>
+                {{/select}}
+            </select>
+            <select name="system.resistances.list.{{idx}}.rank" class="rank-select">
+                {{selectOptions @root.config.ranks selected=resistance.rank blank=""}}
+            </select>
+            <input type="number" 
+                    class="resistance-number" 
+                    name="system.resistances.list.{{idx}}.number" 
+                    value="{{resistance.number}}"/>
+            <button type="button" class="item-delete" data-type="resistances" data-id="{{idx}}">
+                <i class="fas fa-trash"></i>
+            </button>
+            </div>
+            {{/each}}
+        </div>
+        </div>
+
 <!-- Navigation Bar -->
 <nav class="nav-categories" role="tablist">
     <a class="nav-item {{#if tabs.special}}active{{/if}}" data-tab="special">Special Ability</a>
