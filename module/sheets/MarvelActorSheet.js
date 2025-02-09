@@ -166,6 +166,9 @@ export class MarvelActorSheet extends ActorSheet {
                 delete: html.find('.item-delete[data-type="power"]').length
             });
 
+            // clickable karma history
+            html.find('.clickable-karma').click(this._onKarmaHistoryClick.bind(this));
+
             // Add event listeners for ability, popularity, and resource rolls
             html.find('.ability-label').click(async (ev) => this._onAbilityRoll(ev));
             html.find('.clickable-popularity').click(async (ev) => this._onPopularityRoll(ev));
@@ -313,6 +316,148 @@ export class MarvelActorSheet extends ActorSheet {
                 }
             });
         }
+    }
+
+    // handler for karma history
+    async _onKarmaHistoryClick(event) {
+        event.preventDefault();
+        
+        const karmaHistory = this.actor.system.karmaTracking.history || [];
+        let filteredHistory = [...karmaHistory];
+        let currentSort = { field: 'date', direction: 'desc' };
+        
+        const content = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/karma-history.html",
+            {
+                actor: this.actor,
+                karmaHistory: this._sortKarmaHistory(filteredHistory, currentSort)
+            }
+        );
+    
+        const dialog = new Dialog({
+            title: `Karma History - ${this.actor.name}`,
+            content: content,
+            buttons: {
+                close: {
+                    label: "Close"
+                }
+            },
+            render: html => {
+                // Sorting
+                html.find('.sortable').click(ev => {
+                    const field = ev.currentTarget.dataset.sort;
+                    if (currentSort.field === field) {
+                        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        currentSort = { field, direction: 'asc' };
+                    }
+                    this._updateKarmaDisplay(html, this._sortKarmaHistory(filteredHistory, currentSort));
+                    this._updateSortIndicators(html, currentSort);
+                });
+    
+                // Filtering
+                html.find('.karma-type-filter').change(ev => {
+                    const filterType = ev.target.value;
+                    filteredHistory = this._filterKarmaHistory(karmaHistory, filterType);
+                    this._updateKarmaDisplay(html, this._sortKarmaHistory(filteredHistory, currentSort));
+                });
+    
+                // Search
+                html.find('.karma-search').on('input', ev => {
+                    const searchTerm = ev.target.value.toLowerCase();
+                    filteredHistory = karmaHistory.filter(entry => 
+                        entry.description.toLowerCase().includes(searchTerm)
+                    );
+                    this._updateKarmaDisplay(html, this._sortKarmaHistory(filteredHistory, currentSort));
+                });
+    
+                // Export
+                html.find('.export-karma').click(() => this._exportKarmaHistory(karmaHistory));
+    
+                // Add Entry button handler (previous implementation)
+                html.find('.add-karma-entry').click(this._onAddKarmaEntry.bind(this));
+            }
+        }, {
+            width: 600,
+            height: 700
+        });
+    
+        dialog.render(true);
+    }
+    
+    // Helper methods
+    _sortKarmaHistory(history, sort) {
+        return [...history].sort((a, b) => {
+            let comparison = 0;
+            switch (sort.field) {
+                case 'date':
+                    comparison = new Date(b.date) - new Date(a.date);
+                    break;
+                case 'amount':
+                    comparison = a.amount - b.amount;
+                    break;
+                case 'description':
+                    comparison = a.description.localeCompare(b.description);
+                    break;
+            }
+            return sort.direction === 'asc' ? comparison : -comparison;
+        });
+    }
+    
+    _filterKarmaHistory(history, type) {
+        switch (type) {
+            case 'earned':
+                return history.filter(entry => entry.amount > 0);
+            case 'spent':
+                return history.filter(entry => entry.amount < 0);
+            default:
+                return history;
+        }
+    }
+    
+    _updateKarmaDisplay(html, history) {
+        const entriesContainer = html.find('.karma-entries');
+        entriesContainer.empty();
+        
+        history.forEach(entry => {
+            const entryHtml = `
+                <div class="karma-entry">
+                    <div class="karma-date">${entry.date}</div>
+                    <div class="karma-amount ${entry.amount > 0 ? 'karma-earned' : 'karma-spent'}">
+                        ${entry.amount > 0 ? '+' : ''}${entry.amount}
+                    </div>
+                    <div class="karma-description">${entry.description}</div>
+                </div>
+            `;
+            entriesContainer.append(entryHtml);
+        });
+    }
+    
+    _updateSortIndicators(html, currentSort) {
+        const headers = html.find('.sortable');
+        headers.removeClass('sorted-asc sorted-desc');
+        headers.find('.fa-sort').removeClass('fa-sort-up fa-sort-down');
+        
+        const currentHeader = headers.filter(`[data-sort="${currentSort.field}"]`);
+        currentHeader.addClass(`sorted-${currentSort.direction}`);
+    }
+    
+    async _exportKarmaHistory(history) {
+        const content = history.map(entry => 
+            `${entry.date},${entry.amount},"${entry.description}"`
+        ).join('\n');
+        
+        const blob = new Blob([`Date,Amount,Description\n${content}`], {type: 'text/csv'});
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `karma-history-${this.actor.name}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }, 0);
     }
 
     _onCategoryChange(event) {

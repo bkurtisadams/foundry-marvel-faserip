@@ -1,0 +1,56 @@
+<form class="karma-history-dialog">
+    <div class="karma-summary">
+        <div class="karma-totals">
+            <div class="karma-current">
+                <label>Current Karma</label>
+                <div class="value">{{actor.system.secondaryAbilities.karma.value}}</div>
+            </div>
+            <div class="karma-max">
+                <label>Maximum Karma</label>
+                <div class="value">{{actor.system.secondaryAbilities.karma.max}}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="karma-controls">
+        <div class="karma-filters">
+            <select class="karma-type-filter">
+                <option value="all">All Entries</option>
+                <option value="earned">Karma Earned</option>
+                <option value="spent">Karma Spent</option>
+            </select>
+            <input type="text" class="karma-search" placeholder="Search descriptions..."/>
+        </div>
+        <div class="karma-buttons">
+            <button type="button" class="add-karma-entry"><i class="fas fa-plus"></i> Add Entry</button>
+            <button type="button" class="export-karma"><i class="fas fa-file-export"></i> Export</button>
+        </div>
+    </div>
+
+    <div class="karma-history">
+        <div class="karma-table">
+            <div class="karma-header">
+                <div class="header-cell sortable" data-sort="date">
+                    Date <i class="fas fa-sort"></i>
+                </div>
+                <div class="header-cell sortable" data-sort="amount">
+                    Amount <i class="fas fa-sort"></i>
+                </div>
+                <div class="header-cell sortable" data-sort="description">
+                    Description <i class="fas fa-sort"></i>
+                </div>
+            </div>
+            <div class="karma-entries">
+                {{#each karmaHistory}}
+                <div class="karma-entry">
+                    <div class="karma-date">{{date}}</div>
+                    <div class="karma-amount {{#if (gt amount 0)}}karma-earned{{else}}karma-spent{{/if}}">
+                        {{#if (gt amount 0)}}+{{/if}}{{amount}}
+                    </div>
+                    <div class="karma-description">{{description}}</div>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+</form>
