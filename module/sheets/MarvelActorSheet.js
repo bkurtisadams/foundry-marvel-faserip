@@ -342,7 +342,7 @@ export class MarvelActorSheet extends ActorSheet {
                     label: "Close"
                 }
             },
-            render: html => {
+            render: function(html) {  // Change is here - proper function declaration
                 // Sorting
                 html.find('.sortable').click(ev => {
                     const field = ev.currentTarget.dataset.sort;
@@ -354,14 +354,14 @@ export class MarvelActorSheet extends ActorSheet {
                     this._updateKarmaDisplay(html, this._sortKarmaHistory(filteredHistory, currentSort));
                     this._updateSortIndicators(html, currentSort);
                 });
-    
+        
                 // Filtering
                 html.find('.karma-type-filter').change(ev => {
                     const filterType = ev.target.value;
                     filteredHistory = this._filterKarmaHistory(karmaHistory, filterType);
                     this._updateKarmaDisplay(html, this._sortKarmaHistory(filteredHistory, currentSort));
                 });
-    
+        
                 // Search
                 html.find('.karma-search').on('input', ev => {
                     const searchTerm = ev.target.value.toLowerCase();
@@ -370,12 +370,26 @@ export class MarvelActorSheet extends ActorSheet {
                     );
                     this._updateKarmaDisplay(html, this._sortKarmaHistory(filteredHistory, currentSort));
                 });
-    
+        
+                // Add the event listeners for edit and delete buttons
+                html.find('.karma-entries').on('click', '.edit-entry', async (ev) => {
+                    ev.preventDefault();
+                    const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
+                    const entry = filteredHistory[index];
+                    await this._onEditKarmaEntry(ev, entry);
+                });
+        
+                html.find('.karma-entries').on('click', '.delete-entry', async (ev) => {
+                    ev.preventDefault();
+                    const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
+                    await this._onDeleteKarmaEntry(ev, index);
+                });
+        
                 // Export
-                html.find('.export-karma').click(() => this._exportKarmaHistory(karmaHistory));
-    
+                html.find('.export-button').click(() => this._exportKarmaHistory(karmaHistory));
+        
                 // Add Entry
-                html.find('.add-karma-entry').click(async (ev) => {
+                html.find('.add-entry').click(async (ev) => {
                     ev.preventDefault();
                     await this._onAddKarmaEntry(ev);
                 });
@@ -461,7 +475,7 @@ export class MarvelActorSheet extends ActorSheet {
                     callback: async (html) => {
                         const form = html.find('form')[0];
                         const newAmount = parseInt(form.amount.value);
-                        const newDescription = form.description.value;
+                        const newDescription = form.description.value?.trim(); // Add trim
                         
                         if (!newAmount || !newDescription) {
                             ui.notifications.error("Please fill in all fields");
@@ -469,7 +483,7 @@ export class MarvelActorSheet extends ActorSheet {
                         }
     
                         // Get current history
-                        const currentHistory = this.actor.system.karmaTracking.history || [];
+                        const currentHistory = duplicate(this.actor.system.karmaTracking.history || []); // Add duplicate for safety
                         const currentKarma = this.actor.system.secondaryAbilities.karma.value;
                         
                         // Find and update the entry
@@ -491,14 +505,19 @@ export class MarvelActorSheet extends ActorSheet {
                                 description: newDescription
                             };
     
-                            // Update actor
-                            await this.actor.update({
-                                "system.karmaTracking.history": updatedHistory,
-                                "system.secondaryAbilities.karma.value": currentKarma + karmaDiff
-                            });
-                            
-                            // Refresh the karma history window
-                            this._onKarmaHistoryClick(event);
+                            try {
+                                // Update actor
+                                await this.actor.update({
+                                    "system.karmaTracking.history": updatedHistory,
+                                    "system.secondaryAbilities.karma.value": currentKarma + karmaDiff
+                                });
+                                
+                                // Refresh the karma history window
+                                this._onKarmaHistoryClick(event);
+                            } catch (error) {
+                                console.error("Error updating karma entry:", error);
+                                ui.notifications.error("Error updating karma entry");
+                            }
                         }
                     }
                 },
@@ -531,19 +550,19 @@ export class MarvelActorSheet extends ActorSheet {
         if (!confirm) return;
     
         // Get current history
-        const currentHistory = this.actor.system.karmaTracking.history || [];
-        const currentKarma = this.actor.system.secondaryAbilities.karma.value;
+        const currentHistory = duplicate(this.actor.system.karmaTracking.history);
+        const currentKarma = this.actor.system.karmaTracking.karmaPool;
         
         // Get the entry to be deleted
         const deletedEntry = currentHistory[index];
         
-        // Remove the entry and adjust karma
-        const updatedHistory = currentHistory.filter((_, i) => i !== index);
+        // Remove the entry
+        currentHistory.splice(index, 1);
         
         // Update actor
         await this.actor.update({
-            "system.karmaTracking.history": updatedHistory,
-            "system.secondaryAbilities.karma.value": currentKarma - deletedEntry.amount
+            "system.karmaTracking.history": currentHistory,
+            "system.karmaTracking.karmaPool": currentKarma - deletedEntry.amount
         });
         
         // Refresh the karma history window
