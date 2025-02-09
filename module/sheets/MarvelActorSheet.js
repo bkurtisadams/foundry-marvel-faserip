@@ -67,7 +67,12 @@ export class MarvelActorSheet extends ActorSheet {
         };
         
         // Get all powers as items and log the process
-        console.log("All actor items:", this.actor.items);
+        console.log("Sheet data context:", {
+            actor: this.actor,
+            items: context.items,
+            powers: context.powers,
+            config: context.config
+        });
         context.powers = this.actor.items.filter(item => item.type === "power");
         console.log("Filtered powers:", context.powers);
     
@@ -456,30 +461,36 @@ export class MarvelActorSheet extends ActorSheet {
     async _onPowerEdit(event) {
         event.preventDefault();
         
-        const powerIndex = event.currentTarget.dataset.index;
-        console.log("Power Index:", powerIndex);
-        
-        // Fetch the power using the index
         const powerID = event.currentTarget.dataset.id;
         const power = this.actor.items.get(powerID);
         console.log("Editing power:", power);
+        console.log("Power system data:", power.system);
+        
         if (!power) {
             ui.notifications.error("Power not found");
             return;
         }
     
+        // Structure the data to match the template's expectations
+        const templateData = {
+            power: {
+                name: power.name,
+                system: power.system  // Preserve the nested system data structure
+            },
+            config: {
+                ranks: Object.entries(CONFIG.marvel.ranks).reduce((obj, [key, value]) => {
+                    obj[key] = game.i18n.localize(`MARVEL.Rank${key.replace(/\s+/g, '')}`);
+                    return obj;
+                }, {})
+            }
+        };
+    
+        console.log("Template data for power edit:", templateData);
+    
         // Proceed to render the edit dialog
         const html = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/edit-power.html", 
-            {
-                power: power,
-                config: {
-                    ranks: Object.entries(CONFIG.marvel.ranks).reduce((obj, [key, value]) => {
-                        obj[key] = game.i18n.localize(`MARVEL.Rank${key.replace(/\s+/g, '')}`);
-                        return obj;
-                    }, {})
-                }
-            }
+            templateData
         );
         
         return new Dialog({
@@ -503,31 +514,33 @@ export class MarvelActorSheet extends ActorSheet {
                             limitations: form.querySelector('[name="limitations"]').value,
                             type: form.querySelector('[name="type"]').value
                         });
-    
+            
                         // Prepare the updated power data
                         const rankKey = form.querySelector('[name="rank"]').value;
                         const rankNumber = CONFIG.marvel.ranks[rankKey]?.standard || 0;
                         const updatedPower = {
                             name: form.querySelector('[name="name"]').value || "",
-                            rank: rankKey,
-                            rankNumber: rankNumber,
-                            damage: parseInt(form.querySelector('[name="damage"]').value) || 0,
-                            range: parseInt(form.querySelector('[name="range"]').value) || 0,
-                            description: form.querySelector('[name="description"]').value || "",
-                            limitations: form.querySelector('[name="limitations"]').value || "",
-                            type: form.querySelector('[name="type"]').value || ""
+                            system: {  // Add this system wrapper
+                                rank: rankKey,
+                                rankNumber: rankNumber,
+                                damage: parseInt(form.querySelector('[name="damage"]').value) || 0,
+                                range: parseInt(form.querySelector('[name="range"]').value) || 0,
+                                description: form.querySelector('[name="description"]').value || "",
+                                limitations: form.querySelector('[name="limitations"]').value || "",
+                                type: form.querySelector('[name="type"]').value || ""
+                            }
                         };
-    
+            
                         console.log("Updated Power Data:", updatedPower);  // Log the updated power data
-
+            
                         // Update the power in the actor's items
                         await this.actor.updateEmbeddedDocuments("Item", [{
                             _id: power.id,
                             ...updatedPower
                         }]);
-    
+            
                         console.log("Power updated successfully:", updatedPower);
-                        console.log("Updated power in actor:", this.actor.items.contents); // Log the updated actor items
+                        console.log("Updated power in actor:", this.actor.items.contents);
                     }
                 },
                 cancel: {
@@ -825,6 +838,7 @@ async _onAddPower(event) {
                     try {
                         const created = await this.actor.createEmbeddedDocuments("Item", [powerData]);
                         console.log("Power created:", created);
+                        ui.notifications.info(`Created power: ${powerData.name}`);
                     } catch (error) {
                         console.error("Error creating power:", error);
                         ui.notifications.error("Error creating power");

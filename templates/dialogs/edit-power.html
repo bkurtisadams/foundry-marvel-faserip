@@ -8,40 +8,40 @@
         <label>Rank</label>
         <select name="rank">
             {{#each config.ranks as |label key|}}
-            <option value="{{key}}" {{#if (eq ../power.rank key)}}selected{{/if}}>{{label}}</option>
+            <option value="{{key}}" {{#if (eq ../power.system.rank key)}}selected{{/if}}>{{label}}</option>
             {{/each}}
         </select>
     </div>
 
     <div class="form-group">
         <label>Damage</label>
-        <input type="number" name="damage" value="{{power.damage}}" data-dtype="Number"/>
+        <input type="number" name="damage" value="{{power.system.damage}}" data-dtype="Number"/>
     </div>
 
     <div class="form-group">
         <label>Range (areas)</label>
-        <input type="number" name="range" value="{{power.range}}" data-dtype="Number"/>
+        <input type="number" name="range" value="{{power.system.range}}" data-dtype="Number"/>
     </div>
 
     <div class="form-group">
         <label>Description</label>
-        <textarea name="description">{{power.description}}</textarea>
+        <textarea name="description">{{power.system.description}}</textarea>
     </div>
 
     <div class="form-group">
         <label>Limitations</label>
-        <textarea name="limitations">{{power.limitations}}</textarea>
+        <textarea name="limitations">{{power.system.limitations}}</textarea>
     </div>
 
     <div class="form-group">
         <label>Type</label>
         <select name="type">
-            <option value="attack" {{#if (eq power.type "attack")}}selected{{/if}}>Attack</option>
-            <option value="defense" {{#if (eq power.type "defense")}}selected{{/if}}>Defense</option>
-            <option value="movement" {{#if (eq power.type "movement")}}selected{{/if}}>Movement</option>
-            <option value="sensory" {{#if (eq power.type "sensory")}}selected{{/if}}>Sensory</option>
-            <option value="control" {{#if (eq power.type "control")}}selected{{/if}}>Control</option>
-            <option value="utility" {{#if (eq power.type "utility")}}selected{{/if}}>Utility</option>
+            <option value="attack" {{#if (eq power.system.type "attack")}}selected{{/if}}>Attack</option>
+            <option value="defense" {{#if (eq power.system.type "defense")}}selected{{/if}}>Defense</option>
+            <option value="movement" {{#if (eq power.system.type "movement")}}selected{{/if}}>Movement</option>
+            <option value="sensory" {{#if (eq power.system.type "sensory")}}selected{{/if}}>Sensory</option>
+            <option value="control" {{#if (eq power.system.type "control")}}selected{{/if}}>Control</option>
+            <option value="utility" {{#if (eq power.system.type "utility")}}selected{{/if}}>Utility</option>
         </select>
     </div>
 </form>

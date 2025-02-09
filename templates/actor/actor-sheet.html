@@ -171,7 +171,7 @@
                 <input type="text" value="{{power.name}}" disabled/>
                 <select class="rank-select" disabled>
                     {{#each @root.config.ranks as |label key|}}
-                    <option value="{{key}}" {{#if (eq ../power.system.rank key)}}selected{{/if}}>{{label}}</option>
+                    <option value="{{key}}" {{#if (eq power.system.rank key)}}selected{{/if}}>{{label}}</option>
                     {{/each}}
                 </select>
                 <div class="power-controls">
