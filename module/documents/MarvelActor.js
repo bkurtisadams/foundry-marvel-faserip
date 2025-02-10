@@ -658,6 +658,29 @@ export class MarvelActor extends Actor {
             ui.notifications.error("No target selected");
             return null;
         }
+
+        // Check if we're in the right phase for defensive actions
+        const combat = game.combat;
+        if (!combat) return;
+
+        const currentPhase = combat.getFlag("marvel-faserip", "currentPhase");
+        const targetToken = target.token;
+        
+        // Check if target has declared a defensive action
+        const defense = combat.hasDefensiveAction(targetToken.id);
+        if (defense && !defense.used) {
+            // Force the defensive action to resolve first
+            const defenseResult = await target.rollAbility(defense.action === "Bl" ? "strength" : "agility", {
+                featType: "combat",
+                actionType: defense.action
+            });
+            
+            // If defense succeeds (not white result), attack automatically misses
+            if (defenseResult.color !== "white") {
+                await combat.useDefensiveAction(targetToken.id);
+                return { success: false, defended: true, defenseType: defense.action };
+            }
+        }
     
         // Roll the attack
         const attackRoll = await this.rollAttack(ability, attackType, options);

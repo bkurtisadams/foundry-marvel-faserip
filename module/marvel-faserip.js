@@ -9,8 +9,9 @@ import { MarvelAttackItemSheet } from "./sheets/items/MarvelAttackItemSheet.js";
 // Define Combat Phases
 const COMBAT_PHASES = {
     SETUP: 0,        // Initial setup, declares NPCs
-    ACTIONS: 1,      // Players declare actions
-    RESOLUTION: 2    // Initiative and resolution
+    PREACTION: 1,    // Pre-action defensive declarations and rolls
+    ACTIONS: 2,      // Players declare actions
+    RESOLUTION: 3    // Initiative and resolution
 };
 
 async function getInitiativeModifier(intuitionValue) {
@@ -166,7 +167,37 @@ Hooks.once('init', async function() {
     ]);
 });
 
-// Override Combat class's rollInitiative method
+// Add to Combat class
+Combat.prototype.declareDefensiveAction = async function(tokenId, action) {
+    const validDefenses = ["Do", "Bl", "Ev"];
+    if (!validDefenses.includes(action)) {
+        throw new Error("Invalid defensive action");
+    }
+
+    await this.setFlag("marvel-faserip", `defensiveActions.${tokenId}`, {
+        action: action,
+        declared: true,
+        used: false
+    });
+};
+
+Combat.prototype.hasDefensiveAction = function(tokenId) {
+    return this.getFlag("marvel-faserip", `defensiveActions.${tokenId}`);
+};
+
+Combat.prototype.useDefensiveAction = async function(tokenId) {
+    const defense = this.getFlag("marvel-faserip", `defensiveActions.${tokenId}`);
+    if (defense && !defense.used) {
+        await this.setFlag("marvel-faserip", `defensiveActions.${tokenId}`, {
+            ...defense,
+            used: true
+        });
+        return true;
+    }
+    return false;
+};
+
+// Override Combat class's rollInitiative method to handle Marvel's initiative rules
 Combat.prototype.rollInitiative = async function(ids, {formula=null, updateTurn=true, messageOptions={}}={}) {
     const heroes = [];
     const villains = [];
@@ -272,6 +303,10 @@ Hooks.on("renderCombatTracker", (app, html, data) => {
                 await combat.nextRound();
                 break;
                 
+            case COMBAT_PHASES.PREACTION:
+                await announcePreActionPhase(combat);
+                break;
+                
             case COMBAT_PHASES.ACTIONS:
                 await announceActionPhase(combat);
                 break;
@@ -282,7 +317,7 @@ Hooks.on("renderCombatTracker", (app, html, data) => {
         }
         
         await combat.setFlag("marvel-faserip", "currentPhase", nextPhase);
-    });
+    });;
 });
     // Disable individual initiative rolls when phase system is active
     Hooks.on("preUpdateCombat", (combat, updateData, options, userId) => {
@@ -297,7 +332,8 @@ Hooks.on("renderCombatTracker", (app, html, data) => {
 // Get next phase button label
 function getNextPhaseLabel(currentPhase) {
     switch(currentPhase) {
-        case COMBAT_PHASES.SETUP: return "Begin Action Declarations";
+        case COMBAT_PHASES.SETUP: return "Begin Pre-Action Phase";
+        case COMBAT_PHASES.PREACTION: return "Begin Action Declarations";
         case COMBAT_PHASES.ACTIONS: return "Resolve Actions";
         case COMBAT_PHASES.RESOLUTION: return "Next Round";
     }
@@ -307,9 +343,28 @@ function getNextPhaseLabel(currentPhase) {
 function getCurrentPhaseInfo(currentPhase) {
     switch(currentPhase) {
         case COMBAT_PHASES.SETUP: return "GM Setup";
+        case COMBAT_PHASES.PREACTION: return "Pre-Action Defensive Declarations";
         case COMBAT_PHASES.ACTIONS: return "Action Declarations";
         case COMBAT_PHASES.RESOLUTION: return "Resolution Phase";
     }
+}
+
+// A pre-action phase announcement
+async function announcePreActionPhase(combat) {
+    await ChatMessage.create({
+        content: `
+            <div class="marvel-phase">
+                <h3>Pre-Action Phase</h3>
+                <p>Characters may now declare and roll defensive actions:</p>
+                <ul>
+                    <li>Dodging (Do)</li>
+                    <li>Blocking (Bl)</li>
+                    <li>Evading (Ev)</li>
+                </ul>
+                <p>Once declared, these defensive actions must be used when attacked.</p>
+            </div>
+        `
+    });
 }
 
 // Action phase announcement
