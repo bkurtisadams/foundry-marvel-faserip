@@ -127,16 +127,22 @@ export class MarvelActorSheet extends ActorSheet {
     }
     
     _onDragStart(event) {
+        event.stopPropagation();  // Add this line
         const li = event.currentTarget;
         const item = this.actor.items.get(li.dataset.itemId);
         if (!item) return;
     
         // Set the drag data
-        event.dataTransfer.setData("text/plain", JSON.stringify({
+        const dragData = {
             type: "Item",
             actorId: this.actor.id,
             itemId: item.id
-        }));
+        };
+    
+        event.dataTransfer.setData("text/plain", JSON.stringify(dragData));
+    
+        // Optionally set effectAllowed to move or copy
+        event.dataTransfer.effectAllowed = "copy";
     }
 
     activateListeners(html) {
