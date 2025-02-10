@@ -305,7 +305,7 @@ export class MarvelActor extends Actor {
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
         
         // Roll the dice and add karma
-        const roll = await new Roll("1d100").evaluate({async: true});
+        const roll = new Roll("1d100").evaluateSync();
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
         
@@ -376,7 +376,7 @@ export class MarvelActor extends Actor {
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
         
         // Roll and add karma
-        const roll = await new Roll("1d100").evaluate({async: true});
+        const roll = new Roll("1d100").evaluateSync();
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
         
@@ -421,57 +421,47 @@ export class MarvelActor extends Actor {
     
     // roll attack method 
     async rollAttack(ability, attackType, options = {}) {
+        console.log("Rolling attack with:", { ability, attackType, options });
+        
         // Get the ability data
         const abilityData = this.system.primaryAbilities[ability.toLowerCase()];
         if (!abilityData) {
+            console.error(`Ability ${ability} not found`);
             throw new Error(`Ability ${ability} not found`);
         }
-    
-        // Get stored roll options or use defaults
-        const stored = await game.user.getFlag("world", "marvelRollOptions") || {
-            columnShift: 0,
-            karmaPoints: 0
-        };
-    
-        // Merge stored options with provided options
-        options = foundry.utils.mergeObject(stored, options);
     
         // Get base rank and apply column shift
         const baseRank = abilityData.rank || this.getRankFromValue(abilityData.number);
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
     
-        // Roll and add karma
-        const roll = await new Roll("1d100").evaluate({async: true});
-        const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
-        const finalRoll = Math.min(100, roll.total + karmaPoints);
+        // Roll the dice
+        const roll = await new Roll("1d100").evaluate();
+        const total = roll.total;
     
-        // Deduct karma if used
-        if (karmaPoints > 0) {
-            await this.update({
-                "system.secondaryAbilities.karma.value": this.system.secondaryAbilities.karma.value - karmaPoints
-            });
-        }
+        console.log("Attack roll result:", { 
+            total, 
+            baseRank, 
+            shiftedRank,
+            abilityData 
+        });
     
-        // Get the color result and specific attack outcome
-        const color = this.getColorResult(finalRoll, shiftedRank);
-        const action = CONFIG.marvel.actionResults[attackType];
-        const resultText = action?.results[color] || color.toUpperCase();
+        // Get the color result
+        const color = this.getColorResult(total, shiftedRank);
     
-        // Create chat message content
+        // Create chat message
         const messageContent = `
             <div class="marvel-roll">
-                <h3>${this.name} - ${action?.name || "Attack"}</h3>
+                <h3>${this.name} - ${attackType} Attack</h3>
                 <div class="roll-details">
                     <div>${ability}: ${abilityData.number} (${baseRank})</div>
                     ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                    <div>Roll: ${roll.total}${karmaPoints ? ` + ${karmaPoints} Karma = ${finalRoll}` : ''}</div>
+                    <div>Roll: ${total}</div>
                 </div>
                 <div class="roll-result ${this._getColorClass(color)}">
-                    ${resultText}
+                    ${color.toUpperCase()}
                 </div>
             </div>`;
     
-        // Create chat message
         await ChatMessage.create({
             speaker: ChatMessage.getSpeaker({ actor: this }),
             content: messageContent,
@@ -479,7 +469,294 @@ export class MarvelActor extends Actor {
             sound: CONFIG.sounds.dice
         });
     
-        return { roll, color, result: resultText };
+        return { roll, color };
+    }
+
+    /**
+     * Calculate damage from a combat hit
+     * @param {string} color - The color result (white, green, yellow, red)
+     * @param {string} attackType - The type of attack (BA, EA, etc)
+     * @param {Object} options - Additional options including weaponDamage
+     * @returns {number} The calculated damage amount
+     */
+
+    _calculateCombatDamage(color, attackType, options = {}) {    
+        // Get base damage from attacker's strength or weapon
+        let baseDamage = 0;
+        if (attackType === "BA" || attackType === "TB") {
+            // For blunt attacks, use strength
+            baseDamage = this.system.primaryAbilities.strength.number;
+        } else {
+            // For other attacks, use weapon damage
+            baseDamage = options.weaponDamage || 0;
+        }
+
+        // Get combat effects based on attack type and color
+        const combatEffect = CONFIG.marvel.actionResults[attackType]?.results[color];
+        if (!combatEffect) return 0;
+
+        // Different effects based on hit type
+        let finalDamage = 0;
+        switch (combatEffect.toLowerCase()) {
+            case 'miss':
+                finalDamage = 0;
+                break;
+            case 'hit':
+                finalDamage = baseDamage;
+                break;
+            case 'slam':
+                finalDamage = baseDamage;
+                // TODO: Add slam effects (knockback) later
+                break;
+            case 'stun':
+                finalDamage = baseDamage;
+                // TODO: Add stun effects later
+                break;
+            case 'kill':
+                finalDamage = baseDamage * 2; // Double damage for kill results
+                break;
+            case 'bullseye':
+                finalDamage = baseDamage * 1.5; // 1.5x damage for bullseye
+                break;
+            default:
+                finalDamage = baseDamage;
+        }
+
+        return finalDamage;
+    }
+
+    /**
+     * Handle an attack attempt against a target
+     * @param {string} ability - The ability used (fighting, agility)
+     * @param {string} attackType - The type of attack (BA, EA, etc)
+     * @param {Object} options - Additional options
+     * @param {Actor} target - The target actor
+     * @returns {Promise<Object>} The attack results
+     */
+    async handleAttack(ability, attackType, options = {}, target) {
+        console.log("HandleAttack started with:", {ability, attackType, options, target});
+        
+        if (!target) {
+            ui.notifications.error("No target selected");
+            return null;
+        }
+    
+        // Get the target's current health before we start
+        const currentHealth = target.system.secondaryAbilities.health.value;
+        const maxHealth = target.system.secondaryAbilities.health.max;
+        console.log("Target initial health status:", {
+            currentHealth,
+            maxHealth,
+            target: target.name,
+            healthSystem: target.system.secondaryAbilities.health
+        });
+    
+        // Roll the attack - this already handles the dialog
+        console.log("About to roll attack with:", {ability, attackType, options});
+        const attackRoll = await this.rollAttack(ability, attackType, options);
+        console.log("Attack roll result:", attackRoll);
+        
+        if (!attackRoll) {
+            console.log("No attack roll result, returning null");
+            return null;
+        }
+    
+        // If hit (anything but white), calculate and apply damage
+        if (attackRoll.color !== "white") {
+            let calculatedDamage = 0;
+    
+            // Calculate base damage based on attack type
+            console.log("Calculating damage for attack type:", attackType);
+            switch(attackType) {
+                case "BA": // Blunt Attack
+                    calculatedDamage = this.system.primaryAbilities.strength.number;
+                    console.log("Blunt Attack damage based on strength:", calculatedDamage);
+                    break;
+                case "EA": // Edged Attack
+                    calculatedDamage = options.weaponDamage || this.system.primaryAbilities.strength.number;
+                    console.log("Edged Attack damage:", calculatedDamage);
+                    break;
+                case "TB": // Throwing Blunt
+                case "TE": // Throwing Edged
+                    calculatedDamage = Math.min(this.system.primaryAbilities.strength.number, options.weaponDamage || 0);
+                    console.log("Throwing attack damage:", calculatedDamage);
+                    break;
+                case "Sh": // Shooting
+                    calculatedDamage = options.weaponDamage || 0;
+                    console.log("Shooting damage:", calculatedDamage);
+                    break;
+                case "En": // Energy
+                case "Fo": // Force
+                    calculatedDamage = options.weaponDamage || 0;
+                    console.log("Energy/Force damage:", calculatedDamage);
+                    break;
+            }
+    
+            // Get target's armor/protection if any
+            const targetArmor = target.system.resistances?.list?.find(r => 
+                r.type.toLowerCase() === "physical")?.number || 0;
+            console.log("Target armor found:", targetArmor);
+    
+            // Reduce damage by armor
+            const finalDamage = Math.max(0, calculatedDamage - targetArmor);
+            console.log("Final damage after armor reduction:", finalDamage);
+    
+            try {
+                // Update target's health
+                const newHealth = Math.max(0, currentHealth - finalDamage);
+                console.log("Updating target health:", {
+                    current: currentHealth,
+                    damage: finalDamage,
+                    new: newHealth,
+                    target: target.name
+                });
+    
+                await target.update({
+                    "system.secondaryAbilities.health.value": newHealth
+                });
+    
+                // Create damage message
+                const messageContent = `
+                    <div class="marvel-damage">
+                        <h3>${this.name} hits ${target.name}!</h3>
+                        <div class="damage-details">
+                            <div>Base Damage: ${calculatedDamage}</div>
+                            ${targetArmor ? `<div>Target Armor: ${targetArmor}</div>` : ''}
+                            <div>Final Damage: ${finalDamage}</div>
+                            <div>Target Health: ${currentHealth} → ${newHealth}</div>
+                        </div>
+                    </div>`;
+    
+                await ChatMessage.create({
+                    speaker: ChatMessage.getSpeaker({ actor: this }),
+                    content: messageContent
+                });
+    
+            } catch (error) {
+                console.error('Error applying damage:', error);
+                ui.notifications.error("Error applying damage to target");
+                throw error;
+            }
+    
+            return { ...attackRoll, damage: finalDamage };
+        }
+    
+        return attackRoll;
+    }
+
+
+    /**
+     * Handle an attack attempt against a target
+     * @param {string} ability - The ability used (fighting, agility)
+     * @param {string} attackType - The type of attack (BA, EA, etc)
+     * @param {Object} options - Additional options
+     * @param {Actor} target - The target actor
+     * @returns {Promise<Object>} The attack results
+     */
+    async handleAttack(ability, attackType, options = {}, target) {
+        if (!target) {
+            ui.notifications.error("No target selected");
+            return null;
+        }
+    
+        // Roll the attack
+        const attackRoll = await this.rollAttack(ability, attackType, options);
+        if (!attackRoll) return null;
+    
+        // If hit (anything but white), calculate and apply damage
+        if (attackRoll.color !== "white") {
+            let calculatedDamage = 0;
+    
+            // Calculate base damage based on attack type
+            switch(attackType) {
+                case "BA": // Blunt Attack
+                    calculatedDamage = this.system.primaryAbilities.strength.number;
+                    break;
+                case "EA": // Edged Attack
+                    calculatedDamage = options.weaponDamage || this.system.primaryAbilities.strength.number;
+                    break;
+                case "TB": // Throwing Blunt
+                case "TE": // Throwing Edged
+                    calculatedDamage = Math.min(this.system.primaryAbilities.strength.number, options.weaponDamage || 0);
+                    break;
+                case "Sh": // Shooting
+                    calculatedDamage = options.weaponDamage || 0;
+                    break;
+                case "En": // Energy
+                case "Fo": // Force
+                    calculatedDamage = options.weaponDamage || 0;
+                    break;
+            }
+    
+            // Get target's armor/protection if any
+            const targetArmor = target.system.resistances?.list?.find(r => 
+                r.type.toLowerCase() === "physical")?.number || 0;
+    
+            // Reduce damage by armor
+            const finalDamage = Math.max(0, calculatedDamage - targetArmor);
+    
+            // Handle special effects based on result color and attack type
+            let effectResult = null;
+            if (attackRoll.color === "yellow" || attackRoll.color === "red") {
+                switch(attackType) {
+                    case "BA":
+                        if (attackRoll.color === "yellow") effectResult = "slam";
+                        else effectResult = "stun";
+                        break;
+                    case "EA":
+                        if (attackRoll.color === "yellow") effectResult = "stun";
+                        else effectResult = "kill";
+                        break;
+                    case "Sh":
+                        if (attackRoll.color === "yellow") effectResult = "bullseye";
+                        else effectResult = "kill";
+                        break;
+                }
+            }
+    
+            // Apply damage to target
+            if (finalDamage > 0) {
+                try {
+                    const currentHealth = target.system.secondaryAbilities.health.value;
+                    const newHealth = Math.max(0, currentHealth - finalDamage);
+                    
+                    await target.update({
+                        "system.secondaryAbilities.health.value": newHealth
+                    });
+    
+                    // Create damage message
+                    const messageContent = `
+                        <div class="marvel-damage">
+                            <h3>${this.name} hits ${target.name}!</h3>
+                            <div class="damage-details">
+                                <div>Base Damage: ${calculatedDamage}</div>
+                                ${targetArmor ? `<div>Target Armor: ${targetArmor}</div>` : ''}
+                                <div>Final Damage: ${finalDamage}</div>
+                                ${effectResult ? `<div>Effect: ${effectResult.toUpperCase()}</div>` : ''}
+                                <div>Health: ${currentHealth} → ${newHealth}</div>
+                            </div>
+                        </div>`;
+    
+                    await ChatMessage.create({
+                        speaker: ChatMessage.getSpeaker({ actor: this }),
+                        content: messageContent
+                    });
+    
+                    // Handle special effects like Stun, Slam, or Kill
+                    if (effectResult && finalDamage > 0) {
+                        await target.handleCombatEffect(effectResult);
+                    }
+    
+                } catch (error) {
+                    console.error('Error applying damage:', error);
+                    ui.notifications.error("Error applying damage to target");
+                }
+            }
+    
+            return { ...attackRoll, damage: finalDamage, effect: effectResult };
+        }
+    
+        return attackRoll;
     }
 
     /**
@@ -496,6 +773,106 @@ export class MarvelActor extends Actor {
             red: 'red-result'
         };
         return colorMap[color.toLowerCase()] || '';
+    }
+
+    async handleCombatEffect(effectType) {
+        // Roll endurance FEAT for effect
+        const enduranceRoll = new Roll("1d100").evaluateSync();
+        const enduranceRank = this.system.primaryAbilities.endurance.rank;
+        
+        // Get color result from universal table
+        const color = this.getColorResult(enduranceRoll.total, enduranceRank);
+        
+        let effectResult = "";
+        let effectMessage = "";
+    
+        switch(effectType) {
+            case "slam":
+                // Handle Slam per rules
+                if (color === "white") {
+                    effectResult = "No Slam";
+                    effectMessage = "Resists the slam attempt";
+                } else if (color === "green") {
+                    effectResult = "Stagger";
+                    effectMessage = "Staggers back but maintains footing";
+                } else if (color === "yellow") {
+                    effectResult = "1 Area";
+                    effectMessage = "Knocked back one area";
+                } else if (color === "red") {
+                    effectResult = "Grand Slam";
+                    effectMessage = "Knocked back with force";
+                }
+                break;
+    
+            case "stun":
+                // Handle Stun per rules
+                if (color === "white") {
+                    effectResult = "No Effect";
+                    effectMessage = "Resists the stun attempt";
+                } else if (color === "green") {
+                    effectResult = "1 Round";
+                    effectMessage = "Stunned for 1 round";
+                } else if (color === "yellow" || color === "red") {
+                    const rounds = Math.floor(Math.random() * 10) + 1;
+                    effectResult = `${rounds} Rounds`;
+                    effectMessage = `Stunned for ${rounds} rounds`;
+                }
+                break;
+    
+            case "kill":
+                // Handle Kill per rules
+                if (color === "white") {
+                    effectResult = "No Effect";
+                    effectMessage = "Resists the killing blow";
+                } else if (color === "green") {
+                    if (["EA", "Sh"].includes(attackType)) { // Only for Edged and Shooting
+                        effectResult = "Endurance Loss";
+                        effectMessage = "Takes severe damage, losing Endurance rank";
+                        // Reduce Endurance rank
+                        const currentRank = this.system.primaryAbilities.endurance.rank;
+                        const ranks = Object.keys(CONFIG.marvel.ranks);
+                        const currentIndex = ranks.indexOf(currentRank);
+                        if (currentIndex > 0) {
+                            await this.update({
+                                "system.primaryAbilities.endurance.rank": ranks[currentIndex - 1]
+                            });
+                        }
+                    }
+                } else if (color === "yellow" || color === "red") {
+                    effectResult = "Endurance Loss";
+                    effectMessage = "Takes severe damage, losing Endurance rank";
+                    // Same endurance reduction as above
+                    const currentRank = this.system.primaryAbilities.endurance.rank;
+                    const ranks = Object.keys(CONFIG.marvel.ranks);
+                    const currentIndex = ranks.indexOf(currentRank);
+                    if (currentIndex > 0) {
+                        await this.update({
+                            "system.primaryAbilities.endurance.rank": ranks[currentIndex - 1]
+                        });
+                    }
+                }
+                break;
+        }
+    
+        // Create chat message for effect
+        if (effectMessage) {
+            const messageContent = `
+                <div class="marvel-effect">
+                    <h3>${this.name} - ${effectType.toUpperCase()} Effect</h3>
+                    <div class="effect-details">
+                        <div>Endurance Roll: ${enduranceRoll.total}</div>
+                        <div>Result: ${effectResult}</div>
+                        <div>${effectMessage}</div>
+                    </div>
+                </div>`;
+    
+            await ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({ actor: this }),
+                content: messageContent
+            });
+        }
+    
+        return { result: effectResult, message: effectMessage };
     }
 
     /**
@@ -655,7 +1032,7 @@ export class MarvelActor extends Actor {
 
         // Apply column shifts and roll
         const shiftedRank = this.applyColumnShift(resourceRank, options.columnShift || 0);
-        const roll = await new Roll("1d100").evaluate({async: true});
+        const roll = new Roll("1d100").evaluateSync();
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
         
@@ -784,7 +1161,7 @@ export class MarvelActor extends Actor {
         const shiftedRank = this.applyColumnShift(baseRank, totalShift);
 
         // Roll and add karma
-        const roll = await new Roll("1d100").evaluate({async: true});
+        const roll = new Roll("1d100").evaluateSync();
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
 
@@ -850,10 +1227,15 @@ export class MarvelActor extends Actor {
      * @returns {Promise} Promise that resolves when damage is applied
      */
     async applyDamage(damage, options = {}) {
+        console.log(`Applying ${damage} damage to ${this.name}`);
+        
         const currentHealth = this.system.secondaryAbilities.health.value;
+        console.log(`Current health: ${currentHealth}`);
+        
         const newHealth = Math.max(0, currentHealth - damage);
+        console.log(`New health will be: ${newHealth}`);
 
-        // Update health value
+        // Update health value using the correct data path
         await this.update({
             "system.secondaryAbilities.health.value": newHealth
         });
@@ -894,7 +1276,7 @@ export class MarvelActor extends Actor {
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
 
         // Roll with karma option
-        const roll = await new Roll("1d100").evaluate({async: true});
+        const roll = new Roll("1d100").evaluateSync();
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
 
@@ -1083,7 +1465,7 @@ export class MarvelActor extends Actor {
         // Apply column shifts and roll
         const baseRank = power.rank;
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
-        const roll = await new Roll("1d100").evaluate({async: true});
+        const roll = new Roll("1d100").evaluateSync();
         const finalRoll = roll.total;  // No karma allowed on power stunt attempts
 
         // Deduct karma cost

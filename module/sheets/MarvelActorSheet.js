@@ -126,12 +126,32 @@ export class MarvelActorSheet extends ActorSheet {
         return context;
     }
     
+    _onDragStart(event) {
+        const li = event.currentTarget;
+        const item = this.actor.items.get(li.dataset.itemId);
+        if (!item) return;
+    
+        // Set the drag data
+        event.dataTransfer.setData("text/plain", JSON.stringify({
+            type: "Item",
+            actorId: this.actor.id,
+            itemId: item.id
+        }));
+    }
 
     activateListeners(html) {
         super.activateListeners(html);
     
         if (this.isEditable) {
             console.log("Setting up listeners"); // Add this line
+            
+            // Add drag events for macros
+            let handler = ev => this._onDragStart(ev);
+            html.find('li.item').each((i, li) => {
+            if (li.classList.contains("item-header")) return;
+            li.setAttribute("draggable", true);
+            li.addEventListener("dragstart", handler, false);
+        });
             // Test each method exists before binding
             const bindings = [
                 { selector: '.add-power', method: this._onAddPower },
@@ -209,11 +229,43 @@ export class MarvelActorSheet extends ActorSheet {
             // Attack roll button
             html.find('.roll-attack').click(async (ev) => {
                 ev.preventDefault();
-                const itemId = ev.currentTarget.closest(".attack-row").dataset.itemId;
+                const attackRow = ev.currentTarget.closest(".attack-row");
+                if (!attackRow) return;
+                
+                const itemId = attackRow.dataset.itemId;
                 if (!itemId) return;
+                
                 const item = this.actor.items.get(itemId);
                 if (!item) return;
-                return await item.roll();
+            
+                // Get selected token as target
+                const targets = game.user.targets;
+                const target = targets.size === 1 ? targets.first().actor : null;
+                
+                if (!target) {
+                    ui.notifications.warn("Please select a target token first");
+                    return;
+                }
+            
+                console.log("Attack initiated:", {
+                    attacker: this.actor.name,
+                    target: target.name,
+                    item: item.name,
+                    ability: item.system.ability,
+                    attackType: item.system.attackType
+                });
+            
+                // Call handleAttack directly instead of item.roll()
+                return await this.actor.handleAttack(
+                    item.system.ability,
+                    item.system.attackType,
+                    {
+                        weaponDamage: item.system.weaponDamage,
+                        range: item.system.range,
+                        columnShift: item.system.columnShift
+                    },
+                    target
+                );
             });
             
              // Edit attack button
@@ -332,6 +384,36 @@ export class MarvelActorSheet extends ActorSheet {
                 }
             });
         }
+        // Modify the attack roll button handler
+        html.find('.roll-attack').click(async (ev) => {
+            ev.preventDefault();
+            const itemId = ev.currentTarget.closest(".attack-row").dataset.itemId;
+            if (!itemId) return;
+            
+            const item = this.actor.items.get(itemId);
+            if (!item) return;
+
+            // Get selected token as target
+            const targets = game.user.targets;
+            const target = targets.size === 1 ? targets.first().actor : null;
+            
+            if (!target) {
+                ui.notifications.warn("Please select a target token first");
+                return;
+            }
+
+            // Call the new handleAttack method
+            return await this.actor.handleAttack(
+                item.system.ability,
+                item.system.attackType,
+                {
+                    weaponDamage: item.system.weaponDamage,
+                    range: item.system.range,
+                    columnShift: item.system.columnShift
+                },
+                target
+            );
+        });
     }
 
     // handler for karma history
@@ -1789,3 +1871,35 @@ async _onResistanceRankChange(event) {
     this.render(false);
 }
 }
+async function createFaseripMacro(data, slot) {
+    if (data.type !== "Item") return;
+    if (!("data" in data)) return ui.notifications.warn("You can only create macro buttons for owned Items");
+    const item = data.data;
+  
+    // Create the macro command
+    const command = `game.faserip.rollItemMacro("${item.name}");`;
+    let macro = game.macros.find(m => (m.name === item.name) && (m.command === command));
+    if (!macro) {
+      macro = await Macro.create({
+        name: item.name,
+        type: "script",
+        img: item.img,
+        command: command,
+        flags: { "faserip.itemMacro": true }
+      });
+    }
+    game.user.assignHotbarMacro(macro, slot);
+    return false;
+  }
+  
+  function rollItemMacro(itemName) {
+    const speaker = ChatMessage.getSpeaker();
+    let actor;
+    if (speaker.token) actor = game.actors.tokens[speaker.token];
+    if (!actor) actor = game.actors.get(speaker.actor);
+    const item = actor ? actor.items.find(i => i.name === itemName) : null;
+    if (!item) return ui.notifications.warn(`Your controlled Actor does not have an item named ${itemName}`);
+  
+    // Trigger the item roll
+    return item.roll();
+  }

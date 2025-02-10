@@ -70,9 +70,51 @@ async function rollSideInitiative(combat, side, sideName) {
     return { total, side: sideName, firstCombatant: side[0] };
 }
 
+  function rollItemMacro(itemName) {
+    console.log("FASERIP | Rolling item macro for:", itemName);
+    
+    const speaker = ChatMessage.getSpeaker();
+    console.log("FASERIP | Speaker:", speaker);
+    
+    let actor;
+    if (speaker.token) {
+        console.log("FASERIP | Getting actor from token");
+        actor = game.actors.tokens[speaker.token];
+    }
+    if (!actor) {
+        console.log("FASERIP | Getting actor from speaker ID");
+        actor = game.actors.get(speaker.actor);
+    }
+    console.log("FASERIP | Found actor:", actor);
+
+    const item = actor ? actor.items.find(i => i.name === itemName) : null;
+    console.log("FASERIP | Found item:", item);
+    
+    if (!item) {
+        console.warn(`FASERIP | Actor does not have item named ${itemName}`);
+        return ui.notifications.warn(`Your controlled Actor does not have an item named ${itemName}`);
+    }
+
+    // Trigger the item roll
+    console.log("FASERIP | Attempting to roll item");
+    if (item.type === "attack") {
+        return actor.rollAttack(item.system.ability, item.system.attackType, {
+            weaponDamage: item.system.weaponDamage,
+            columnShift: item.system.columnShift,
+            range: item.system.range
+        });
+    }
+}
+  
 // Initialize system
 Hooks.once('init', async function() {
     console.log('marvel-faserip | Initializing Marvel FASERIP System');
+
+    // Set up game.faserip
+    game.faserip = {
+        MarvelActor,
+        rollItemMacro
+    };
 
     CONFIG.marvel = {
         ranks: MARVEL_RANKS,
@@ -302,26 +344,55 @@ async function resolveActions(combat) {
 }
 
 // Handle Macro Creation
-Hooks.on("hotbarDrop", async (bar, data, slot) => {
-    if (data.type !== "Item") return;
+Hooks.on("hotbarDrop", async (bar, rawData, slot) => {
+    console.log("FASERIP | Hotbar Drop Raw Data:", rawData);
     
+    // Parse the data if it's a string
+    const data = typeof rawData === "string" ? JSON.parse(rawData) : rawData;
+    console.log("FASERIP | Parsed Hotbar Drop Data:", data);
+
+    if (data.type !== "Item") {
+        console.log("FASERIP | Not an item, ignoring drop");
+        return;
+    }
+   
     const actor = game.actors.get(data.actorId);
+    console.log("FASERIP | Found actor:", actor);
+
     const item = actor?.items.get(data.itemId);
-    if (!item || item.type !== "attack") return;
+    console.log("FASERIP | Found item:", item);
+
+    if (!item || item.type !== "attack") {
+        console.log("FASERIP | Item not found or not an attack:", {item});
+        return;
+    }
+
+    console.log("FASERIP | Creating macro command for attack item:", item);
 
     const command = `(async () => {
         try {
+            console.log("FASERIP | Executing attack macro");
             const actor = game.actors.get("${data.actorId}");
             if (!actor) {
+                console.error("FASERIP | Actor not found:", "${data.actorId}");
                 ui.notifications.warn("Actor not found");
                 return;
             }
-            
+           
             const item = actor.items.get("${data.itemId}");
             if (!item) {
+                console.error("FASERIP | Attack item not found:", "${data.itemId}");
                 ui.notifications.warn("Attack item not found");
                 return;
             }
+
+            console.log("FASERIP | Rolling attack with:", {
+                ability: item.system.ability,
+                attackType: item.system.attackType,
+                weaponDamage: item.system.weaponDamage,
+                columnShift: item.system.columnShift,
+                range: item.system.range
+            });
 
             // Instead of opening the sheet, execute the roll
             await actor.rollAttack(item.system.ability, item.system.attackType, {
@@ -330,25 +401,47 @@ Hooks.on("hotbarDrop", async (bar, data, slot) => {
                 range: item.system.range
             });
         } catch(err) {
-            console.error(err);
+            console.error("FASERIP | Error executing attack macro:", err);
             ui.notifications.error("Failed to roll attack");
         }
     })();`;
 
     // Create or update the macro
+    console.log("FASERIP | Looking for existing macro with name:", item.name);
     let macro = game.macros.find(m => m.name === item.name && m.author.id === game.user.id);
-    if (!macro) {
-        macro = await Macro.create({
-            name: item.name,
-            type: "script",
-            img: item.img,
-            command: command,
-            flags: { "marvel-faserip.attackMacro": true }
-        });
-    } else {
-        await macro.update({ command: command });
-    }
     
-    await game.user.assignHotbarMacro(macro, slot);
+    if (!macro) {
+        console.log("FASERIP | Creating new macro");
+        try {
+            macro = await Macro.create({
+                name: item.name,
+                type: "script",
+                img: item.img,
+                command: command,
+                flags: { "marvel-faserip.attackMacro": true }
+            });
+            console.log("FASERIP | Created new macro:", macro);
+        } catch (error) {
+            console.error("FASERIP | Error creating macro:", error);
+            return false;
+        }
+    } else {
+        console.log("FASERIP | Updating existing macro");
+        try {
+            await macro.update({ command: command });
+            console.log("FASERIP | Updated macro");
+        } catch (error) {
+            console.error("FASERIP | Error updating macro:", error);
+            return false;
+        }
+    }
+   
+    try {
+        await game.user.assignHotbarMacro(macro, slot);
+        console.log("FASERIP | Assigned macro to hotbar slot:", slot);
+    } catch (error) {
+        console.error("FASERIP | Error assigning macro to hotbar:", error);
+    }
+
     return false;
 });
