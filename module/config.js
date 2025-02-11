@@ -41,95 +41,177 @@ export const UNIVERSAL_TABLE_RANGES = {
 };
 
 export const ACTION_RESULTS = {
-    "BA": { 
-        name: "Blunt Attack",
+    // Fighting-based actions
+    "BA": {
         ability: "Fighting",
-        results: { white: "Miss", green: "Hit", yellow: "Slam", red: "Stun" }
+        name: "Blunt Attack",
+        description: "Basic melee attack using blunt force",
+        results: {
+            white: { result: "Miss", effect: "miss", description: "Attack fails to connect" },
+            green: { result: "Hit", effect: "damage", description: "Normal damage" },
+            yellow: { result: "Slam", effect: "slam", description: "Target is knocked back" },
+            red: { result: "Stun", effect: "stun", description: "Target is stunned" }
+        }
     },
     "EA": {
-        name: "Edged Attack",
         ability: "Fighting",
-        results: { white: "Miss", green: "Hit", yellow: "Stun", red: "Kill" }
+        name: "Edged Attack",
+        description: "Melee attack with edged/piercing weapon",
+        results: {
+            white: { result: "Miss", effect: "miss", description: "Attack fails to connect" },
+            green: { result: "Hit", effect: "damage", description: "Normal damage" },
+            yellow: { result: "Stun", effect: "stun", description: "Target is stunned" },
+            red: { result: "Kill", effect: "kill", description: "Deadly strike" }
+        }
     },
+
+    // Agility-based actions
     "Sh": {
-        name: "Shooting",
         ability: "Agility",
-        results: { white: "Miss", green: "Hit", yellow: "Bullseye", red: "Kill" }
+        name: "Shooting",
+        description: "Ranged attack with projectile weapon",
+        results: {
+            white: { result: "Miss", effect: "miss", description: "Shot misses target" },
+            green: { result: "Hit", effect: "damage", description: "Normal damage" },
+            yellow: { result: "Bullseye", effect: "bullseye", description: "Critical hit for double damage" },
+            red: { result: "Kill", effect: "kill", description: "Deadly shot" }
+        }
     },
     "TE": {
-        name: "Throwing Edged",
         ability: "Agility",
-        results: { white: "Miss", green: "Hit", yellow: "Stun", red: "Kill" }
+        name: "Throwing Edged",
+        description: "Throwing an edged weapon",
+        results: {
+            white: { result: "Miss", effect: "miss", description: "Throw misses" },
+            green: { result: "Hit", effect: "damage", description: "Normal damage" },
+            yellow: { result: "Stun", effect: "stun", description: "Target is stunned" },
+            red: { result: "Kill", effect: "kill", description: "Deadly throw" }
+        }
     },
     "TB": {
-        name: "Throwing Blunt",
         ability: "Agility",
-        results: { white: "Miss", green: "Hit", yellow: "Hit", red: "Stun" }
+        name: "Throwing Blunt",
+        description: "Throwing a blunt object",
+        results: {
+            white: { result: "Miss", effect: "miss", description: "Throw misses" },
+            green: { result: "Hit", effect: "damage", description: "Normal damage" },
+            yellow: { result: "Hit", effect: "damage", description: "Solid hit" },
+            red: { result: "Slam", effect: "slam", description: "Target is knocked back" }
+        }
     },
     "En": {
-        name: "Energy",
         ability: "Agility",
-        results: { white: "Miss", green: "Hit", yellow: "Bullseye", red: "Kill" }
+        name: "Energy",
+        description: "Energy-based ranged attack",
+        results: {
+            white: { result: "Miss", effect: "miss", description: "Energy blast misses" },
+            green: { result: "Hit", effect: "damage", description: "Normal damage" },
+            yellow: { result: "Hit", effect: "damage", description: "Solid hit" },
+            red: { result: "Stun", effect: "stun", description: "Target is stunned" }
+        }
     },
     "Fo": {
-        name: "Force",
         ability: "Agility",
-        results: { white: "Miss", green: "Hit", yellow: "Bullseye", red: "Stun" }
-    },
-    "Gp": {
-        name: "Grappling",
-        ability: "Strength",
-        results: { white: "Miss", green: "Miss", yellow: "Partial", red: "Hold" }
-    },
-    "Gb": {
-        name: "Grabbing",
-        ability: "Strength",
-        results: { white: "Miss", green: "Take", yellow: "Grab", red: "Break" }
-    },
-    "Es": {
-        name: "Escaping",
-        ability: "Strength",
-        results: { white: "Miss", green: "Miss", yellow: "Escape", red: "Reverse" }
-    },
-    "Ch": {
-        name: "Charging",
-        ability: "Endurance",
-        results: { white: "Miss", green: "Hit", yellow: "Slam", red: "Stun" }
+        name: "Force",
+        description: "Force/kinetic ranged attack",
+        results: {
+            white: { result: "Miss", effect: "miss", description: "Force attack misses" },
+            green: { result: "Hit", effect: "damage", description: "Normal damage" },
+            yellow: { result: "Bullseye", effect: "bullseye", description: "Critical hit" },
+            red: { result: "Stun", effect: "stun", description: "Target is stunned" }
+        }
     },
     "Do": {
+        ability: "Agility",
         name: "Dodging",
-        ability: "Agility",
-        results: { white: "None", green: "-2 CS", yellow: "-4 CS", red: "-6 CS" }
+        description: "Defensive maneuver to avoid attacks",
+        results: {
+            white: { result: "None", effect: "none", description: "No defensive bonus" },
+            green: { result: "-2 CS", effect: "columnShift", value: -2, description: "Small defensive bonus" },
+            yellow: { result: "-4 CS", effect: "columnShift", value: -4, description: "Good defensive bonus" },
+            red: { result: "-6 CS", effect: "columnShift", value: -6, description: "Excellent defensive bonus" }
+        }
     },
-    "Ev": {
-        name: "Evading",
-        ability: "Fighting",
-        results: { white: "Autohit", green: "Evasion", yellow: "+1 CS", red: "+2 CS" }
-    },
-    "Bl": {
-        name: "Blocking",
+
+    // Strength-based actions
+    "Gp": {
         ability: "Strength",
-        results: { white: "-6 CS", green: "-4 CS", yellow: "-2 CS", red: "+1 CS" }
+        name: "Grappling",
+        description: "Wrestling and grappling moves",
+        results: {
+            white: { result: "Miss", effect: "miss", description: "Failed to grapple" },
+            green: { result: "Miss", effect: "miss", description: "Failed to secure hold" },
+            yellow: { result: "Partial", effect: "partial", description: "Partial hold" },
+            red: { result: "Hold", effect: "hold", description: "Full grappling hold" }
+        }
     },
-    "Ca": {
-        name: "Catching",
-        ability: "Agility",
-        results: { white: "Autohit", green: "Miss", yellow: "Damage", red: "Catch" }
+    "Gb": {
+        ability: "Strength",
+        name: "Grabbing",
+        description: "Attempt to grab opponent or object",
+        results: {
+            white: { result: "Miss", effect: "miss", description: "Failed to grab" },
+            green: { result: "Take", effect: "take", description: "Successfully grab item" },
+            yellow: { result: "Grab", effect: "grab", description: "Grab and control" },
+            red: { result: "Break", effect: "break", description: "Break free or item" }
+        }
+    },
+
+    // Endurance-based actions
+    "Ch": {
+        ability: "Endurance",
+        name: "Charging",
+        description: "Rush attack",
+        results: {
+            white: { result: "Miss", effect: "miss", description: "Charge misses" },
+            green: { result: "Hit", effect: "damage", description: "Normal damage" },
+            yellow: { result: "Slam", effect: "slam", description: "Target knocked back" },
+            red: { result: "Stun", effect: "stun", description: "Target stunned" }
+        }
+    },
+    "Es": {
+        ability: "Strength",
+        name: "Escaping",
+        description: "Break free from holds or bonds",
+        results: {
+            white: { result: "Miss", effect: "miss", description: "Cannot escape" },
+            green: { result: "Miss", effect: "miss", description: "Still held" },
+            yellow: { result: "Escape", effect: "escape", description: "Break free" },
+            red: { result: "Reverse", effect: "reverse", description: "Escape and reverse" }
+        }
     },
     "St": {
-        name: "Stun?",
         ability: "Endurance",
-        results: { white: "1-10", green: "1", yellow: "No", red: "No" }
+        name: "Stun Resistance",
+        description: "Resist stun effects",
+        results: {
+            white: { result: "1-10", effect: "stun", value: "1d10", description: "Long stun" },
+            green: { result: "1", effect: "stun", value: 1, description: "Brief stun" },
+            yellow: { result: "No", effect: "none", description: "Resist stun" },
+            red: { result: "No", effect: "none", description: "Immune to stun" }
+        }
     },
     "Sl": {
-        name: "Slam?",
         ability: "Endurance",
-        results: { white: "Gr. Slam", green: "1 area", yellow: "Stagger", red: "No" }
+        name: "Slam Resistance",
+        description: "Resist being knocked back",
+        results: {
+            white: { result: "Gr. Slam", effect: "grandSlam", description: "Major knockback" },
+            green: { result: "1 area", effect: "slam", value: 1, description: "Minor knockback" },
+            yellow: { result: "Stagger", effect: "stagger", description: "Stagger but hold ground" },
+            red: { result: "No", effect: "none", description: "Resist knockback" }
+        }
     },
     "Ki": {
-        name: "Kill?",
         ability: "Endurance",
-        results: { white: "En. Loss", green: "E/S", yellow: "No", red: "No" }
+        name: "Kill Resistance",
+        description: "Resist lethal effects",
+        results: {
+            white: { result: "En. Loss", effect: "enduranceLoss", description: "Permanent Endurance loss" },
+            green: { result: "E/S", effect: "enduranceStrengthLoss", description: "End/Str loss" },
+            yellow: { result: "No", effect: "none", description: "Resist effect" },
+            red: { result: "No", effect: "none", description: "Immune to effect" }
+        }
     }
 };
 
