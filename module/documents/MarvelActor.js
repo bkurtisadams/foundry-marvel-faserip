@@ -296,65 +296,72 @@ export class MarvelActor extends Actor {
      * @returns {Promise<Roll>} The roll result
      */
     async rollAbility(abilityId, options = {}) {
-        const ability = this.system.primaryAbilities[abilityId];
-        if (!ability) {
-            throw new Error(`Ability ${abilityId} not found`);
-        }
-
-        const baseRank = ability.rank || this.getRankFromValue(ability.number);
-        const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
-        
-        // Roll the dice and add karma
-        const roll = new Roll("1d100").evaluateSync();
-        const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
-        const finalRoll = Math.min(100, roll.total + karmaPoints);
-        
-        // Deduct karma if used
-        if (karmaPoints > 0) {
-            await this.update({
-                "system.secondaryAbilities.karma.value": this.system.secondaryAbilities.karma.value - karmaPoints
+        try {
+            const ability = this.system.primaryAbilities[abilityId];
+            if (!ability) {
+                throw new Error(`Ability ${abilityId} not found`);
+            }
+    
+            // Get base rank and apply column shift
+            const baseRank = ability.rank || this.getRankFromValue(ability.number);
+            const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
+            
+            // Create and evaluate the roll asynchronously
+            const roll = await new Roll("1d100").evaluate({async: true});
+            const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
+            const finalRoll = Math.min(100, roll.total + karmaPoints);
+            
+            // Deduct karma if used
+            if (karmaPoints > 0) {
+                await this.update({
+                    "system.secondaryAbilities.karma.value": this.system.secondaryAbilities.karma.value - karmaPoints
+                });
+            }
+            
+            // Get the color result and outcome
+            const color = this.getColorResult(finalRoll, shiftedRank);
+            let resultText = color.toUpperCase();
+            
+            // Handle combat specific results
+            if (options.featType === "combat" && options.actionType) {
+                resultText = CONFIG.marvel.actionResults[options.actionType]?.results[color] || resultText;
+            }
+    
+            // Create formatted ability name
+            const formattedAbility = abilityId.charAt(0).toUpperCase() + abilityId.slice(1);
+            
+            // Create chat message content
+            const messageContent = `
+                <div class="marvel-roll">
+                    <h3>${this.name} - ${options.featType === "combat" ? 
+                        CONFIG.marvel.actionResults[options.actionType]?.name || "Combat" : 
+                        formattedAbility + " FEAT"}</h3>
+                    <div class="roll-details">
+                        <div>${formattedAbility}: ${ability.number} (${baseRank})</div>
+                        ${options.columnShift ? 
+                            `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
+                        <div>Roll: ${roll.total}${karmaPoints ? 
+                            ` + ${karmaPoints} Karma = ${finalRoll}` : ''}</div>
+                    </div>
+                    <div class="roll-result ${this._getColorClass(color)}">
+                        ${resultText}
+                    </div>
+                </div>`;
+            
+            // Create the chat message
+            await ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({ actor: this }),
+                content: messageContent,
+                rolls: [roll],
+                sound: CONFIG.sounds.dice
             });
+    
+            return { roll, color, result: resultText };
+        } catch (error) {
+            console.error("Error in rollAbility:", error);
+            ui.notifications.error("Error rolling ability check");
+            throw error;
         }
-        
-        // Get the color result and outcome
-        const color = this.getColorResult(finalRoll, shiftedRank);
-        let resultText = color.toUpperCase();
-        
-        // Handle combat specific results
-        if (options.featType === "combat" && options.actionType) {
-            resultText = CONFIG.marvel.actionResults[options.actionType]?.results[color] || resultText;
-        }
-
-        // Create formatted ability name
-        const formattedAbility = abilityId.charAt(0).toUpperCase() + abilityId.slice(1);
-        
-        // Create chat message content
-        const messageContent = `
-            <div class="marvel-roll">
-                <h3>${this.name} - ${options.featType === "combat" ? 
-                    CONFIG.marvel.actionResults[options.actionType]?.name || "Combat" : 
-                    formattedAbility + " FEAT"}</h3>
-                <div class="roll-details">
-                    <div>${formattedAbility}: ${ability.number} (${baseRank})</div>
-                    ${options.columnShift ? 
-                        `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                    <div>Roll: ${roll.total}${karmaPoints ? 
-                        ` + ${karmaPoints} Karma = ${finalRoll}` : ''}</div>
-                </div>
-                <div class="roll-result ${this._getColorClass(color)}">
-                    ${resultText}
-                </div>
-            </div>`;
-        
-        // Create the chat message
-        await ChatMessage.create({
-            speaker: ChatMessage.getSpeaker({ actor: this }),
-            content: messageContent,
-            rolls: [roll],
-            sound: CONFIG.sounds.dice
-        });
-
-        return { roll, color, result: resultText };
     }
 
     /**

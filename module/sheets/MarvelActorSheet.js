@@ -1561,99 +1561,111 @@ async _onResourceRoll(event) {
 }
 
 async _onAbilityRoll(event) {
-    event.preventDefault();
-    const element = event.currentTarget;
-    const abilityId = element.closest('.ability-row').dataset.ability;
-    
-    // Get stored values
-    const stored = await game.user.getFlag("world", "marvelRollOptions") || {
-        featType: "ability",
-        actionType: "BA",
-        columnShift: 0,
-        karmaPoints: 0
-    };
-    
-    // Prepare template data using template.json ability structure
-    const ability = this.actor.system.primaryAbilities[abilityId];
-    const templateData = {
-        config: CONFIG.marvel,
-        defaultFeatType: stored.featType,
-        defaultAction: stored.actionType,
-        columnShift: stored.columnShift,
-        karmaPoints: stored.karmaPoints,
-        showActionSelect: stored.featType === "combat",
-        actionTypes: CONFIG.marvel.actionResults,
-        ability: ability
-    };
-    
-    const html = await renderTemplate(
-        "systems/marvel-faserip/templates/dialogs/ability-roll.html",
-        templateData
-    );
-    
-    return new Promise(resolve => {
-        const dialog = new Dialog({
-            title: "FEAT Roll",
-            content: html,
-            buttons: {
-                roll: {
-                    label: "Roll",
-                    callback: async (html) => {
-                        const form = html[0].querySelector("form");
-                        const featType = form.querySelector('input[name="featType"]:checked').value;
-                        const options = {
-                            featType: featType,
-                            actionType: featType === "combat" ? form.actionType.value : null,
-                            columnShift: parseInt(form.columnShift.value) || 0,
-                            karmaPoints: parseInt(form.karmaPoints.value) || 0
-                        };
-                        
-                        // Store values for next time
-                        await game.user.setFlag("world", "marvelRollOptions", options);
-                        
-                        // Update karma tracking if karma points were spent
-                        if (options.karmaPoints > 0) {
-                            const currentKarma = this.actor.system.karmaTracking.karmaPool;
-                            const newHistory = [...(this.actor.system.karmaTracking.history || []), {
-                                date: new Date().toLocaleString(),
-                                amount: -options.karmaPoints,
-                                description: `Spent on ${abilityId.toUpperCase()} FEAT roll`
-                            }];
-                            
-                            await this.actor.update({
-                                "system.karmaTracking.karmaPool": currentKarma - options.karmaPoints,
-                                "system.karmaTracking.history": newHistory
-                            });
+    try {
+        event.preventDefault();
+        const element = event.currentTarget;
+        const abilityId = element.closest('.ability-row').dataset.ability;
+        
+        // Get stored values
+        const stored = await game.user.getFlag("world", "marvelRollOptions") || {
+            featType: "ability",
+            actionType: "BA",
+            columnShift: 0,
+            karmaPoints: 0
+        };
+        
+        // Prepare template data using template.json ability structure
+        const ability = this.actor.system.primaryAbilities[abilityId];
+        const templateData = {
+            config: CONFIG.marvel,
+            defaultFeatType: stored.featType,
+            defaultAction: stored.actionType,
+            columnShift: stored.columnShift,
+            karmaPoints: stored.karmaPoints,
+            showActionSelect: stored.featType === "combat",
+            actionTypes: CONFIG.marvel.actionResults,
+            ability: ability
+        };
+        
+        const html = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/ability-roll.html",
+            templateData
+        );
+        
+        return new Promise(resolve => {
+            const dialog = new Dialog({
+                title: "FEAT Roll",
+                content: html,
+                buttons: {
+                    roll: {
+                        label: "Roll",
+                        callback: async (html) => {
+                            try {
+                                const form = html[0].querySelector("form");
+                                const featType = form.querySelector('input[name="featType"]:checked').value;
+                                const options = {
+                                    featType: featType,
+                                    actionType: featType === "combat" ? form.actionType.value : null,
+                                    columnShift: parseInt(form.columnShift.value) || 0,
+                                    karmaPoints: parseInt(form.karmaPoints.value) || 0
+                                };
+                                
+                                // Store values for next time
+                                await game.user.setFlag("world", "marvelRollOptions", options);
+                                
+                                // Update karma tracking if karma points were spent
+                                if (options.karmaPoints > 0) {
+                                    const currentKarma = this.actor.system.karmaTracking.karmaPool;
+                                    const newHistory = [...(this.actor.system.karmaTracking.history || []), {
+                                        date: new Date().toLocaleString(),
+                                        amount: -options.karmaPoints,
+                                        description: `Spent on ${abilityId.toUpperCase()} FEAT roll`
+                                    }];
+                                    
+                                    await this.actor.update({
+                                        "system.karmaTracking.karmaPool": currentKarma - options.karmaPoints,
+                                        "system.karmaTracking.history": newHistory
+                                    });
+                                }
+                                
+                                // Perform the roll with await
+                                await this.actor.rollAbility(abilityId, options);
+                                resolve(true);
+                            } catch (err) {
+                                console.error("Error in ability roll dialog:", err);
+                                ui.notifications.error("Error processing ability roll");
+                                resolve(false);
+                            }
                         }
-                        
-                        // Perform the roll
-                        await this.actor.rollAbility(abilityId, options);
-                        resolve(true);
+                    },
+                    cancel: {
+                        label: "Cancel",
+                        callback: () => resolve(false)
                     }
                 },
-                cancel: {
-                    label: "Cancel",
-                    callback: () => resolve(false)
-                }
-            },
-            default: "roll",
-            
-            render: (html) => {
-                // Add listeners for feat type changes
-                const radioButtons = html[0].querySelectorAll('input[name="featType"]');
-                radioButtons.forEach(radio => {
-                    radio.addEventListener('change', (event) => {
-                        const actionSelect = html[0].querySelector('.action-select');
-                        if (event.currentTarget.value === "combat") {
-                            actionSelect.style.display = "";
-                        } else {
-                            actionSelect.style.display = "none";
-                        }
+                default: "roll",
+                
+                render: (html) => {
+                    // Add listeners for feat type changes
+                    const radioButtons = html[0].querySelectorAll('input[name="featType"]');
+                    radioButtons.forEach(radio => {
+                        radio.addEventListener('change', (event) => {
+                            const actionSelect = html[0].querySelector('.action-select');
+                            if (event.currentTarget.value === "combat") {
+                                actionSelect.style.display = "";
+                            } else {
+                                actionSelect.style.display = "none";
+                            }
+                        });
                     });
-                });
-            }
-        }).render(true);
-    });
+                }
+            });
+            dialog.render(true);
+        });
+    } catch (err) {
+        console.error("Error initiating ability roll:", err);
+        ui.notifications.error("Error initiating ability roll");
+    }
 }
 
 async _onPowerInfo(event) {
