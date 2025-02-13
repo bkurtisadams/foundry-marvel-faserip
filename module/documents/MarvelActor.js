@@ -541,114 +541,47 @@ export class MarvelActor extends Actor {
      * @returns {Promise<Object>} The attack results
      */
     async handleAttack(ability, attackType, options = {}, target) {
-        console.log("HandleAttack started with:", {ability, attackType, options, target});
-        
-        if (!target) {
-            ui.notifications.error("No target selected");
-            return null;
-        }
+        try {
+            // Prevent double processing
+            if (this._processingAttack) {
+                console.log("Attack already being processed");
+                return null;
+            }
+            this._processingAttack = true;
     
-        // Get the target's current health before we start
-        const currentHealth = target.system.secondaryAbilities.health.value;
-        const maxHealth = target.system.secondaryAbilities.health.max;
-        console.log("Target initial health status:", {
-            currentHealth,
-            maxHealth,
-            target: target.name,
-            healthSystem: target.system.secondaryAbilities.health
-        });
-    
-        // Roll the attack - this already handles the dialog
-        console.log("About to roll attack with:", {ability, attackType, options});
-        const attackRoll = await this.rollAttack(ability, attackType, options);
-        console.log("Attack roll result:", attackRoll);
-        
-        if (!attackRoll) {
-            console.log("No attack roll result, returning null");
-            return null;
-        }
-    
-        // If hit (anything but white), calculate and apply damage
-        if (attackRoll.color !== "white") {
-            let calculatedDamage = 0;
-    
-            // Calculate base damage based on attack type
-            console.log("Calculating damage for attack type:", attackType);
-            switch(attackType) {
-                case "BA": // Blunt Attack
-                    calculatedDamage = this.system.primaryAbilities.strength.number;
-                    console.log("Blunt Attack damage based on strength:", calculatedDamage);
-                    break;
-                case "EA": // Edged Attack
-                    calculatedDamage = options.weaponDamage || this.system.primaryAbilities.strength.number;
-                    console.log("Edged Attack damage:", calculatedDamage);
-                    break;
-                case "TB": // Throwing Blunt
-                case "TE": // Throwing Edged
-                    calculatedDamage = Math.min(this.system.primaryAbilities.strength.number, options.weaponDamage || 0);
-                    console.log("Throwing attack damage:", calculatedDamage);
-                    break;
-                case "Sh": // Shooting
-                    calculatedDamage = options.weaponDamage || 0;
-                    console.log("Shooting damage:", calculatedDamage);
-                    break;
-                case "En": // Energy
-                case "Fo": // Force
-                    calculatedDamage = options.weaponDamage || 0;
-                    console.log("Energy/Force damage:", calculatedDamage);
-                    break;
+            if (!target?.actor) {
+                ui.notifications.error("Valid target required");
+                this._processingAttack = false;
+                return null;
             }
     
-            // Get target's armor/protection if any
-            const targetArmor = target.system.resistances?.list?.find(r => 
-                r.type.toLowerCase() === "physical")?.number || 0;
-            console.log("Target armor found:", targetArmor);
-    
-            // Reduce damage by armor
-            const finalDamage = Math.max(0, calculatedDamage - targetArmor);
-            console.log("Final damage after armor reduction:", finalDamage);
-    
-            try {
-                // Update target's health
-                const newHealth = Math.max(0, currentHealth - finalDamage);
-                console.log("Updating target health:", {
-                    current: currentHealth,
-                    damage: finalDamage,
-                    new: newHealth,
-                    target: target.name
-                });
-    
-                await target.update({
-                    "system.secondaryAbilities.health.value": newHealth
-                });
-    
-                // Create damage message
-                const messageContent = `
-                    <div class="marvel-damage">
-                        <h3>${this.name} hits ${target.name}!</h3>
-                        <div class="damage-details">
-                            <div>Base Damage: ${calculatedDamage}</div>
-                            ${targetArmor ? `<div>Target Armor: ${targetArmor}</div>` : ''}
-                            <div>Final Damage: ${finalDamage}</div>
-                            <div>Target Health: ${currentHealth} → ${newHealth}</div>
-                        </div>
-                    </div>`;
-    
-                await ChatMessage.create({
-                    speaker: ChatMessage.getSpeaker({ actor: this }),
-                    content: messageContent
-                });
-    
-            } catch (error) {
-                console.error('Error applying damage:', error);
-                ui.notifications.error("Error applying damage to target");
-                throw error;
+            // Roll attack with proper error handling
+            const attackRoll = await this.rollAttack(ability, attackType, options);
+            if (!attackRoll?.success) {
+                this._processingAttack = false;
+                return attackRoll;
             }
     
-            return { ...attackRoll, damage: finalDamage };
-        }
+            // Calculate and apply damage
+            const damageResult = await this._calculateAndApplyDamage(
+                attackRoll, 
+                attackType, 
+                options, 
+                target
+            );
     
-        return attackRoll;
+            this._processingAttack = false;
+            return {
+                ...attackRoll,
+                ...damageResult
+            };
+    
+        } catch (err) {
+            console.error("Error in handleAttack:", err);
+            ui.notifications.error("Error processing attack");
+            this._processingAttack = false;
+            return null;
+        }
     }
 
 

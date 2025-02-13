@@ -22,24 +22,20 @@ export class MarvelAttackItem extends Item {
             ui.notifications.error("This item is not owned by an actor.");
             return null;
         }
-
-        // Validate we have the required data
-        if (!this.system.ability) {
-            ui.notifications.error("Attack item is missing ability.");
+    
+        // Validate required data
+        if (!this.system.ability || !this.system.attackType) {
+            ui.notifications.error("Attack item is missing required data.");
             return null;
         }
-        if (!this.system.attackType) {
-            ui.notifications.error("Attack item is missing attack type.");
-            return null;
-        }
-
+    
         try {
             // Get stored roll options
             const stored = await game.user.getFlag("world", "marvelRollOptions") || {
                 columnShift: this.system.columnShift || 0,
                 karmaPoints: 0
             };
-
+    
             // Show roll dialog
             const template = "systems/marvel-faserip/templates/dialogs/ability-roll.html";
             const dialogData = {
@@ -49,9 +45,9 @@ export class MarvelAttackItem extends Item {
                 showActionSelect: false,
                 item: this
             };
-
+    
             const html = await renderTemplate(template, dialogData);
-
+    
             return new Promise(resolve => {
                 new Dialog({
                     title: `${this.name} Attack Roll`,
@@ -60,31 +56,52 @@ export class MarvelAttackItem extends Item {
                         roll: {
                             label: "Roll",
                             callback: async (html) => {
-                                //const form = html.querySelector("form");
-                                const form = html.find("form")[0];
-                                const options = {
-                                    columnShift: (parseInt(form.columnShift.value) || 0) + (this.system.columnShift || 0),
-                                    karmaPoints: parseInt(form.karmaPoints.value) || 0,
-                                    weaponDamage: this.system.weaponDamage,
-                                    range: this.system.range
-                                };
-
-                                // Store options for next time
-                                await game.user.setFlag("world", "marvelRollOptions", {
-                                    columnShift: parseInt(form.columnShift.value) || 0,
-                                    karmaPoints: parseInt(form.karmaPoints.value) || 0
-                                });
-
-                                // Get the ability from the item's system data
-                                const ability = this.system.ability.toLowerCase();
-                                
-                                // Get the attack type from the item's system data
-                                const attackType = this.system.attackType;
-                                console.log(`Rolling attack with ability ${ability} and type ${attackType}`);
-
-                                // Roll the attack
-                                const result = await this.actor.rollAttack(ability, attackType, options);
-                                resolve(result);
+                                try {
+                                    const form = html.find("form")[0];
+                                    if (!form) throw new Error("Form not found in dialog");
+    
+                                    const options = {
+                                        columnShift: (parseInt(form.columnShift.value) || 0) + (this.system.columnShift || 0),
+                                        karmaPoints: parseInt(form.karmaPoints.value) || 0,
+                                        weaponDamage: this.system.weaponDamage,
+                                        range: this.system.range,
+                                        itemId: this.id  // Add itemId to prevent double processing
+                                    };
+    
+                                    // Store options for next time
+                                    await game.user.setFlag("world", "marvelRollOptions", {
+                                        columnShift: parseInt(form.columnShift.value) || 0,
+                                        karmaPoints: parseInt(form.karmaPoints.value) || 0
+                                    });
+    
+                                    // Get targets
+                                    const targets = game.user.targets;
+                                    if (!targets.size) {
+                                        ui.notifications.warn("Please select a target first");
+                                        resolve(null);
+                                        return;
+                                    }
+    
+                                    const target = targets.first().actor;
+                                    if (!target) {
+                                        ui.notifications.error("Invalid target");
+                                        resolve(null);
+                                        return;
+                                    }
+    
+                                    // Use handleAttack instead of rollAttack
+                                    const result = await this.actor.handleAttack(
+                                        this.system.ability.toLowerCase(),
+                                        this.system.attackType,
+                                        options,
+                                        target
+                                    );
+                                    resolve(result);
+                                } catch (error) {
+                                    console.error("Error in attack roll dialog:", error);
+                                    ui.notifications.error("Error processing attack roll");
+                                    resolve(null);
+                                }
                             }
                         },
                         cancel: {
@@ -96,8 +113,8 @@ export class MarvelAttackItem extends Item {
                 }).render(true);
             });
         } catch (error) {
-            console.error("Error rolling attack:", error);
-            ui.notifications.error("Error rolling attack. Check console for details.");
+            console.error("Error in attack roll:", error);
+            ui.notifications.error("Error initiating attack roll");
             return null;
         }
     }
