@@ -1050,7 +1050,7 @@ export class MarvelActor extends Actor {
 
         // Apply column shifts and roll
         const shiftedRank = this.applyColumnShift(resourceRank, options.columnShift || 0);
-        const roll = new Roll("1d100").evaluateSync();
+        const roll = await new Roll("1d100").evaluate({async: true});
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
         
@@ -1179,7 +1179,7 @@ export class MarvelActor extends Actor {
         const shiftedRank = this.applyColumnShift(baseRank, totalShift);
 
         // Roll and add karma
-        const roll = new Roll("1d100").evaluateSync();
+        const roll = await new Roll("1d100").evaluate({async: true});
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
 
@@ -1483,7 +1483,7 @@ export class MarvelActor extends Actor {
         // Apply column shifts and roll
         const baseRank = power.rank;
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
-        const roll = new Roll("1d100").evaluateSync();
+        const roll = await new Roll("1d100").evaluate({async: true});
         const finalRoll = roll.total;  // No karma allowed on power stunt attempts
 
         // Deduct karma cost
