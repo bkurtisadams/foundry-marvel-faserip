@@ -740,6 +740,30 @@ select:focus {
     width: 100%;
 }
 
+.add-attack-dialog .button-group {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #ccc;
+}
+
+.add-attack-dialog .roll-attack {
+    background: #4a5568;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.add-attack-dialog .roll-attack:hover {
+    background: #2d3748;
+}
+
+.add-attack-dialog .roll-attack i {
+    color: #ffd700;
+}
+
 /* Current Phase Display */
 .current-phase {
     font-size: 0.9em;

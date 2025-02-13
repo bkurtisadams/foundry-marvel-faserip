@@ -11,6 +11,17 @@ export class MarvelAttackItemSheet extends ItemSheet {
     }
 
     /** @override */
+    activateListeners(html) {
+        super.activateListeners(html);
+
+        // Add roll handler
+        html.find('.roll-attack').click(async ev => {
+            ev.preventDefault();
+            return await this.item.roll();
+        });
+    }
+    
+    /** @override */
     async getData() {
         const context = await super.getData();
 

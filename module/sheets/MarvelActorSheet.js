@@ -236,49 +236,7 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.roll-attack').click(this._onAttackRoll.bind(this));
             html.find('.attack-row img').click(this._onAttackInfo.bind(this));
 
-            // Attack roll button
-            /* html.find('.roll-attack').click(async (ev) => {
-                ev.preventDefault();
-                const attackRow = ev.currentTarget.closest(".attack-row");
-                if (!attackRow) return;
-                
-                const itemId = attackRow.dataset.itemId;
-                if (!itemId) return;
-                
-                const item = this.actor.items.get(itemId);
-                if (!item) return;
-            
-                // Get selected token as target
-                const targets = game.user.targets;
-                const target = targets.size === 1 ? targets.first().actor : null;
-                
-                if (!target) {
-                    ui.notifications.warn("Please select a target token first");
-                    return;
-                }
-            
-                console.log("Attack initiated:", {
-                    attacker: this.actor.name,
-                    target: target.name,
-                    item: item.name,
-                    ability: item.system.ability,
-                    attackType: item.system.attackType
-                });
-            
-                // Call handleAttack directly instead of item.roll()
-                return await this.actor.handleAttack(
-                    item.system.ability,
-                    item.system.attackType,
-                    {
-                        weaponDamage: item.system.weaponDamage,
-                        range: item.system.range,
-                        columnShift: item.system.columnShift
-                    },
-                    target
-                );
-            }); */
-            
-             // Edit attack button
+            // Edit attack button
             html.find('.item-edit').click(ev => {
                 ev.preventDefault();
                 const attackRow = ev.currentTarget.closest(".attack-row");
@@ -394,39 +352,10 @@ export class MarvelActorSheet extends ActorSheet {
                 }
             });
         }
-        // Modify the attack roll button handler
-        /* html.find('.roll-attack').click(async (ev) => {
-            ev.preventDefault();
-            const itemId = ev.currentTarget.closest(".attack-row").dataset.itemId;
-            if (!itemId) return;
-            
-            const item = this.actor.items.get(itemId);
-            if (!item) return;
-
-            // Get selected token as target
-            const targets = game.user.targets;
-            const target = targets.size === 1 ? targets.first().actor : null;
-            
-            if (!target) {
-                ui.notifications.warn("Please select a target token first");
-                return;
-            }
-
-            // Call the new handleAttack method
-            return await this.actor.handleAttack(
-                item.system.ability,
-                item.system.attackType,
-                {
-                    weaponDamage: item.system.weaponDamage,
-                    range: item.system.range,
-                    columnShift: item.system.columnShift
-                },
-                target
-            );
-        }) */;
+        ;
     }
 
-    /* async _onAttackRoll(event) {
+    async _onAttackRoll(event) {
         event.preventDefault();
         const element = event.currentTarget;
         const itemId = element.closest(".attack-row").dataset.itemId;
@@ -439,7 +368,7 @@ export class MarvelActorSheet extends ActorSheet {
     
         return await item.roll();
     }
- */
+    
     async _onAttackInfo(event) {
         event.preventDefault();
         const itemId = event.currentTarget.closest(".attack-row").dataset.itemId;
