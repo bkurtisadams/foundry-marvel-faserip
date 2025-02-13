@@ -23,7 +23,7 @@ export class MarvelAttackItem extends Item {
             return null;
         }
     
-        // Validate required data
+        // Validate we have the required data
         if (!this.system.ability || !this.system.attackType) {
             ui.notifications.error("Attack item is missing required data.");
             return null;
@@ -74,27 +74,11 @@ export class MarvelAttackItem extends Item {
                                         karmaPoints: parseInt(form.karmaPoints.value) || 0
                                     });
     
-                                    // Get targets
-                                    const targets = game.user.targets;
-                                    if (!targets.size) {
-                                        ui.notifications.warn("Please select a target first");
-                                        resolve(null);
-                                        return;
-                                    }
-    
-                                    const target = targets.first().actor;
-                                    if (!target) {
-                                        ui.notifications.error("Invalid target");
-                                        resolve(null);
-                                        return;
-                                    }
-    
-                                    // Use handleAttack instead of rollAttack
-                                    const result = await this.actor.handleAttack(
+                                    // Use rollAttack instead of handleAttack
+                                    const result = await this.actor.rollAttack(
                                         this.system.ability.toLowerCase(),
                                         this.system.attackType,
-                                        options,
-                                        target
+                                        options
                                     );
                                     resolve(result);
                                 } catch (error) {

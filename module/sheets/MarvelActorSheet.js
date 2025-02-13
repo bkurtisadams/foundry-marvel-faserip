@@ -232,8 +232,12 @@ export class MarvelActorSheet extends ActorSheet {
             // Add attack button
             html.find('.add-attack').click(async (ev) => this._onAddAttack(ev));
 
+            // Attack roll buttons
+            html.find('.roll-attack').click(this._onAttackRoll.bind(this));
+            html.find('.attack-row img').click(this._onAttackInfo.bind(this));
+
             // Attack roll button
-            html.find('.roll-attack').click(async (ev) => {
+            /* html.find('.roll-attack').click(async (ev) => {
                 ev.preventDefault();
                 const attackRow = ev.currentTarget.closest(".attack-row");
                 if (!attackRow) return;
@@ -272,7 +276,7 @@ export class MarvelActorSheet extends ActorSheet {
                     },
                     target
                 );
-            });
+            }); */
             
              // Edit attack button
             html.find('.item-edit').click(ev => {
@@ -391,7 +395,7 @@ export class MarvelActorSheet extends ActorSheet {
             });
         }
         // Modify the attack roll button handler
-        html.find('.roll-attack').click(async (ev) => {
+        /* html.find('.roll-attack').click(async (ev) => {
             ev.preventDefault();
             const itemId = ev.currentTarget.closest(".attack-row").dataset.itemId;
             if (!itemId) return;
@@ -419,6 +423,46 @@ export class MarvelActorSheet extends ActorSheet {
                 },
                 target
             );
+        }) */;
+    }
+
+    /* async _onAttackRoll(event) {
+        event.preventDefault();
+        const element = event.currentTarget;
+        const itemId = element.closest(".attack-row").dataset.itemId;
+        const item = this.actor.items.get(itemId);
+        
+        if (!item) {
+            ui.notifications.error("Attack item not found");
+            return;
+        }
+    
+        return await item.roll();
+    }
+ */
+    async _onAttackInfo(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.closest(".attack-row").dataset.itemId;
+        if (!itemId) return;
+        const item = this.actor.items.get(itemId);
+        if (!item) return;
+        
+        // Create chat message with attack description
+        const messageContent = `
+            <div class="marvel-roll">
+                <h3>${item.name} - Attack Details</h3>
+                <div class="roll-details">
+                    <div>Ability: ${item.system.ability}</div>
+                    <div>Attack Type: ${item.system.attackType}</div>
+                    ${item.system.weaponDamage ? `<div>Weapon Damage: ${item.system.weaponDamage}</div>` : ''}
+                    ${item.system.range ? `<div>Range: ${item.system.range}</div>` : ''}
+                    ${item.system.description ? `<div class="description">${item.system.description}</div>` : ''}
+                </div>
+            </div>`;
+    
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+            content: messageContent
         });
     }
 
@@ -447,8 +491,8 @@ export class MarvelActorSheet extends ActorSheet {
                     label: "Close"
                 }
             },
-            // Around line 406, replace the render function with:
-        render: (html) => {  // Change to arrow function to preserve 'this' context
+            
+        render: (html) => {
             const dialog = this;
             
             // Sorting
