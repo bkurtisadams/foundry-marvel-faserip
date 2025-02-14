@@ -14,6 +14,7 @@ export class MarvelActorSheet extends ActorSheet {
 
     async getData(options = {}) {
         const context = await super.getData(options);
+        console.log("Sheet data context:", context.actor.system.primaryAbilities);
         
         // Ensure context.actor.system exists and initialize if needed
         const system = context.actor.system || {};
@@ -150,6 +151,7 @@ export class MarvelActorSheet extends ActorSheet {
     
         if (this.isEditable) {
             console.log("Setting up listeners"); // Add this line
+            html.find('.initial-roll-input').change(this._onInitialRollChange.bind(this));
             
             // Add drag events for macros
             let handler = ev => this._onDragStart(ev);
@@ -353,6 +355,20 @@ export class MarvelActorSheet extends ActorSheet {
             });
         }
         ;
+    }
+
+    async _onInitialRollChange(event) {
+        event.preventDefault();
+        const element = event.currentTarget;
+        const abilityPath = element.dataset.ability;
+        const newRoll = element.value;
+        const cleanPath = abilityPath.replace('primaryAbilities.', '');
+        
+        console.log(`Updating initial roll for ${cleanPath} to ${newRoll}`);
+        
+        await this.actor.update({
+            [`system.primaryAbilities.${cleanPath}.initialRoll`]: newRoll
+        });
     }
 
     async _onAttackRoll(event) {
@@ -1358,7 +1374,7 @@ async _onNumberChange(event) {
     this.render(false);
 }
 
-async _onRankChange(event) {
+/* async _onRankChange(event) {
     event.preventDefault();
     const element = event.currentTarget;
     const abilityPath = element.dataset.ability;
@@ -1380,7 +1396,28 @@ async _onRankChange(event) {
             [`system.primaryAbilities.${cleanPath}.number`]: rankNumber
         });
     }
-}
+} */
+    async _onRankChange(event) {
+        event.preventDefault();
+        const element = event.currentTarget;
+        const abilityPath = element.dataset.ability;
+        const newRank = element.value;
+        const cleanPath = abilityPath.replace('primaryAbilities.', '');
+        
+        console.log(`Updating rank for ${cleanPath} to ${newRank}`);
+        
+        if (element.classList.contains('initial-rank-input')) {
+            await this.actor.update({
+                [`system.primaryAbilities.${cleanPath}.initialRank`]: newRank
+            });
+        } else {
+            const rankNumber = CONFIG.marvel.ranks[newRank]?.standard || 0;
+            await this.actor.update({
+                [`system.primaryAbilities.${cleanPath}.rank`]: newRank,
+                [`system.primaryAbilities.${cleanPath}.number`]: rankNumber
+            });
+        }
+    }
 
 async _onPopularityRoll(event) {
     event.preventDefault();

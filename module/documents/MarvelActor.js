@@ -4,6 +4,8 @@ export class MarvelActor extends Actor {
         // Always call super first to ensure core data is initialized
         super.prepareData();
 
+        console.log("Preparing actor data:", this.system.primaryAbilities);
+
         // Initialize base template data structure if needed
         this._initializeBaseTemplate();
         
