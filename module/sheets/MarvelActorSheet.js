@@ -153,6 +153,9 @@ export class MarvelActorSheet extends ActorSheet {
             console.log("Setting up listeners"); // Add this line
             html.find('.initial-roll-input').change(this._onInitialRollChange.bind(this));
             
+            html.find('.join-pool').click(this._onJoinPool.bind(this));
+            html.find('.leave-pool').click(this._onLeavePool.bind(this));
+            
             // Add drag events for macros
             let handler = ev => this._onDragStart(ev);
             html.find('li.item').each((i, li) => {
@@ -734,6 +737,58 @@ async _onAddKarmaEntry(event) {
             `;
             entriesContainer.append(entryHtml);
         });
+    }
+
+    async _onJoinPool(event) {
+        event.preventDefault();
+        
+        const content = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/join-pool.html",
+            {
+                actor: this.actor,
+                maxContribution: this.actor.system.karmaTracking.karmaPool
+            }
+        );
+    
+        new Dialog({
+            title: "Join Karma Pool",
+            content: content,
+            buttons: {
+                join: {
+                    label: "Join",
+                    callback: async (html) => {
+                        const contribution = parseInt(html.find('[name="contribution"]').val()) || 0;
+                        const isPermanent = html.find('[name="permanent"]').prop("checked");
+                        const isLocked = html.find('[name="locked"]').prop("checked");
+                        
+                        await this.actor.joinKarmaPool({
+                            contribution,
+                            isPermanent,
+                            isLocked
+                        });
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
+                }
+            }
+        }).render(true);
+    }
+    
+    async _onLeavePool(event) {
+        event.preventDefault();
+        
+        const confirmLeave = await Dialog.confirm({
+            title: "Leave Karma Pool",
+            content: "Are you sure you want to leave the karma pool? You'll receive your share of the remaining karma.",
+            yes: () => true,
+            no: () => false,
+            defaultYes: false
+        });
+    
+        if (confirmLeave) {
+            await this.actor.leaveKarmaPool();
+        }
     }
     
     _updateSortIndicators(html, currentSort) {

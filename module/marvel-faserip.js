@@ -130,6 +130,15 @@ Hooks.once('init', async function() {
     };
 
     // Register system settings
+    // Around line 48 in init hook
+    game.settings.register("marvel-faserip", "karmaPools", {
+        name: "Karma Pools",
+        scope: "world",
+        config: false,
+        type: Object,
+        default: {}
+    });
+    
     game.settings.register("marvel-faserip", "combatPhase", {
         name: "Combat Phase",
         scope: "world",

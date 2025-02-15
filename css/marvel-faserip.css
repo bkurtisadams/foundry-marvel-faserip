@@ -1678,3 +1678,42 @@ select:focus {
     -webkit-appearance: none;
     margin: 0;
 }
+
+.group-pool-info {
+    margin-top: 10px;
+    padding: 5px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 3px;
+}
+
+.pool-tag {
+    font-size: 0.8em;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 5px;
+}
+
+.pool-tag.permanent {
+    background: #4CAF50;
+    color: white;
+}
+
+.pool-tag.locked {
+    background: #FFC107;
+    color: black;
+}
+
+.join-pool, .leave-pool {
+    width: 100%;
+    margin-top: 5px;
+    background: #782e22;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 3px;
+    cursor: pointer;
+}
+
+.join-pool:hover, .leave-pool:hover {
+    background: #9e3c2d;
+}

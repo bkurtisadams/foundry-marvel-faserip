@@ -349,6 +349,25 @@
                     <h2>Karma Pool</h2>
                     <input type="number" name="system.karmaTracking.karmaPool" value="{{actor.system.karmaTracking.karmaPool}}"/>
                     
+                    <h2>Lifetime Total</h2>
+                    <input type="number" name="system.karmaTracking.lifetimeTotal" value="{{actor.system.karmaTracking.lifetimeTotal}}" disabled/>
+                    
+                    {{#if actor.system.karmaTracking.groupPool.active}}
+                    <div class="group-pool-info">
+                        <h3>Group Pool Contribution</h3>
+                        <input type="number" value="{{actor.system.karmaTracking.groupPool.contributed}}" disabled/>
+                        {{#if actor.system.karmaTracking.groupPool.isPermanent}}
+                        <span class="pool-tag permanent">Permanent</span>
+                        {{/if}}
+                        {{#if actor.system.karmaTracking.groupPool.isLocked}}
+                        <span class="pool-tag locked">Locked</span>
+                        {{/if}}
+                    </div>
+                    <button type="button" class="leave-pool">Leave Pool</button>
+                    {{else}}
+                    <button type="button" class="join-pool">Join Group Pool</button>
+                    {{/if}}
+                    
                     <div class="karma-history-button" title="View Karma History">
                         <i class="fas fa-history"></i>
                     </div>

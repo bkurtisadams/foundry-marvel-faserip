@@ -74,7 +74,18 @@ export class MarvelActor extends Actor {
             this.system.karmaTracking = {
                 karmaPool: 0,
                 advancementFund: 0,
-                history: []
+                history: [],
+                lifetimeTotal: 0,
+                adventurePool: {
+                    active: false,
+                    contributed: 0,
+                    poolId: null
+                },
+                permanentPool: {
+                    active: false,
+                    contributed: 0,
+                    poolId: null
+                }
             };
         }
     }
@@ -1873,4 +1884,129 @@ export class MarvelActor extends Actor {
         };
         return costs[currentRank] || 3000;
     }
+
+    /**
+ * Join a karma group pool
+ * @param {Object} options - Pool options
+ * @returns {Promise<boolean>} Success/failure of joining
+ */
+async joinKarmaPool(options = {}) {
+    console.log("Joining karma pool with options:", options);
+    
+    const contribution = Math.min(options.contribution || 0, this.system.karmaTracking.karmaPool);
+    
+    // Get or create pool
+    let pool = await game.settings.get("marvel-faserip", `karmaPools.${options.poolId}`);
+    if (!pool) {
+        pool = {
+            id: options.poolId || randomID(16),
+            total: 0,
+            members: [],
+            isPermanent: options.isPermanent || false,
+            isLocked: options.isLocked || false,
+            contributions: {}
+        };
+    }
+
+    // Add member to pool
+    if (!pool.members.includes(this.id)) {
+        pool.members.push(this.id);
+        pool.total += contribution;
+        pool.contributions[this.id] = contribution;
+
+        // Update actor's karma tracking
+        await this.update({
+            "system.karmaTracking.karmaPool": this.system.karmaTracking.karmaPool - contribution,
+            "system.karmaTracking.groupPool": {
+                active: true,
+                contributed: contribution,
+                poolId: pool.id,
+                isPermanent: pool.isPermanent,
+                isLocked: pool.isLocked
+            }
+        });
+
+        // Save pool
+        await game.settings.set("marvel-faserip", `karmaPools.${pool.id}`, pool);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Leave current karma pool
+ * @returns {Promise<boolean>} Success/failure of leaving
+ */
+async leaveKarmaPool() {
+    console.log("Attempting to leave karma pool");
+    
+    const poolId = this.system.karmaTracking.groupPool.poolId;
+    if (!poolId) return false;
+
+    const pool = await game.settings.get("marvel-faserip", `karmaPools.${poolId}`);
+    if (!pool) return false;
+
+    // Calculate share
+    const share = Math.floor(pool.total / pool.members.length);
+    
+    // Remove from pool
+    pool.members = pool.members.filter(id => id !== this.id);
+    pool.total -= share;
+    delete pool.contributions[this.id];
+
+    // Update actor
+    await this.update({
+        "system.karmaTracking.karmaPool": this.system.karmaTracking.karmaPool + share,
+        "system.karmaTracking.groupPool": {
+            active: false,
+            contributed: 0,
+            poolId: null,
+            isPermanent: false,
+            isLocked: false
+        }
+    });
+
+    // Save or delete pool if empty
+    if (pool.members.length === 0) {
+        await game.settings.delete("marvel-faserip", `karmaPools.${poolId}`);
+    } else {
+        await game.settings.set("marvel-faserip", `karmaPools.${poolId}`, pool);
+    }
+
+    return true;
+}
+
+/**
+ * Use karma from group pool
+ * @param {number} amount - Amount of karma to use
+ * @param {string} reason - Reason for using karma
+ * @returns {Promise<boolean>} Success/failure of using karma
+ */
+async useGroupKarma(amount, reason) {
+    console.log(`Attempting to use ${amount} karma from group pool for: ${reason}`);
+    
+    const poolId = this.system.karmaTracking.groupPool.poolId;
+    if (!poolId) return false;
+
+    const pool = await game.settings.get("marvel-faserip", `karmaPools.${poolId}`);
+    if (!pool) return false;
+
+    // Check if pool is locked and this is for advancement
+    if (pool.isLocked && reason === "advancement") {
+        ui.notifications.error("Cannot use locked pool karma for advancement");
+        return false;
+    }
+
+    // Check if enough karma
+    if (pool.total < amount) {
+        ui.notifications.error("Not enough karma in group pool");
+        return false;
+    }
+
+    // Use karma
+    pool.total -= amount;
+    await game.settings.set("marvel-faserip", `karmaPools.${poolId}`, pool);
+
+    return true;
+}
 }
