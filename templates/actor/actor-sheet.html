@@ -74,74 +74,142 @@
 
         <div class="powers-list">
     <section class="sheet-body">
+        <!-- In actor-sheet.html, replace the abilities-grid section (around line 150-300) with: -->
         <div class="abilities-grid">
+            <!-- In templates/actor/actor-sheet.html, find and replace the primary-abilities section -->
             <div class="primary-abilities">
-                <h2>Primary Abilities</h2>
                 <table>
                     <thead>
                         <tr>
                             <th></th>
-                            <th class="init-column">Init Roll</th>
-                            <th class="init-column">Init Rank #</th>
+                            <th>Initial Roll</th>
+                            <th>Initial Rank</th>
                             <th>Current Rank</th>
-                            <th>Current Rank #</th>
+                            <th>Current Rank Number</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {{#each actor.system.primaryAbilities as |ability key|}}
-                        <tr class="ability-row" data-ability="{{key}}">
-                            <td class="ability-label">{{key}}</td>
-                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.{{key}}.initialRoll" value="{{ability.initialRoll}}" data-ability="{{key}}" maxlength="3"/></td>
-                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.{{key}}.initialRank" value="{{ability.initialRank}}" data-ability="{{key}}"/></td>
+                        <!-- Fighting -->
+                        <tr class="ability-row" data-ability="fighting">
+                            <td class="ability-label">F</td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.fighting.initialRoll" value="{{actor.system.primaryAbilities.fighting.initialRoll}}" data-ability="fighting"/></td>
+                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.fighting.initialRank" value="{{actor.system.primaryAbilities.fighting.initialRank}}" data-ability="fighting"/></td>
                             <td>
-                                <select name="system.primaryAbilities.{{key}}.rank" class="rank-select" data-ability="{{key}}">
-                                    {{selectOptions @root.config.ranks selected=ability.rank blank=""}}
+                                <select name="system.primaryAbilities.fighting.rank" class="rank-select" data-ability="fighting">
+                                    {{selectOptions @root.config.ranks selected=actor.system.primaryAbilities.fighting.rank}}
                                 </select>
                             </td>
-                            <td><input type="number" class="ability-number" name="system.primaryAbilities.{{key}}.number" value="{{ability.number}}" data-ability="{{key}}" /></td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.fighting.number" value="{{actor.system.primaryAbilities.fighting.number}}" data-ability="fighting"/></td>
                         </tr>
-                        {{/each}}
+                        <!-- Agility -->
+                        <tr class="ability-row" data-ability="agility">
+                            <td class="ability-label">A</td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.agility.initialRoll" value="{{actor.system.primaryAbilities.agility.initialRoll}}" data-ability="agility"/></td>
+                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.agility.initialRank" value="{{actor.system.primaryAbilities.agility.initialRank}}" data-ability="agility"/></td>
+                            <td>
+                                <select name="system.primaryAbilities.agility.rank" class="rank-select" data-ability="agility">
+                                    {{selectOptions @root.config.ranks selected=actor.system.primaryAbilities.agility.rank}}
+                                </select>
+                            </td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.agility.number" value="{{actor.system.primaryAbilities.agility.number}}" data-ability="agility"/></td>
+                        </tr>
+                        <!-- Strength -->
+                        <tr class="ability-row" data-ability="strength">
+                            <td class="ability-label">S</td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.strength.initialRoll" value="{{actor.system.primaryAbilities.strength.initialRoll}}" data-ability="strength"/></td>
+                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.strength.initialRank" value="{{actor.system.primaryAbilities.strength.initialRank}}" data-ability="strength"/></td>
+                            <td>
+                                <select name="system.primaryAbilities.strength.rank" class="rank-select" data-ability="strength">
+                                    {{selectOptions @root.config.ranks selected=actor.system.primaryAbilities.strength.rank}}
+                                </select>
+                            </td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.strength.number" value="{{actor.system.primaryAbilities.strength.number}}" data-ability="strength"/></td>
+                        </tr>
+                        <!-- Endurance -->
+                        <tr class="ability-row" data-ability="endurance">
+                            <td class="ability-label">E</td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.endurance.initialRoll" value="{{actor.system.primaryAbilities.endurance.initialRoll}}" data-ability="endurance"/></td>
+                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.endurance.initialRank" value="{{actor.system.primaryAbilities.endurance.initialRank}}" data-ability="endurance"/></td>
+                            <td>
+                                <select name="system.primaryAbilities.endurance.rank" class="rank-select" data-ability="endurance">
+                                    {{selectOptions @root.config.ranks selected=actor.system.primaryAbilities.endurance.rank}}
+                                </select>
+                            </td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.endurance.number" value="{{actor.system.primaryAbilities.endurance.number}}" data-ability="endurance"/></td>
+                        </tr>
+                        <!-- Reason -->
+                        <tr class="ability-row" data-ability="reason">
+                            <td class="ability-label">R</td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.reason.initialRoll" value="{{actor.system.primaryAbilities.reason.initialRoll}}" data-ability="reason"/></td>
+                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.reason.initialRank" value="{{actor.system.primaryAbilities.reason.initialRank}}" data-ability="reason"/></td>
+                            <td>
+                                <select name="system.primaryAbilities.reason.rank" class="rank-select" data-ability="reason">
+                                    {{selectOptions @root.config.ranks selected=actor.system.primaryAbilities.reason.rank}}
+                                </select>
+                            </td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.reason.number" value="{{actor.system.primaryAbilities.reason.number}}" data-ability="reason"/></td>
+                        </tr>
+                        <!-- Intuition -->
+                        <tr class="ability-row" data-ability="intuition">
+                            <td class="ability-label">I</td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.intuition.initialRoll" value="{{actor.system.primaryAbilities.intuition.initialRoll}}" data-ability="intuition"/></td>
+                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.intuition.initialRank" value="{{actor.system.primaryAbilities.intuition.initialRank}}" data-ability="intuition"/></td>
+                            <td>
+                                <select name="system.primaryAbilities.intuition.rank" class="rank-select" data-ability="intuition">
+                                    {{selectOptions @root.config.ranks selected=actor.system.primaryAbilities.intuition.rank}}
+                                </select>
+                            </td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.intuition.number" value="{{actor.system.primaryAbilities.intuition.number}}" data-ability="intuition"/></td>
+                        </tr>
+                        <!-- Psyche -->
+                        <tr class="ability-row" data-ability="psyche">
+                            <td class="ability-label">P</td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.psyche.initialRoll" value="{{actor.system.primaryAbilities.psyche.initialRoll}}" data-ability="psyche"/></td>
+                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.psyche.initialRank" value="{{actor.system.primaryAbilities.psyche.initialRank}}" data-ability="psyche"/></td>
+                            <td>
+                                <select name="system.primaryAbilities.psyche.rank" class="rank-select" data-ability="psyche">
+                                    {{selectOptions @root.config.ranks selected=actor.system.primaryAbilities.psyche.rank}}
+                                </select>
+                            </td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.psyche.number" value="{{actor.system.primaryAbilities.psyche.number}}" data-ability="psyche"/></td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
 
             <div class="secondary-abilities">
-                <h2>Secondary Abilities</h2>
-                <div class="secondary-grid">
-                    <!-- make sure of bindings -->
-                <div class="ability-block">
-                    <label>Health (F+A+S+E)</label>
-                    <div class="value-pair">
-                        <input type="number" name="system.secondaryAbilities.health.value" value="{{actor.system.secondaryAbilities.health.value}}"/>
-                        <span>/</span>
-                        <input type="number" name="system.secondaryAbilities.health.max" value="{{actor.system.secondaryAbilities.health.max}}" readonly/>
-                    </div>
-                </div>
-
-                <div class="ability-block">
-                    <label class="clickable-karma">Karma (R+I+P)</label>
-                    <div class="value-pair">
-                        <input type="number" name="system.secondaryAbilities.karma.value" value="{{actor.system.secondaryAbilities.karma.value}}"/>
-                        <span>/</span>
-                        <input type="number" name="system.secondaryAbilities.karma.max" value="{{actor.system.secondaryAbilities.karma.max}}" readonly/>
-                    </div>
-                </div>
-
-                    <div class="ability-block">
-                        <label class="clickable-resources">Resources</label>
-                        <input type="number" name="system.secondaryAbilities.resources.number" value="{{actor.system.secondaryAbilities.resources.number}}"/>
-                    </div>
-
-                    <div class="popularity-block">
-                        <div class="popularity-labels">
-                            <label class="clickable-popularity" data-popularity-type="hero">Hero Popularity</label>
-                            <label class="clickable-popularity" data-popularity-type="secret">Secret ID Popularity</label>
-                        </div>
-                        <div class="popularity-inputs">
-                            <input type="number" name="system.secondaryAbilities.popularity.hero" value="{{actor.system.secondaryAbilities.popularity.hero}}"/>
-                            <input type="number" name="system.secondaryAbilities.popularity.secret" value="{{actor.system.secondaryAbilities.popularity.secret}}"/>
-                        </div>                    </div>
-                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Health</th>
+                            <th>Karma</th>
+                            <th>Resources</th>
+                            <th>Popularity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>F + A + S + E</td>
+                            <td>R + I + P</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type="number" name="system.secondaryAbilities.health.value" value="{{actor.system.secondaryAbilities.health.value}}"/>
+                            </td>
+                            <td>
+                                <input type="number" name="system.secondaryAbilities.karma.value" value="{{actor.system.secondaryAbilities.karma.value}}"/>
+                            </td>
+                            <td>
+                                <input type="number" name="system.secondaryAbilities.resources.number" value="{{actor.system.secondaryAbilities.resources.number}}"/>
+                            </td>
+                            <td>
+                                <input type="number" name="system.secondaryAbilities.popularity.hero" value="{{actor.system.secondaryAbilities.popularity.hero}}"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -353,7 +421,7 @@
                     <input type="number" name="system.karmaTracking.lifetimeTotal" value="{{actor.system.karmaTracking.lifetimeTotal}}" disabled/>
                 </div>
             </div>
-                        
+
             <div class="contacts-box">
                 <div class="list-header">
                     <button type="button" class="add-contact">+ Add Contact</button>
