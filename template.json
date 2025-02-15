@@ -75,10 +75,10 @@
             "secret": 0
           }
         },
-        "karmaTracking": {
-          "karmaPool": 0,
+          "karmaTracking": {
           "advancementFund": 0,
-          "history": []
+          "karmaPool": 0,
+          "lifetimeTotal": 0
         },
         "resistances": {
           "list": []

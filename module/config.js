@@ -1,3 +1,24 @@
+// At the top of config.js, before any other CONFIG settings
+CONFIG.marvel = CONFIG.marvel || {};
+
+// Then you can add karmaReasons
+CONFIG.marvel.karmaReasons = {
+    stopCrime: { id: "stopCrime", label: "Stop Crime", karma: 30 },
+    rescue: { id: "rescue", label: "Rescue", karma: 20 },
+    defeatFoe: { id: "defeatFoe", label: "Defeat Villain", karma: 40 },
+    charity: { id: "charity", label: "Charitable Act", karma: 10 },
+    // Add more reasons...
+};
+
+CONFIG.marvel.karmaSpendTypes = {
+    powerStunt: { id: "powerStunt", label: "Power Stunt" },
+    advancement: { id: "advancement", label: "Advancement" },
+    dieRoll: { id: "dieRoll", label: "Modify Die Roll" },
+    poolContribution: { id: "poolContribution", label: "Team Pool Contribution" },
+    // Add more types...
+};
+
+// Your existing MARVEL_RANKS and other config settings...
 export const MARVEL_RANKS = {
     'Shift 0': { range: [0, 0], standard: 0 },
     'Feeble': { range: [1, 2], standard: 2 },

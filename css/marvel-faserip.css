@@ -1717,3 +1717,102 @@ select:focus {
 .join-pool:hover, .leave-pool:hover {
     background: #9e3c2d;
 }
+
+.karma-sheet {
+    padding: 10px;
+    min-height: 600px;
+}
+
+.karma-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #782e22;
+}
+
+.karma-header h1 {
+    color: #782e22;
+    margin: 0;
+}
+
+.karma-controls {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.current-karma {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.karma-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.karma-buttons button {
+    background: #782e22;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.karma-buttons button:hover {
+    background: #9e3c2d;
+}
+
+.karma-sheet table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.karma-sheet th {
+    text-align: left;
+    padding: 8px;
+    background: #f5f5f5;
+    border-bottom: 2px solid #782e22;
+}
+
+.karma-sheet td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.karma-change.positive {
+    color: #4CAF50;
+}
+
+.karma-change.negative {
+    color: #F44336;
+}
+
+.progress-bar {
+    width: 200px;
+    height: 20px;
+    background: #eee;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: #782e22;
+    transition: width 0.3s ease;
+}
+
+.team-pools {
+    margin-top: 20px;
+}
+
+.karma-sheet h2 {
+    color: #782e22;
+    border-bottom: 1px solid #782e22;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}

@@ -45,11 +45,16 @@ export class MarvelActorSheet extends ActorSheet {
         }
     
         // Initialize karma tracking if not set
-        if (!system.karmaTracking) {
-            system.karmaTracking = {
+        if (!context.actor.system.karmaTracking) {
+            context.actor.system.karmaTracking = {
                 karmaPool: 0,
                 advancementFund: 0,
-                history: []
+                history: [],
+                groupPool: {
+                    active: false,
+                    contributed: 0,
+                    poolId: null
+                }
             };
         }
     
@@ -153,6 +158,7 @@ export class MarvelActorSheet extends ActorSheet {
             console.log("Setting up listeners"); // Add this line
             html.find('.initial-roll-input').change(this._onInitialRollChange.bind(this));
             
+            html.find('.karma-history-button').click(this._onKarmaSheet.bind(this));
             html.find('.join-pool').click(this._onJoinPool.bind(this));
             html.find('.leave-pool').click(this._onLeavePool.bind(this));
             
@@ -415,7 +421,7 @@ export class MarvelActorSheet extends ActorSheet {
     }
 
     // handler for karma history
-    async _onKarmaHistoryClick(event) {
+    /* async _onKarmaHistoryClick(event) {
         event.preventDefault();
         
         // Initialize properties
@@ -508,7 +514,7 @@ export class MarvelActorSheet extends ActorSheet {
         });
     
         dialog.render(true);
-    }
+    } */
     
     // Add this method to handle adding new karma entries
     // In MarvelActorSheet.js, in the _onAddKarmaEntry method
@@ -789,6 +795,84 @@ async _onAddKarmaEntry(event) {
         if (confirmLeave) {
             await this.actor.leaveKarmaPool();
         }
+    }
+
+    async _onKarmaHistoryClick(event) {
+        event.preventDefault();
+        
+        // Initialize properties
+        const history = this.actor.system.karmaTracking.history || [];
+        
+        const content = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/karma-history.html",
+            {
+                actor: this.actor,
+                karmaHistory: history
+            }
+        );
+    
+        new Dialog({
+            title: `Karma History - ${this.actor.name}`,
+            content: content,
+            buttons: {
+                close: {
+                    label: "Close"
+                }
+            },
+            classes: ["karma-history"],
+            width: 600,
+            height: 400,
+            resizable: true
+        }).render(true);
+    }
+    
+    async _onAddKarmaEntry(event) {
+        event.preventDefault();
+        
+        const content = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
+            { entry: { amount: '', description: '' } }
+        );
+        
+        new Dialog({
+            title: "Add Karma Entry",
+            content: content,
+            buttons: {
+                add: {
+                    label: "Add Entry",
+                    callback: async (html) => {
+                        const form = html.find('form')[0];
+                        const amount = Number(form.amount.value);
+                        const description = form.description.value;
+                        
+                        if (isNaN(amount) || !description) {
+                            ui.notifications.error("Please enter a valid amount and description");
+                            return;
+                        }
+                        
+                        // Create new entry
+                        const newEntry = {
+                            date: new Date().toLocaleString(),
+                            amount: amount,
+                            description: description
+                        };
+                        
+                        // Get current history and karma
+                        const currentHistory = this.actor.system.karmaTracking.history || [];
+                        const currentKarma = this.actor.system.secondaryAbilities.karma.value;
+                        
+                        // Update actor
+                        await this.actor.update({
+                            "system.karmaTracking.history": [...currentHistory, newEntry],
+                            "system.secondaryAbilities.karma.value": currentKarma + amount
+                        });
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
+                }
+            }
+        }).render(true);
     }
     
     _updateSortIndicators(html, currentSort) {
@@ -1953,6 +2037,188 @@ async _onResistanceRankChange(event) {
     await this.actor.update(updateData);
     this.render(false);
 }
+
+/* async _onKarmaSheet(event) {
+    event.preventDefault();
+    
+    // Prepare data for the sheet
+    const data = {
+        actor: this.actor,
+        karmaHistory: this._prepareKarmaHistory(),
+        advancementFunds: this._prepareAdvancementFunds(),
+        teamPools: await this._prepareTeamPools()
+    };
+
+    // Render the sheet
+    const content = await renderTemplate(
+        "systems/marvel-faserip/templates/dialogs/karma-sheet.html",
+        data
+    );
+
+    new Dialog({
+        title: `${this.actor.name} - Karma Sheet`,
+        content: content,
+        buttons: {
+            close: {
+                label: "Close"
+            }
+        },
+        render: (html) => {
+            // Add listeners for the gain/spend buttons
+            html.find('.gain-karma').click(this._onGainKarma.bind(this));
+            html.find('.spend-karma').click(this._onSpendKarma.bind(this));
+        },
+        width: 800,
+        height: 600
+    }).render(true);
+} */
+
+/* _prepareKarmaHistory() {
+    const history = this.actor.system.karmaTracking.history || [];
+    let balance = 0;
+    
+    return history.map(entry => {
+        balance += entry.amount;
+        return {
+            date: new Date(entry.date).toLocaleDateString(),
+            description: entry.description,
+            change: entry.amount,
+            balance: balance
+        };
+    });
+} */
+
+/* _prepareAdvancementFunds() {
+    const funds = [];
+    const advancementFund = this.actor.system.karmaTracking.advancementFund || 0;
+    
+    // Calculate costs based on current abilities
+    Object.entries(this.actor.system.primaryAbilities).forEach(([key, ability]) => {
+        const currentValue = ability.number || 0;
+        const cost = this._getAbilityAdvancementCost(currentValue);
+        
+        if (ability.advancementKarma) {
+            funds.push({
+                trait: key.charAt(0).toUpperCase() + key.slice(1),
+                saved: ability.advancementKarma,
+                needed: cost,
+                progressPercent: (ability.advancementKarma / cost) * 100
+            });
+        }
+    });
+
+    // Add any power advancement funds
+    Object.values(this.actor.items.filter(i => i.type === "power")).forEach(power => {
+        if (power.system.advancementKarma) {
+            const cost = this._getPowerAdvancementCost(power.system.rank);
+            funds.push({
+                trait: `Power: ${power.name}`,
+                saved: power.system.advancementKarma,
+                needed: cost,
+                progressPercent: (power.system.advancementKarma / cost) * 100
+            });
+        }
+    });
+
+    return funds;
+} */
+
+/* async _prepareTeamPools() {
+    const pools = [];
+    const groupPool = this.actor.system.karmaTracking.groupPool;
+    
+    if (groupPool.active) {
+        const pool = await game.settings.get("marvel-faserip", `karmaPools.${groupPool.poolId}`);
+        if (pool) {
+            pools.push({
+                name: pool.name || "Team Pool",
+                contribution: groupPool.contributed,
+                total: pool.total,
+                share: Math.floor(pool.total / pool.members.length)
+            });
+        }
+    }
+    
+    return pools;
+} */
+
+async _onGainKarma(event) {
+    event.preventDefault();
+    
+    const content = await renderTemplate(
+        "systems/marvel-faserip/templates/dialogs/gain-karma.html",
+        {
+            reasons: CONFIG.marvel.karmaReasons
+        }
+    );
+
+    new Dialog({
+        title: "Gain Karma",
+        content: content,
+        buttons: {
+            gain: {
+                label: "Gain",
+                callback: async (html) => {
+                    const amount = parseInt(html.find('[name="amount"]').val()) || 0;
+                    const reason = html.find('[name="reason"]').val();
+                    
+                    if (amount <= 0) {
+                        ui.notifications.error("Amount must be positive");
+                        return;
+                    }
+
+                    await this.actor.addKarma(amount, reason);
+                    this._onKarmaSheet(event); // Refresh the sheet
+                }
+            },
+            cancel: {
+                label: "Cancel"
+            }
+        }
+    }).render(true);
+}
+
+async _onSpendKarma(event) {
+    event.preventDefault();
+    
+    const content = await renderTemplate(
+        "systems/marvel-faserip/templates/dialogs/spend-karma.html",
+        {
+            reasons: CONFIG.marvel.karmaSpendTypes,
+            maxKarma: this.actor.system.karmaTracking.karmaPool
+        }
+    );
+
+    new Dialog({
+        title: "Spend Karma",
+        content: content,
+        buttons: {
+            spend: {
+                label: "Spend",
+                callback: async (html) => {
+                    const amount = parseInt(html.find('[name="amount"]').val()) || 0;
+                    const reason = html.find('[name="reason"]').val();
+                    
+                    if (amount <= 0) {
+                        ui.notifications.error("Amount must be positive");
+                        return;
+                    }
+
+                    if (amount > this.actor.system.karmaTracking.karmaPool) {
+                        ui.notifications.error("Not enough karma");
+                        return;
+                    }
+
+                    await this.actor.spendKarma(amount, reason);
+                    this._onKarmaSheet(event); // Refresh the sheet
+                }
+            },
+            cancel: {
+                label: "Cancel"
+            }
+        }
+    }).render(true);
+}
 }
 async function createFaseripMacro(data, slot) {
     if (data.type !== "Item") return;
@@ -1986,3 +2252,5 @@ async function createFaseripMacro(data, slot) {
     // Trigger the item roll
     return item.roll();
   }
+
+  

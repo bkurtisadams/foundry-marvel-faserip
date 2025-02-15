@@ -70,24 +70,26 @@ export class MarvelActor extends Actor {
             };
         }
 
-        if (!this.system.karmaTracking) {
+        /* if (!this.system.karmaTracking) {
             this.system.karmaTracking = {
                 karmaPool: 0,
                 advancementFund: 0,
                 history: [],
                 lifetimeTotal: 0,
-                adventurePool: {
-                    active: false,
-                    contributed: 0,
-                    poolId: null
-                },
-                permanentPool: {
+                groupPool: {  // Changed to groupPool to match usage
                     active: false,
                     contributed: 0,
                     poolId: null
                 }
             };
-        }
+        } */
+            if (!this.system.karmaTracking) {
+                this.system.karmaTracking = {
+                    advancementFund: 0,
+                    karmaPool: 0,
+                    lifetimeTotal: 0
+                };
+            }
     }
 
     /** Initialize hero-specific template data */
@@ -208,6 +210,15 @@ export class MarvelActor extends Actor {
         if (!this.system.secondaryAbilities.karma.value) {
             this.system.secondaryAbilities.karma.value = karma;
         }
+    }
+
+    async updateKarma(advancementFund, karmaPool) {
+        const lifetimeTotal = karmaPool + advancementFund;
+        await this.update({
+            "system.karmaTracking.advancementFund": advancementFund,
+            "system.karmaTracking.karmaPool": karmaPool,
+            "system.karmaTracking.lifetimeTotal": lifetimeTotal
+        });
     }
 
     /**
@@ -1604,7 +1615,7 @@ export class MarvelActor extends Actor {
      * @param {string} reason - Reason for karma award
      * @returns {Promise} Promise that resolves when karma is added
      */
-    async addKarma(amount, reason) {
+    /* async addKarma(amount, reason) {
         if (!amount || isNaN(amount)) {
             throw new Error("Invalid karma amount");
         }
@@ -1649,14 +1660,14 @@ export class MarvelActor extends Actor {
         });
 
         return currentPool + amount;
-    }
+    } */
 
     /**
      * Transfer karma between pool and advancement fund
      * @param {number} amount - Amount to transfer (positive: pool to fund, negative: fund to pool)
      * @returns {Promise} Promise that resolves when transfer is complete
      */
-    async transferKarma(amount) {
+    /* async transferKarma(amount) {
         if (!amount || isNaN(amount)) {
             throw new Error("Invalid karma transfer amount");
         }
@@ -1698,14 +1709,14 @@ export class MarvelActor extends Actor {
         });
 
         return true;
-    }
+    } */
 
     /**
      * Get karma history with optional filtering
      * @param {Object} options - Filter options
      * @returns {Array} Filtered karma history
      */
-    getKarmaHistory(options = {}) {
+    /* getKarmaHistory(options = {}) {
         const history = this.system.karmaTracking.history || [];
         let filtered = [...history];
 
@@ -1726,7 +1737,7 @@ export class MarvelActor extends Actor {
         filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         return filtered;
-    }
+    } */
 
     /**
      * Advance an ability using karma
@@ -1776,81 +1787,83 @@ export class MarvelActor extends Actor {
         return true;
     }
 
+    // _getAbilityAdvancementCost method
     /**
      * Calculate karma cost for advancing an ability
      * @param {number} currentValue - Current ability value
-     * @returns {number} Karma cost
+     * @returns {number} Karma cost for next rank
      * @private
      */
     _getAbilityAdvancementCost(currentValue) {
-        // Based on FASERIP advancement rules
-        if (currentValue < 10) return 50;
-        if (currentValue < 20) return 75;
-        if (currentValue < 30) return 100;
-        if (currentValue < 40) return 150;
-        if (currentValue < 50) return 200;
-        return 300;
+        // Base cost is 10 times current rank number
+        const baseCost = currentValue * 10;
+        
+        // Check if we're cresting to next rank level
+        const nextValue = currentValue + 1;
+        const currentRank = this.getRankFromValue(currentValue);
+        const nextRank = this.getRankFromValue(nextValue);
+        
+        // If ranks are different, we're cresting and need to add 400
+        if (currentRank !== nextRank) {
+            return baseCost + 400; // Cresting costs additional 400
+        }
+        
+        return baseCost;
     }
 
     /**
-     * Advance a power's rank using karma
-     * @param {number} powerIndex - Index of the power to advance
-     * @returns {Promise<boolean>} Success of the advancement
+     * Calculate karma cost for advancing a power
+     * @param {string} currentRank - Current power rank
+     * @param {number} currentValue - Current rank number
+     * @returns {number} Karma cost
+     * @private
      */
-    async advancePower(powerIndex) {
-        const power = this.system.powers.list[powerIndex];
-        if (!power) {
-            throw new Error(`Power at index ${powerIndex} not found`);
-        }
-
-        // Calculate karma cost for power advancement
-        const currentRank = power.rank;
-        const karmaCost = this._getPowerAdvancementCost(currentRank);
+    _getPowerAdvancementCost(currentRank, currentValue) {
+        // Base cost is 20 times rank number
+        const baseCost = currentValue * 20;
         
-        // Check if we have enough karma
-        if (this.system.karmaTracking.advancementFund < karmaCost) {
-            ui.notifications.error(`Not enough karma (${karmaCost} required) to advance power`);
-            return false;
+        // If cresting to next rank, add 500
+        const nextValue = currentValue + 1;
+        const nextRank = this.getRankFromValue(nextValue);
+        
+        if (currentRank !== nextRank) {
+            return baseCost + 500; // Cresting costs additional 500
         }
-
-        // Get next rank
-        const nextRank = this._getNextRank(currentRank);
-        if (!nextRank) {
-            ui.notifications.error("Power cannot be advanced further");
-            return false;
-        }
-
-        // Update power list with new rank
-        const powers = duplicate(this.system.powers.list);
-        powers[powerIndex].rank = nextRank;
-        powers[powerIndex].rankNumber = CONFIG.marvel.ranks[nextRank].standard;
-
-        // Update power and deduct karma
-        await this.update({
-            "system.powers.list": powers,
-            "system.karmaTracking.advancementFund": this.system.karmaTracking.advancementFund - karmaCost
-        });
-
-        // Create chat message
-        const messageContent = `
-            <div class="marvel-advancement">
-                <h3>${this.name} - Power Advancement</h3>
-                <div class="advancement-details">
-                    <div>Power: ${power.name}</div>
-                    <div>Old Rank: ${currentRank}</div>
-                    <div>New Rank: ${nextRank}</div>
-                    <div>Karma Cost: ${karmaCost}</div>
-                </div>
-            </div>`;
-
-        await ChatMessage.create({
-            speaker: ChatMessage.getSpeaker({ actor: this }),
-            content: messageContent
-        });
-
-        return true;
+        
+        return baseCost;
     }
 
+    /**
+     * Calculate karma cost for new power
+     * @param {number} startingRankNumber - Starting rank number for new power
+     * @param {boolean} isRobot - Whether character is robotic
+     * @returns {number} Karma cost
+     * @private
+     */
+    _getNewPowerCost(startingRankNumber, isRobot = false) {
+        const multiplier = isRobot ? 10 : 40;
+        return 3000 + (startingRankNumber * multiplier);
+    }
+
+    /**
+     * Calculate karma cost for new talent
+     * @param {boolean} isNPC - Whether learning from NPC
+     * @returns {number} Karma cost
+     * @private
+     */
+    _getNewTalentCost(isNPC = true) {
+        return isNPC ? 1000 : 2000;
+    }
+
+    /**
+     * Calculate karma cost for new contact
+     * @param {number} contactResourceRank - Resource rank of contact
+     * @returns {number} Karma cost
+     * @private
+     */
+    _getNewContactCost(contactResourceRank) {
+        return 500 + (contactResourceRank * 10);
+    }
     /**
      * Get the next rank in the progression
      * @param {string} currentRank - Current rank
@@ -1864,74 +1877,52 @@ export class MarvelActor extends Actor {
     }
 
     /**
-     * Calculate karma cost for advancing a power
-     * @param {string} currentRank - Current power rank
-     * @returns {number} Karma cost
-     * @private
+     * Join a karma group pool
+     * @param {Object} options - Pool options
+     * @returns {Promise<boolean>} Success/failure of joining
      */
-    _getPowerAdvancementCost(currentRank) {
-        const costs = {
-            "Feeble": 100,
-            "Poor": 150,
-            "Typical": 200,
-            "Good": 300,
-            "Excellent": 400,
-            "Remarkable": 600,
-            "Incredible": 800,
-            "Amazing": 1000,
-            "Monstrous": 1500,
-            "Unearthly": 2000
-        };
-        return costs[currentRank] || 3000;
+    async joinKarmaPool(options = {}) {
+        console.log("Joining karma pool with options:", options);
+        
+        const contribution = Math.min(options.contribution || 0, this.system.karmaTracking.karmaPool);
+        
+        // Get or create pool
+        let pool = await game.settings.get("marvel-faserip", `karmaPools.${options.poolId}`);
+        if (!pool) {
+            pool = {
+                id: options.poolId || randomID(16),
+                total: 0,
+                members: [],
+                isPermanent: options.isPermanent || false,
+                isLocked: options.isLocked || false,
+                contributions: {}
+            };
+        }
+
+        // Add member to pool
+        if (!pool.members.includes(this.id)) {
+            pool.members.push(this.id);
+            pool.total += contribution;
+            pool.contributions[this.id] = contribution;
+
+            // Update actor's karma tracking
+            await this.update({
+                "system.karmaTracking.karmaPool": this.system.karmaTracking.karmaPool - contribution,
+                "system.karmaTracking.groupPool": {
+                    active: true,
+                    contributed: contribution,
+                    poolId: pool.id,
+                    isPermanent: pool.isPermanent,
+                    isLocked: pool.isLocked
+                }
+            });
+
+            // Save pool
+            await game.settings.set("marvel-faserip", `karmaPools.${pool.id}`, pool);
+            return true;
+        }
+        return false;
     }
-
-    /**
- * Join a karma group pool
- * @param {Object} options - Pool options
- * @returns {Promise<boolean>} Success/failure of joining
- */
-async joinKarmaPool(options = {}) {
-    console.log("Joining karma pool with options:", options);
-    
-    const contribution = Math.min(options.contribution || 0, this.system.karmaTracking.karmaPool);
-    
-    // Get or create pool
-    let pool = await game.settings.get("marvel-faserip", `karmaPools.${options.poolId}`);
-    if (!pool) {
-        pool = {
-            id: options.poolId || randomID(16),
-            total: 0,
-            members: [],
-            isPermanent: options.isPermanent || false,
-            isLocked: options.isLocked || false,
-            contributions: {}
-        };
-    }
-
-    // Add member to pool
-    if (!pool.members.includes(this.id)) {
-        pool.members.push(this.id);
-        pool.total += contribution;
-        pool.contributions[this.id] = contribution;
-
-        // Update actor's karma tracking
-        await this.update({
-            "system.karmaTracking.karmaPool": this.system.karmaTracking.karmaPool - contribution,
-            "system.karmaTracking.groupPool": {
-                active: true,
-                contributed: contribution,
-                poolId: pool.id,
-                isPermanent: pool.isPermanent,
-                isLocked: pool.isLocked
-            }
-        });
-
-        // Save pool
-        await game.settings.set("marvel-faserip", `karmaPools.${pool.id}`, pool);
-        return true;
-    }
-    return false;
-}
 
 /**
  * Leave current karma pool
