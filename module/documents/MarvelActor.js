@@ -89,8 +89,12 @@ export class MarvelActor extends Actor {
                     karmaPool: 0,
                     lifetimeTotal: 0
                 };
-            }
-    }
+            } else {
+                // Ensure values are numbers
+                this.system.karmaTracking.advancementFund = parseInt(this.system.karmaTracking.advancementFund) || 0;
+                this.system.karmaTracking.karmaPool = parseInt(this.system.karmaTracking.karmaPool) || 0;
+                this.system.karmaTracking.lifetimeTotal = this.system.karmaTracking.advancementFund + this.system.karmaTracking.karmaPool;
+            }    }
 
     /** Initialize hero-specific template data */
     _initializeHeroTemplate() {
