@@ -400,6 +400,24 @@
     width: 80px;
     text-align: center;
     margin-bottom: 5px;
+    border: 1px solid #7a7971;
+    border-radius: 3px;
+    padding: 0 3px;
+    background: white;
+}
+
+/* Add specific styles for disabled input */
+.karma-box input:disabled {
+    background-color: #f0f0f0;
+    border: 1px solid #7a7971;
+    color: #000;
+    cursor: not-allowed;
+}
+
+/* Ensure hover state doesn't change border */
+.karma-box input:hover,
+.karma-box input:disabled:hover {
+    border: 1px solid #7a7971;
 }
 
 .karma-box input:last-child {
