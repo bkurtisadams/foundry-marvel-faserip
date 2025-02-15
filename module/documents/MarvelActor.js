@@ -216,14 +216,14 @@ export class MarvelActor extends Actor {
         }
     }
 
-    async updateKarma(advancementFund, karmaPool) {
+    /* async updateKarma(advancementFund, karmaPool) {
         const lifetimeTotal = karmaPool + advancementFund;
         await this.update({
             "system.karmaTracking.advancementFund": advancementFund,
             "system.karmaTracking.karmaPool": karmaPool,
             "system.karmaTracking.lifetimeTotal": lifetimeTotal
         });
-    }
+    } */
 
     /**
      * Update resource rank based on the current number value

@@ -54,11 +54,12 @@ export class MarvelActorSheet extends ActorSheet {
         }
 
         // Calculate Lifetime Total
-        if (context.actor.system.karmaTracking) {
+        /* if (context.actor.system.karmaTracking) {
             context.actor.system.karmaTracking.lifetimeTotal = 
                 (context.actor.system.karmaTracking.advancementFund || 0) + 
                 (context.actor.system.karmaTracking.karmaPool || 0);
-        }    
+        } */
+
         // Get the active tab from flags or default to 'special'
         const activeTab = this.actor.getFlag('marvel-faserip', 'activeTab') || 'special';
         context.activeTab = activeTab;
@@ -254,17 +255,16 @@ export class MarvelActorSheet extends ActorSheet {
             // [Rest of existing code remains unchanged]
     
             // Add karma input listeners for the simplified karma system
-            html.find('input[name="system.karmaTracking.advancementFund"], input[name="system.karmaTracking.karmaPool"]').on('change', async (event) => {
-                const advancementFund = parseInt(html.find('input[name="system.karmaTracking.advancementFund"]').val()) || 0;
-                const karmaPool = parseInt(html.find('input[name="system.karmaTracking.karmaPool"]').val()) || 0;
-                const lifetimeTotal = advancementFund + karmaPool;
+            // Remove/modify this section in activateListeners
+            html.find('input[name="system.karmaTracking.advancementFund"], input[name="system.karmaTracking.karmaPool"], input[name="system.karmaTracking.lifetimeTotal"]').on('change', async (event) => {
+                const target = event.currentTarget;
+                const value = parseInt(target.value) || 0;
+                const field = target.name;
                 
                 await this.actor.update({
-                    "system.karmaTracking.advancementFund": advancementFund,
-                    "system.karmaTracking.karmaPool": karmaPool,
-                    "system.karmaTracking.lifetimeTotal": lifetimeTotal
+                    [field]: value
                 });
-            });
+            });;
         }
     }
 
