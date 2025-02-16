@@ -152,43 +152,118 @@
     margin: 10px 0;
 }
 
-/* Primary Abilities Box */
+/* Primary Abilities Section */
 .primary-abilities {
-    border: 1px solid #000;
-    padding: 5px;
+    border: none;  
+    padding: 0;    
+    margin-bottom: 10px;
 }
 
-/* Primary Abilities Table */
 .primary-abilities table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.primary-abilities th,
-.secondary-abilities th {
+.primary-abilities tr {
+    background-color: #f5f5f5; /* Much lighter gray, almost white */
+}
+
+.primary-abilities th {
     text-align: center;
-    padding: 2px;
+    padding: 1px;
     border: 1px solid #000;
     font-weight: normal;
-    background: transparent;
-    font-size: 12px;
-    font-style: normal;
-    font-family: inherit;
-    color: #514d44;
+    font-size: 11px;
+    height: 18px;
+    white-space: nowrap;
+    background-color: #e0e0e0; /* Lighter header background */
+    color: #000;             /* Black text instead of white */
+}
+
+/* Make the last column (Current Rank #) narrower */
+.primary-abilities th:last-child,
+.primary-abilities td:last-child {
+    width: 40px !important; /* Force narrow width */
 }
 
 .primary-abilities td {
-    padding: 1px 2px;
+    padding: 1px;
     border: 1px solid #000;
     text-align: center;
-    height: 22px;
+    height: 20px;
+    vertical-align: middle;
 }
 
+/* Secondary Abilities Section */
+.secondary-abilities {
+    border: none;   
+    padding: 0;     
+    margin-bottom: 10px;
+}
+
+.secondary-abilities table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.secondary-abilities th {
+    border: 1px solid #000;
+    text-align: center;
+    padding: 1px;
+    font-size: 11px;
+    background-color: #e0e0e0; /* Match primary abilities header */
+    color: #000;             /* Black text */
+}
+
+.secondary-abilities td {
+    border: 1px solid #000;
+    text-align: center;
+    padding: 1px;
+    background-color: #f5f5f5; /* Match primary abilities rows */
+}
+
+
+/* Formula text styling */
+.secondary-abilities tr:first-child td {
+    font-size: 8px;
+    color: #000000;  
+    padding: 2px;
+    background-color: #999999;
+}
+
+/* Column Widths */
+.initial-roll-input {
+    width: 30px !important;
+}
+
+.initial-rank-input,
+.rank-select {
+    width: 80px !important;
+    text-align: center;
+    padding: 0;
+}
+
+.ability-number {
+    width: 30px !important;
+    text-align: center;
+    padding: 0;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.ability-number::-webkit-outer-spin-button,
+.ability-number::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Ability Label */
 .ability-label {
     font-weight: bold;
     width: 20px;
     text-align: center;
-    background: #f5f5f5;
+    background: #999999;
+    color: #000000;    
     cursor: pointer;
 }
 
@@ -201,62 +276,20 @@
 .primary-abilities input[type="text"],
 .primary-abilities input[type="number"],
 .primary-abilities select {
-    width: 100%;
     border: none;
     background: transparent;
     text-align: center;
-    padding: 2px;
-}
-
-.initial-roll-input {
-    width: 40px !important;
-}
-
-.initial-rank-input {
-    width: 70px !important;
-}
-
-.rank-select {
-    width: 90px !important;
-}
-
-.ability-number {
-    width: 60px;
-    text-align: right;
-    -moz-appearance: textfield;
-    appearance: textfield;
-}
-
-.ability-number::-webkit-outer-spin-button,
-.ability-number::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-/* Secondary Abilities */
-.secondary-abilities {
-    border: 1px solid #000;
-    padding: 5px;
-}
-
-.secondary-abilities table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.secondary-abilities td {
-    padding: 2px;
-    border: 1px solid #000;
-    text-align: center;
-    height: 24px;
+    padding: 0;
+    height: 18px;
+    font-size: 11px;
 }
 
 .secondary-abilities input {
     width: calc(100% - 4px);
-    height: 20px;
-    border: none;
-    background: transparent;
     text-align: center;
+    border: none;
+    padding: 1px;
+    background: transparent;
 }
 
 /* Formula text styling */
