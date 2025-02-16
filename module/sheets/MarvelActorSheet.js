@@ -111,6 +111,11 @@ export class MarvelActorSheet extends ActorSheet {
             };
         }
         
+        // Get equipment
+        context.equipment = this.actor.items.filter(item => item.type === "equipment");
+        // Add logging to verify equipment is being found
+        console.log("Equipment items:", context.equipment);
+
         // Initialize talents according to template.json schema
         if (!system.talents) {
             system.talents = {
@@ -153,17 +158,140 @@ export class MarvelActorSheet extends ActorSheet {
         event.dataTransfer.effectAllowed = "copy";
     }
 
+    // Equipment methods
+    async _onAddEquipment(event) {
+        event.preventDefault();
+        console.log("Starting _onAddEquipment method");
+        
+        const template = "systems/marvel-faserip/templates/dialogs/add-equipment.html";
+        console.log("Template path:", template);
+        
+        const dialogData = {
+            types: {
+                "S": "Shooting",
+                "F": "Force",
+                "E": "Energy",
+                "EA": "Edged Attack",
+                "ET": "Edged Thrown",
+                "BA": "Blunt Attack",
+                "BT": "Blunt Thrown"
+            }
+        };
+        console.log("Dialog data prepared:", dialogData);
+    
+        try {
+            const html = await renderTemplate(template, dialogData);
+            console.log("Template rendered:", html);
+    
+            return new Dialog({
+                title: "Add Equipment",
+                content: html,
+                buttons: {
+                    create: {
+                        label: "Create",
+                        callback: async (html) => {
+                            try {
+                                console.log("Create button clicked");
+                                console.log("HTML object received:", html);
+                                
+                                // Using jQuery form selector
+                                const form = html.find('form');
+                                console.log("Form found:", form);
+                                
+                                // Log each form field value
+                                console.log("Form field values:");
+                                console.log("equipmentName:", form.find('[name="equipmentName"]').val());
+                                console.log("type:", form.find('[name="type"]').val());
+                                console.log("range:", form.find('[name="range"]').val());
+                                console.log("damage:", form.find('[name="damage"]').val());
+                                console.log("rate:", form.find('[name="rate"]').val());
+                                console.log("shots:", form.find('[name="shots"]').val());
+                                console.log("material:", form.find('[name="material"]').val());
+                                console.log("price:", form.find('[name="price"]').val());
+                                console.log("special:", form.find('[name="special"]').val());
+                                console.log("description:", form.find('[name="description"]').val());
+    
+                                const equipmentData = {
+                                    name: form.find('[name="equipmentName"]').val(),
+                                    type: "equipment",
+                                    img: "icons/svg/item-bag.svg",
+                                    system: {
+                                        type: form.find('[name="type"]').val(),
+                                        range: form.find('[name="range"]').val(),
+                                        damage: parseInt(form.find('[name="damage"]').val()) || 0,
+                                        rate: parseInt(form.find('[name="rate"]').val()) || 1,
+                                        shots: parseInt(form.find('[name="shots"]').val()) || 0,
+                                        material: form.find('[name="material"]').val(),
+                                        price: form.find('[name="price"]').val(),
+                                        special: form.find('[name="special"]').val(),
+                                        description: form.find('[name="description"]').val()
+                                    }
+                                };
+    
+                                console.log("Equipment data prepared:", equipmentData);
+    
+                                console.log("Actor before creation:", this.actor);
+                                const created = await this.actor.createEmbeddedDocuments("Item", [equipmentData]);
+                                console.log("Equipment created:", created);
+                                
+                                ui.notifications.info(`Created equipment: ${equipmentData.name}`);
+    
+                            } catch (error) {
+                                console.error("Error in create callback:", error);
+                                console.error("Error stack:", error.stack);
+                                ui.notifications.error("Error creating equipment. Check console for details.");
+                            }
+                        }
+                    },
+                    cancel: {
+                        label: "Cancel"
+                    }
+                },
+                default: "create",
+                width: 400,
+                render: (html) => console.log("Dialog rendered with HTML:", html)
+            }).render(true);
+        } catch (error) {
+            console.error("Error rendering dialog:", error);
+            console.error("Error stack:", error.stack);
+            ui.notifications.error("Error rendering equipment dialog. Check console for details.");
+        }
+    }
+
+async _onRollEquipment(event) {
+    event.preventDefault();
+    const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
+    const item = this.actor.items.get(itemId);
+    
+    if (!item) return;
+
+    // Determine which ability to use based on equipment type
+    let ability;
+    switch(item.system.type) {
+        case "S": ability = "agility"; break;
+        case "F": ability = "strength"; break;
+        case "E": ability = "reason"; break;
+        case "EA":
+        case "BA": ability = "fighting"; break;
+        case "ET":
+        case "BT": ability = "agility"; break;
+        default: ability = "fighting";
+    }
+
+    // Roll using the appropriate ability
+    await this.actor.rollAbility(ability, {
+        featType: "combat",
+        actionType: item.system.type,
+        weaponDamage: item.system.damage
+    });
+}
+
     activateListeners(html) {
         super.activateListeners(html);
     
         if (this.isEditable) {
             console.log("Setting up listeners");
             html.find('.initial-roll-input').change(this._onInitialRollChange.bind(this));
-            
-            // Remove these karma history listeners
-            // html.find('.karma-history-button').click(this._onKarmaSheet.bind(this));
-            // html.find('.join-pool').click(this._onJoinPool.bind(this));
-            // html.find('.leave-pool').click(this._onLeavePool.bind(this));
             
             // Add drag events for macros
             let handler = ev => this._onDragStart(ev);
@@ -233,6 +361,11 @@ export class MarvelActorSheet extends ActorSheet {
     
             // Navigation tabs
             html.find('.nav-item').off('click').on('click', this._onTabChange.bind(this));
+
+            // Equipment handlers
+            html.find('.add-equipment').click(ev => this._onAddEquipment(ev));
+            html.find('.roll-equipment').click(ev => this._onRollEquipment(ev));
+            html.find('.item-delete[data-type="equipment"]').click(ev => this._onDeleteEquipment(ev));
     
             // Add attack button
             html.find('.add-attack').click(async (ev) => this._onAddAttack(ev));
@@ -1350,7 +1483,6 @@ async _onAddPower(event) {
         default: "create"
     }).render(true);
 }
-                        
 
 async _onAddTalent(event) {
     console.log("Add talent clicked");
@@ -2128,6 +2260,25 @@ async _onSpendKarma(event) {
         }
     }).render(true);
 }
+
+async _onDeleteEquipment(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const itemId = element.closest(".equipment-row").dataset.itemId;
+    
+    const confirmDelete = await Dialog.confirm({
+        title: "Delete Equipment",
+        content: "<p>Are you sure you want to delete this equipment?</p>",
+        yes: () => true,
+        no: () => false,
+        defaultYes: false
+    });
+
+    if (confirmDelete) {
+        await this.actor.deleteEmbeddedDocuments("Item", [itemId]);
+    }
+}
+
 }
 async function createFaseripMacro(data, slot) {
     if (data.type !== "Item") return;

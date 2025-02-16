@@ -414,13 +414,36 @@
     </div>
 
     <!-- Equipment Tab -->
-    <div class="tab-panel" data-tab="equipment">
+    <!-- Equipment Tab -->
+    <div class="tab-panel {{#if tabs.equipment}}active{{/if}}" data-tab="equipment" {{#unless tabs.equipment}}style="display: none;"{{/unless}}>
         <button type="button" class="add-equipment add-ability-button">+ Add Equipment</button>
         <div class="equipment-list">
-            <!-- Equipment list content will go here -->
+            {{#each equipment as |item|}}
+            <div class="equipment-row item" data-item-id="{{item._id}}">
+                <img src="{{item.img}}" width="24" height="24"/>
+                <div class="equipment-name">{{item.name}}</div>
+                <div class="equipment-details">
+                    {{#if item.system.type}}<span class="equipment-type">{{item.system.type}}</span>{{/if}}
+                    {{#if item.system.damage}}<span class="equipment-damage">Damage: {{item.system.damage}}</span>{{/if}}
+                    {{#if item.system.range}}<span class="equipment-range">Range: {{item.system.range}}</span>{{/if}}
+                    {{#if item.system.shots}}<span class="equipment-shots">Shots: {{item.system.shots}}</span>{{/if}}
+                </div>
+                <div class="equipment-controls">
+                    <a class="item-control item-edit" title="Edit Equipment">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button type="button" class="roll-equipment" title="Use Equipment">
+                        <i class="fas fa-dice-d20"></i>
+                    </button>
+                    <a class="item-control item-delete" title="Delete Equipment" data-type="equipment">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </div>
+            </div>
+            {{/each}}
         </div>
     </div>
-
+    
     <!-- Headquarters Tab -->
     <div class="tab-panel" data-tab="headquarters">
         <button type="button" class="add-headquarters add-ability-button">+ Add Headquarters Feature</button>

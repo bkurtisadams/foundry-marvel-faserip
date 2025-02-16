@@ -144,12 +144,17 @@
       "reliability": ""
     },
     "equipment": {
-      "templates": ["base"],
-      "rank": "",
-      "number": 0,
-      "type": "",
-      "durability": "",
-      "material": ""
+    "templates": ["base"],
+    "type": "",
+    "range": "",
+    "damage": 0,
+    "rate": 1,
+    "shots": 0,
+    "material": "",
+    "price": "",
+    "special": "",
+    "ammunition": "",
+    "description": ""
     },
     "attack": {
       "templates": ["base"],

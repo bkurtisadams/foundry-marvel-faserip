@@ -1,0 +1,88 @@
+<form>
+    <div class="form-group">
+        <label>Name</label>
+        <input type="text" name="equipmentName" required/>
+    </div>
+    
+    <div class="form-group">
+        <label>Type</label>
+        <select name="type" required>
+            {{#each types as |label key|}}
+            <option value="{{key}}">{{label}}</option>
+            {{/each}}
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label>Range</label>
+        <select name="range">
+            <option value="Fe">Feeble</option>
+            <option value="Pr">Poor</option>
+            <option value="Ty">Typical</option>
+            <option value="Gd">Good</option>
+            <option value="Ex">Excellent</option>
+            <option value="Rm">Remarkable</option>
+            <option value="In">Incredible</option>
+            <option value="Am">Amazing</option>
+            <option value="Mn">Monstrous</option>
+            <option value="Un">Unearthly</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label>Damage</label>
+        <input type="number" name="damage" value="0" min="0"/>
+    </div>
+    
+    <div class="form-group">
+        <label>Rate of Fire</label>
+        <input type="number" name="rate" value="1" min="1"/>
+    </div>
+    
+    <div class="form-group">
+        <label>Shots</label>
+        <input type="number" name="shots" value="0" min="0"/>
+    </div>
+    
+    <div class="form-group">
+        <label>Material Strength</label>
+        <select name="material">
+            <option value="Fe">Feeble</option>
+            <option value="Pr">Poor</option>
+            <option value="Ty">Typical</option>
+            <option value="Gd">Good</option>
+            <option value="Ex">Excellent</option>
+            <option value="Rm">Remarkable</option>
+            <option value="In">Incredible</option>
+            <option value="Am">Amazing</option>
+            <option value="Mn">Monstrous</option>
+            <option value="Un">Unearthly</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label>Price (Resource Rank)</label>
+        <select name="price">
+            <option value="Fe">Feeble</option>
+            <option value="Pr">Poor</option>
+            <option value="Ty">Typical</option>
+            <option value="Gd">Good</option>
+            <option value="Ex">Excellent</option>
+            <option value="Rm">Remarkable</option>
+            <option value="In">Incredible</option>
+            <option value="Am">Amazing</option>
+            <option value="Mn">Monstrous</option>
+            <option value="Un">Unearthly</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label>Special Notes</label>
+        <textarea name="special"></textarea>
+    </div>
+    
+    <div class="form-group">
+        <label>Description</label>
+        <textarea name="description"></textarea>
+    </div>
+</form>

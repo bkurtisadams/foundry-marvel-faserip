@@ -1,0 +1,67 @@
+<form class="{{cssClass}}" autocomplete="off">
+    <header class="sheet-header">
+        <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}"/>
+        <div class="header-fields">
+            <h1 class="charname">
+                <input name="name" type="text" value="{{item.name}}" placeholder="Equipment Name"/>
+            </h1>
+        </div>
+    </header>
+
+    <div class="sheet-body">
+        <div class="equipment-properties">
+            <div class="form-group">
+                <label>Type</label>
+                <select name="system.type">
+                    <option value="S" {{#if (eq item.system.type "S")}}selected{{/if}}>Shooting</option>
+                    <option value="F" {{#if (eq item.system.type "F")}}selected{{/if}}>Force</option>
+                    <option value="E" {{#if (eq item.system.type "E")}}selected{{/if}}>Energy</option>
+                    <option value="EA" {{#if (eq item.system.type "EA")}}selected{{/if}}>Edged Attack</option>
+                    <option value="ET" {{#if (eq item.system.type "ET")}}selected{{/if}}>Edged Thrown</option>
+                    <option value="BA" {{#if (eq item.system.type "BA")}}selected{{/if}}>Blunt Attack</option>
+                    <option value="BT" {{#if (eq item.system.type "BT")}}selected{{/if}}>Blunt Thrown</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Range</label>
+                <input type="text" name="system.range" value="{{item.system.range}}"/>
+            </div>
+
+            <div class="form-group">
+                <label>Damage</label>
+                <input type="number" name="system.damage" value="{{item.system.damage}}"/>
+            </div>
+
+            <div class="form-group">
+                <label>Rate of Fire</label>
+                <input type="number" name="system.rate" value="{{item.system.rate}}"/>
+            </div>
+
+            <div class="form-group">
+                <label>Shots</label>
+                <input type="number" name="system.shots" value="{{item.system.shots}}"/>
+            </div>
+
+            <div class="form-group">
+                <label>Material Strength</label>
+                <input type="text" name="system.material" value="{{item.system.material}}"/>
+            </div>
+
+            <div class="form-group">
+                <label>Price (Resource Rank)</label>
+                <input type="text" name="system.price" value="{{item.system.price}}"/>
+            </div>
+
+            <div class="form-group">
+                <label>Special Notes</label>
+                <textarea name="system.special">{{item.system.special}}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="system.description">{{item.system.description}}</textarea>
+            </div>
+        </div>
+    </div>
+</form>

@@ -1989,3 +1989,98 @@ select:focus {
 .faserip-roll .dice-total {
     font-weight: bold;
 }
+
+/* Equipment Styling */
+.equipment-row {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    margin-bottom: 3px;
+    background: white;
+    border: 1px solid #7a7971;
+    border-radius: 3px;
+}
+
+.equipment-row:hover {
+    border-color: #782e22;
+}
+
+.equipment-row img {
+    margin-right: 8px;
+    width: 24px;
+    height: 24px;
+}
+
+.equipment-name {
+    flex: 1;
+    font-weight: bold;
+}
+
+.equipment-details {
+    display: flex;
+    gap: 10px;
+    margin: 0 10px;
+    color: #666;
+}
+
+.equipment-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.equipment-controls a,
+.equipment-controls button {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    line-height: 20px;
+    text-align: center;
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+}
+
+.equipment-controls a:hover,
+.equipment-controls button:hover {
+    color: #782e22;
+}
+
+/* Equipment Form Styling */
+.add-equipment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+}
+
+.add-equipment-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.add-equipment-form label {
+    font-weight: bold;
+    color: #782e22;
+}
+
+.add-equipment-form input[type="text"],
+.add-equipment-form input[type="number"],
+.add-equipment-form select,
+.add-equipment-form textarea {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #7a7971;
+    border-radius: 3px;
+    background: white;
+}
+
+.add-equipment-form textarea {
+    height: 60px;
+    resize: vertical;
+}
+
+.add-equipment-form input[type="number"] {
+    width: 80px;
+}
