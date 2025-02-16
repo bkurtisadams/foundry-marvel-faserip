@@ -336,7 +336,7 @@ export class MarvelActor extends Actor {
             
             // Create and evaluate the roll asynchronously
             const roll = new Roll("1d100");
-            await roll.evaluate({ async: true });
+            await roll.evaluate(); // Evaluate properly in Foundry V12
             
             const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
             const finalRoll = Math.min(100, roll.total + karmaPoints);
