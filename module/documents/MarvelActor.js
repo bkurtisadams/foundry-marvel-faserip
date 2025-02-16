@@ -335,7 +335,9 @@ export class MarvelActor extends Actor {
             const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
             
             // Create and evaluate the roll asynchronously
-            const roll = await new Roll("1d100").evaluate({async: true});
+            const roll = new Roll("1d100");
+            await roll.evaluate({ async: true });
+            
             const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
             const finalRoll = Math.min(100, roll.total + karmaPoints);
             
@@ -408,7 +410,9 @@ export class MarvelActor extends Actor {
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
         
         // Roll and add karma
-        const roll = new Roll("1d100").evaluateSync();
+        const roll = new Roll("1d100");
+        await roll.evaluate({ async: true });
+        
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
         
@@ -517,7 +521,9 @@ export class MarvelActor extends Actor {
                 const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
             
                 // Roll the dice
-                const roll = await new Roll("1d100").evaluate({async: true});
+                const roll = new Roll("1d100");
+                await roll.evaluate(); // Evaluate properly in Foundry V12
+
                 const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
                 const total = Math.min(100, roll.total + karmaPoints);
 
@@ -1071,7 +1077,7 @@ export class MarvelActor extends Actor {
 
         // Apply column shifts and roll
         const shiftedRank = this.applyColumnShift(resourceRank, options.columnShift || 0);
-        const roll = await new Roll("1d100").evaluate({async: true});
+        const roll = new Roll("1d100").evaluateSync();
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
         
@@ -1200,7 +1206,9 @@ export class MarvelActor extends Actor {
         const shiftedRank = this.applyColumnShift(baseRank, totalShift);
 
         // Roll and add karma
-        const roll = await new Roll("1d100").evaluate({async: true});
+        const roll = new Roll("1d100");
+        await roll.evaluate(); // Evaluate properly in Foundry V12
+        
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
 
@@ -1504,7 +1512,7 @@ export class MarvelActor extends Actor {
         // Apply column shifts and roll
         const baseRank = power.rank;
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
-        const roll = await new Roll("1d100").evaluate({async: true});
+        const roll = new Roll("1d100").evaluateSync();
         const finalRoll = roll.total;  // No karma allowed on power stunt attempts
 
         // Deduct karma cost
