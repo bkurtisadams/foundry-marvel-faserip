@@ -1888,3 +1888,68 @@ select:focus {
     margin-bottom: 10px;
     padding-bottom: 5px;
 }
+
+/* FASERIP Roll Chat Message Styling */
+.faserip-roll {
+    background: #f0f0e0;
+    padding: 10px;
+    border: 1px solid #999;
+    border-radius: 3px;
+    margin: 5px 0;
+}
+
+.faserip-roll h3 {
+    color: #782e22;
+    border-bottom: 1px solid #782e22;
+    padding-bottom: 5px;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.faserip-roll div:not(.roll-result) {
+    margin: 3px 0;
+    color: #444;
+}
+
+.faserip-roll .roll-result {
+    margin-top: 8px;
+    border-radius: 3px;
+}
+
+/* Color result styling */
+.faserip-roll .roll-result[style*="background-color: white"] {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+.faserip-roll .roll-result[style*="background-color: green"] {
+    background-color: #2e7d32 !important;
+    color: #ffffff !important;
+}
+
+.faserip-roll .roll-result[style*="background-color: yellow"] {
+    background-color: #ffd700 !important;
+    color: #000000 !important;
+}
+
+.faserip-roll .roll-result[style*="background-color: red"] {
+    background-color: #c62828 !important;
+    color: #ffffff !important;
+}
+
+/* Dice roll styling */
+.faserip-roll .dice-roll {
+    margin-top: 5px;
+}
+
+.faserip-roll .dice-formula {
+    font-family: monospace;
+    background: rgba(0, 0, 0, 0.1);
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+.faserip-roll .dice-total {
+    font-weight: bold;
+}

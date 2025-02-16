@@ -360,22 +360,19 @@ export class MarvelActor extends Actor {
             
             // Create chat message content
             const messageContent = `
-                <div class="marvel-roll">
-                    <h3>${this.name} - ${options.featType === "combat" ? 
-                        CONFIG.marvel.actionResults[options.actionType]?.name || "Combat" : 
-                        formattedAbility + " FEAT"}</h3>
-                    <div class="roll-details">
-                        <div>${formattedAbility}: ${ability.number} (${baseRank})</div>
-                        ${options.columnShift ? 
-                            `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                        <div>Roll: ${roll.total}${karmaPoints ? 
-                            ` + ${karmaPoints} Karma = ${finalRoll}` : ''}</div>
-                    </div>
-                    <div class="roll-result ${this._getColorClass(color)}">
-                        ${resultText}
-                    </div>
-                </div>`;
-            
+            <div class="faserip-roll">
+                <h3>${this.name} - ${formattedAbility} Roll ${options.featType === "combat" ? 
+                    `(${CONFIG.marvel.actionResults[options.actionType]?.name || "Combat"})` : 
+                    "(Ability FEAT)"}</h3>
+                <div>Base Rank: ${baseRank} (${ability.number})</div>
+                ${options.columnShift ? 
+                    `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
+                <div>Roll: ${roll.total}${karmaPoints ? 
+                    ` + Karma: ${karmaPoints} = ${finalRoll}` : ''}</div>
+                <div class="roll-result" style="background-color: ${color}; color: ${color === 'white' || color === 'yellow' ? 'black' : 'white'}; padding: 5px; text-align: center; font-weight: bold; border: 1px solid black;">
+                    ${resultText} (${color.toUpperCase()})
+                </div>
+            </div>`;
             // Create the chat message
             await ChatMessage.create({
                 speaker: ChatMessage.getSpeaker({ actor: this }),
@@ -555,20 +552,19 @@ export class MarvelActor extends Actor {
                 const color = this.getColorResult(total, shiftedRank);
             
                 // Create chat message
+                // Create chat message content
                 const messageContent = `
-                    <div class="marvel-roll">
-                        <h3>${this.name} - ${attackType} Attack</h3>
-                        <div class="roll-details">
-                            <div>${ability}: ${abilityData.number} (${baseRank})</div>
-                            ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                            <div>Roll: ${roll.total}${karmaPoints ? ` + ${karmaPoints} Karma = ${total}` : ''}</div>
-                            ${options.weaponDamage ? `<div>Weapon Damage: ${options.weaponDamage}</div>` : ''}
-                            ${options.range ? `<div>Range: ${options.range} areas</div>` : ''}
-                        </div>
-                        <div class="roll-result ${this._getColorClass(color)}">
-                            ${color.toUpperCase()}
-                        </div>
-                    </div>`;
+                <div class="faserip-roll">
+                    <h3>${this.name} - ${ability.toUpperCase()} Roll (${attackType})</h3>
+                    <div>Base Rank: ${baseRank} (${abilityData.number})</div>
+                    ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
+                    <div>Roll: ${roll.total}${karmaPoints ? ` + Karma: ${karmaPoints} = ${total}` : ''}</div>
+                    ${options.weaponDamage ? `<div>Weapon Damage: ${options.weaponDamage}</div>` : ''}
+                    ${options.range ? `<div>Range: ${options.range} areas</div>` : ''}
+                    <div class="roll-result" style="background-color: ${color}; color: ${color === 'white' || color === 'yellow' ? 'black' : 'white'}; padding: 5px; text-align: center; font-weight: bold; border: 1px solid black;">
+                        ${color.toUpperCase()}${options.weaponDamage ? ` (Damage: ${options.weaponDamage})` : ''}
+                    </div>
+                </div>`;
             
                 await ChatMessage.create({
                     speaker: ChatMessage.getSpeaker({ actor: this }),
