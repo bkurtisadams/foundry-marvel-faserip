@@ -207,10 +207,11 @@
     font-weight: bold;
     width: 20px;
     text-align: center;
+    padding: 1px;
     background: white;
     color: #000000;    
     cursor: pointer;
-    font-size: 12px;
+    font-size: 16px;
 }
 
 .ability-label:hover {
