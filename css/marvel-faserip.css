@@ -154,9 +154,10 @@
 
 /* Primary Abilities Section */
 .primary-abilities {
-    border: none;  
-    padding: 0;    
+    border: 1px solid #000;
+    padding: 5px;    
     margin-bottom: 10px;
+    background: #e0e0e0;
 }
 
 .primary-abilities table {
@@ -164,26 +165,32 @@
     border-collapse: collapse;
 }
 
-.primary-abilities tr {
-    background-color: #f5f5f5; /* Much lighter gray, almost white */
-}
-
 .primary-abilities th {
     text-align: center;
     padding: 1px;
     border: 1px solid #000;
-    font-weight: normal;
-    font-size: 11px;
-    height: 18px;
+    font-weight: bold;
+    font-size: 12px;
+    height: 20px;
     white-space: nowrap;
-    background-color: #e0e0e0; /* Lighter header background */
-    color: #000;             /* Black text instead of white */
+    background-color: #808080;
+    color: white;
 }
 
-/* Make the last column (Current Rank #) narrower */
-.primary-abilities th:last-child,
-.primary-abilities td:last-child {
-    width: 40px !important; /* Force narrow width */
+/* Column widths */
+.primary-abilities td:nth-child(2), /* Initial Roll column */
+.primary-abilities th:nth-child(2) {
+    width: 35px !important;
+}
+
+.primary-abilities td:nth-child(3), /* Initial Rank column */
+.primary-abilities th:nth-child(3) {
+    width: 60px !important;
+}
+
+.primary-abilities td:last-child, /* Current Rank # column */
+.primary-abilities th:last-child {
+    width: 20px !important;
 }
 
 .primary-abilities td {
@@ -192,13 +199,31 @@
     text-align: center;
     height: 20px;
     vertical-align: middle;
+    background: white;
+}
+
+/* Ability Label (FASERIP) */
+.ability-label {
+    font-weight: bold;
+    width: 20px;
+    text-align: center;
+    background: white;
+    color: #000000;    
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.ability-label:hover {
+    text-shadow: 0 0 8px #782e22;
+    color: #782e22;
 }
 
 /* Secondary Abilities Section */
 .secondary-abilities {
-    border: none;   
-    padding: 0;     
+    border: 1px solid #000;
+    padding: 5px;
     margin-bottom: 10px;
+    background: #e0e0e0;
 }
 
 .secondary-abilities table {
@@ -210,45 +235,59 @@
     border: 1px solid #000;
     text-align: center;
     padding: 1px;
-    font-size: 11px;
-    background-color: #e0e0e0; /* Match primary abilities header */
-    color: #000;             /* Black text */
+    font-size: 12px;
+    height: 20px;
+    background-color: #808080;
+    color: white;
+    font-weight: bold;
 }
 
 .secondary-abilities td {
     border: 1px solid #000;
     text-align: center;
     padding: 1px;
-    background-color: #f5f5f5; /* Match primary abilities rows */
+    background: white;
 }
-
 
 /* Formula text styling */
 .secondary-abilities tr:first-child td {
     font-size: 8px;
-    color: #000000;  
+    color: #000000;
     padding: 2px;
-    background-color: #999999;
+    background: white;
+}
+
+/* Input and Select Styling */
+.primary-abilities input[type="text"],
+.primary-abilities input[type="number"],
+.primary-abilities select,
+.secondary-abilities input {
+    border: none;
+    background: transparent;
+    text-align: center;
+    padding: 0;
+    height: 18px;
+    font-size: 12px;
+    width: 100%;
 }
 
 /* Column Widths */
 .initial-roll-input {
-    width: 30px !important;
+    width: 35px !important;
 }
 
-.initial-rank-input,
+.initial-rank-input {
+    width: 60px !important;
+}
+
 .rank-select {
     width: 80px !important;
-    text-align: center;
-    padding: 0;
 }
 
 .ability-number {
-    width: 30px !important;
-    text-align: center;
-    padding: 0;
+    width: 20px !important;
+    text-align: center !important;
     -moz-appearance: textfield;
-    appearance: textfield;
 }
 
 .ability-number::-webkit-outer-spin-button,
@@ -257,49 +296,7 @@
     margin: 0;
 }
 
-/* Ability Label */
-.ability-label {
-    font-weight: bold;
-    width: 20px;
-    text-align: center;
-    background: #999999;
-    color: #000000;    
-    cursor: pointer;
-}
-
-.ability-label:hover {
-    text-shadow: 0 0 8px #782e22;
-    color: #782e22;
-}
-
-/* Input Styling */
-.primary-abilities input[type="text"],
-.primary-abilities input[type="number"],
-.primary-abilities select {
-    border: none;
-    background: transparent;
-    text-align: center;
-    padding: 0;
-    height: 18px;
-    font-size: 11px;
-}
-
-.secondary-abilities input {
-    width: calc(100% - 4px);
-    text-align: center;
-    border: none;
-    padding: 1px;
-    background: transparent;
-}
-
-/* Formula text styling */
-.secondary-abilities tr:first-child td {
-    font-size: 8px;
-    color: #514d44;
-    padding: 4px 2px;
-}
-
-/* Maintain clickable functionality */
+/* Clickable elements */
 .clickable-karma,
 .clickable-popularity,
 .clickable-resources {
