@@ -298,19 +298,54 @@
     margin: 0;
 }
 
-/* Clickable elements */
-.clickable-karma,
-.clickable-popularity,
-.clickable-resources {
-    cursor: pointer;
-    transition: text-shadow 0.3s ease;
+/* popularity values */
+.popularity-values {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
-.clickable-karma:hover,
-.clickable-popularity:hover,
-.clickable-resources:hover {
-    text-shadow: 0 0 8px #782e22;
-    color: #9e3c2d !important;
+.popularity-values input {
+    width: 100%;
+    text-align: center;
+}
+
+/* Optional: add tooltips to distinguish the values */
+.popularity-values input[title]::after {
+    content: attr(title);
+    font-size: 0.8em;
+    color: #666;
+}
+
+/* Clickable elements */
+th.clickable-resources,
+th .clickable-popularity {
+    cursor: pointer !important;
+    transition: all 0.2s ease;
+    padding: 2px 4px;
+}
+
+/* Resources uses th class directly */
+th.clickable-resources:hover {
+    background-color: #6b6b6b;
+    color: #fff;
+}
+
+/* Popularity uses span inside th */
+th .clickable-popularity {
+    display: block;  /* Makes each popularity type stack vertically */
+}
+
+/* Shared hover effects */
+th.clickable-resources:hover,
+th .clickable-popularity:hover {
+    background-color: #6b6b6b;
+    color: #fff;
+}
+
+th.clickable-resources:hover i,
+th .clickable-popularity:hover i {
+    color: #ffd700;
 }
 
 /* Resistance row selects and inputs */
