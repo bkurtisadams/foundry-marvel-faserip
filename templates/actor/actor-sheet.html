@@ -184,12 +184,7 @@
                             <th>Health</th>
                             <th>Karma</th>
                             <th class="clickable-resources" title="Click to roll Resources FEAT">Resources<i class="fas fa-dice-d20 fa-sm" style="margin-left: 4px;"></i></th>
-                            <th>
-                                <span class="clickable-popularity" data-popularity-type="hero" title="Click to roll Hero Popularity">Hero Pop<i class="fas fa-dice-d20 fa-sm" style="margin-left: 4px;"></i></span>
-                                {{#if (eq actor.system.biography.identity "secret")}}
-                                <span class="clickable-popularity" data-popularity-type="secret" title="Click to roll Secret ID Popularity">Secret Pop<i class="fas fa-dice-d20 fa-sm" style="margin-left: 4px;"></i></span>
-                                {{/if}}
-                            </th>
+                            <th>Popularity</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -211,13 +206,10 @@
                             </td>
                             <td>
                                 <div class="popularity-values">
-                                    <!-- If identity is secret, show both values -->
+                                    <span class="clickable-popularity" data-popularity-type="hero">{{actor.system.secondaryAbilities.popularity.hero}}</span>
                                     {{#if (eq actor.system.biography.identity "secret")}}
-                                        <input type="number" name="system.secondaryAbilities.popularity.hero" value="{{actor.system.secondaryAbilities.popularity.hero}}" title="Hero Popularity"/>
-                                        <input type="number" name="system.secondaryAbilities.popularity.secret" value="{{actor.system.secondaryAbilities.popularity.secret}}" title="Secret ID Popularity"/>
-                                    {{else}}
-                                        <!-- Just show hero popularity for public identity -->
-                                        <input type="number" name="system.secondaryAbilities.popularity.hero" value="{{actor.system.secondaryAbilities.popularity.hero}}"/>
+                                    /
+                                    <span class="clickable-popularity" data-popularity-type="secret">{{actor.system.secondaryAbilities.popularity.secret}}</span>
                                     {{/if}}
                                 </div>
                             </td>
