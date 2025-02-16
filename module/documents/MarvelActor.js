@@ -551,7 +551,6 @@ export class MarvelActor extends Actor {
                 // Get the color result
                 const color = this.getColorResult(total, shiftedRank);
             
-                // Create chat message
                 // Create chat message content
                 const messageContent = `
                 <div class="faserip-roll">
@@ -559,10 +558,8 @@ export class MarvelActor extends Actor {
                     <div>Base Rank: ${baseRank} (${abilityData.number})</div>
                     ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
                     <div>Roll: ${roll.total}${karmaPoints ? ` + Karma: ${karmaPoints} = ${total}` : ''}</div>
-                    ${options.weaponDamage ? `<div>Weapon Damage: ${options.weaponDamage}</div>` : ''}
-                    ${options.range ? `<div>Range: ${options.range} areas</div>` : ''}
                     <div class="roll-result" style="background-color: ${color}; color: ${color === 'white' || color === 'yellow' ? 'black' : 'white'}; padding: 5px; text-align: center; font-weight: bold; border: 1px solid black;">
-                        ${color.toUpperCase()}${options.weaponDamage ? ` (Damage: ${options.weaponDamage})` : ''}
+                        ${CONFIG.marvel.actionResults[attackType].results[color]} (${color.toUpperCase()})
                     </div>
                 </div>`;
             
