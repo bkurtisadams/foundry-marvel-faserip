@@ -170,11 +170,12 @@
     padding: 1px;
     border: 1px solid #000;
     font-weight: bold;
-    font-size: 12px;
-    height: 20px;
-    white-space: nowrap;
+    font-size: 11px;
+    height: 32px; /* Increased height to accommodate two lines */
     background-color: #808080;
     color: white;
+    vertical-align: middle;
+    line-height: 1.2;
 }
 
 /* Column widths */
@@ -310,6 +311,54 @@
 .clickable-resources:hover {
     text-shadow: 0 0 8px #782e22;
     color: #9e3c2d !important;
+}
+
+/* Resistance row selects and inputs */
+.secondary-abilities .resistance-row select,
+.secondary-abilities .resistance-row input {
+    height: 20px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: white;
+}
+
+.secondary-abilities .resistance-row .resistance-type {
+    width: 120px;
+}
+
+.secondary-abilities .resistance-row .rank-select {
+    width: 100px;
+}
+
+.secondary-abilities .resistance-row .resistance-number {
+    width: 60px;
+    text-align: center;
+}
+
+/* Delete button styling */
+.secondary-abilities .resistance-row .item-delete {
+    background: none;
+    border: none;
+    color: #782e22;
+    cursor: pointer;
+    padding: 0.2rem;
+}
+
+.secondary-abilities .resistance-row .item-delete:hover {
+    color: #943a2b;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .secondary-abilities .resistance-row {
+        flex-wrap: wrap;
+    }
+    
+    .secondary-abilities .resistance-row select,
+    .secondary-abilities .resistance-row input {
+        flex: 1;
+        min-width: 80px;
+    }
 }
 
 /* Special Abilities Section */
