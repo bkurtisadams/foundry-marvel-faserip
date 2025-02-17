@@ -667,7 +667,7 @@ async rollAttack(ability, attackType, options = {}) {
      * @param {Actor} target - The target actor
      * @returns {Promise<Object>} The attack results
      */
-    async handleAttack(ability, attackType, options = {}, target) {
+    /* async handleAttack(ability, attackType, options = {}, target) {
         if (!target) {
             ui.notifications.error("No target selected");
             return null;
@@ -771,7 +771,7 @@ async rollAttack(ability, attackType, options = {}) {
         }
     
         return attackRoll;
-    }
+    } */
 
     /**
      * Get CSS class for color formatting
@@ -980,15 +980,29 @@ async rollAttack(ability, attackType, options = {}) {
      * @param {Object} options - Roll options
      * @returns {Promise<Roll|null>} The roll result or null if automatic/failed
      */
-    // Add to MarvelActor.js - replace existing rollResourceFeat
-
-async rollResourceFeat(itemRank, options = {}) {
-    try {
+    
+    async rollResourceFeat(itemRank, options = {}) {
+        // Get rank calculations
         const resourceRank = this.system.secondaryAbilities.resources.rank;
         const ranks = Object.keys(CONFIG.marvel.ranks);
         const resourceIndex = ranks.indexOf(resourceRank);
         const itemIndex = ranks.indexOf(itemRank);
         const rankDiff = resourceIndex - itemIndex;
+    
+        // Check if automatic purchase
+        const isAutomaticPurchase = rankDiff >= 3 && !options.useBank;
+    
+        // Check timing only if not automatic and not GM
+        if (!isAutomaticPurchase && !game.user.isGM) {
+            const lastAttempt = this.getFlag("marvel-faserip", "lastResourceAttempt");
+            if (lastAttempt) {
+                const daysSinceAttempt = Math.floor((Date.now() - lastAttempt.timestamp) / (24 * 60 * 60 * 1000));
+                if (daysSinceAttempt < 7) {
+                    ui.notifications.error(`Must wait ${7 - daysSinceAttempt} more days before making another resource roll.`);
+                    return null;
+                }
+            }
+        }
 
         let messageContent = `
             <div class="marvel-roll">
@@ -1130,7 +1144,6 @@ async rollResourceFeat(itemRank, options = {}) {
         ui.notifications.error("Error processing resource roll");
         return null;
     }
-}
 
 // Add helper method to MarvelActor.js if not already present
 isSuccessfulColor(resultColor, requiredColor) {
@@ -1142,7 +1155,36 @@ isSuccessfulColor(resultColor, requiredColor) {
     };
     return colorValues[resultColor.toLowerCase()] >= colorValues[requiredColor.toLowerCase()];
 }
-   
+
+async _getResourceWarningMessage(lastAttempt) {
+    if (lastAttempt && !game.user.isGM) {
+        const daysSinceAttempt = Math.floor((Date.now() - lastAttempt.timestamp) / (24 * 60 * 60 * 1000));
+        if (daysSinceAttempt < 7) {
+            return `Warning: Last roll attempt was ${daysSinceAttempt} days ago. Must wait ${7 - daysSinceAttempt} more days before making another roll.`;
+        }
+    }
+    return "";
+}
+
+async clearResourceLockout() {
+    await this.unsetFlag("marvel-faserip", "lastResourceAttempt");
+    await this.unsetFlag("marvel-faserip", "lastResourceFailure");
+    await this.unsetFlag("marvel-faserip", "activeLoan");
+    await game.user.unsetFlag("world", "marvelResourceOptions");
+    
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        content: `
+            <div class="marvel-roll">
+                <h3>${this.name} - Resource FEAT Lockout Cleared</h3>
+                <div class="roll-details">
+                    <div>GM has cleared the resource FEAT lockout.</div>
+                </div>
+            </div>`
+    });
+    
+    ui.notifications.info("Resource FEAT roll lockout cleared");
+}   
     /**
      * Roll a Popularity FEAT
      * @param {string} popularityType - Either "hero" or "secret"
