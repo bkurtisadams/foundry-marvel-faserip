@@ -1994,56 +1994,53 @@ select:focus {
 .equipment-row {
     display: flex;
     align-items: center;
-    padding: 5px;
-    margin-bottom: 3px;
+    padding: 2px 5px;  /* Reduced padding */
+    margin-bottom: 2px;  /* Reduced margin */
     background: white;
     border: 1px solid #7a7971;
     border-radius: 3px;
-}
-
-.equipment-row:hover {
-    border-color: #782e22;
+    height: 24px;  /* Set explicit height */
+    min-height: 24px;  /* Ensure minimum height */
 }
 
 .equipment-row img {
-    margin-right: 8px;
-    width: 24px;
-    height: 24px;
+    margin-right: 5px;  /* Reduced margin */
+    width: 16px;  /* Smaller icon */
+    height: 16px;  /* Smaller icon */
 }
 
 .equipment-name {
     flex: 1;
-    font-weight: bold;
+    font-size: 11px;  /* Smaller font */
+    white-space: nowrap;  /* Prevent wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;  /* Add ellipsis for long names */
 }
 
 .equipment-details {
     display: flex;
-    gap: 10px;
-    margin: 0 10px;
+    gap: 5px;  /* Reduced gap */
+    margin: 0 5px;  /* Reduced margin */
     color: #666;
+    font-size: 10px;  /* Smaller font */
+}
+
+.equipment-details span {
+    white-space: nowrap;  /* Prevent wrapping */
 }
 
 .equipment-controls {
     display: flex;
-    gap: 5px;
+    gap: 2px;  /* Reduced gap */
 }
 
 .equipment-controls a,
 .equipment-controls button {
-    width: 20px;
-    height: 20px;
+    width: 16px;  /* Smaller buttons */
+    height: 16px;  /* Smaller buttons */
     padding: 0;
-    line-height: 20px;
-    text-align: center;
-    background: none;
-    border: none;
-    color: #666;
-    cursor: pointer;
-}
-
-.equipment-controls a:hover,
-.equipment-controls button:hover {
-    color: #782e22;
+    line-height: 16px;
+    font-size: 10px;  /* Smaller icons */
 }
 
 /* Equipment Form Styling */
