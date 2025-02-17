@@ -2212,18 +2212,30 @@ async _onAddResistance(event) {
     this.render(false);
 }
 
+// In MarvelActorSheet.js, around line 1055
 async _onResistanceNumberChange(event) {
     console.log("Resistance number change triggered");
     event.preventDefault();
     const element = event.currentTarget;
-    const resistancePath = element.dataset.resistance;
     const newNumber = parseInt(element.value) || 0;
     const newRank = this.actor.getRankFromValue(newNumber);
 
-    // Create update data
+    // Get the full path from the name attribute instead of dataset
+    const fullPath = element.name;
+    
+    // Extract the index from the path
+    const pathMatch = fullPath.match(/system\.resistances\.list\.(\d+)\.number/);
+    if (!pathMatch) {
+        console.error("Could not parse resistance path:", fullPath);
+        return;
+    }
+    
+    const idx = pathMatch[1];
+
+    // Create update data with correct path
     const updateData = {
-        [`system.resistances.${resistancePath}.rank`]: newRank,
-        [`system.resistances.${resistancePath}.number`]: newNumber
+        [`system.resistances.list.${idx}.rank`]: newRank,
+        [`system.resistances.list.${idx}.number`]: newNumber
     };
 
     console.log("Updating resistance with data:", updateData);
