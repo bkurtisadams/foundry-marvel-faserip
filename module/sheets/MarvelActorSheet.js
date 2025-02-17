@@ -267,6 +267,26 @@ export class MarvelActorSheet extends ActorSheet {
             ui.notifications.error("Equipment not found");
             return;
         }
+
+        // Map equipment types to attack types from ACTION_RESULTS
+        const typeMap = {
+            "S": "Sh",    // Shooting
+            "F": "Fo",    // Force
+            "E": "En",    // Energy
+            "EA": "EA",   // Edged Attack
+            "ET": "TE",   // Throwing Edged
+            "BA": "BA",   // Blunt Attack
+            "BT": "TB"    // Throwing Blunt
+        };
+
+        const attackType = typeMap[item.system.type];
+        if (!attackType || !CONFIG.marvel.actionResults[attackType]) {
+            ui.notifications.error("Invalid attack type");
+            return;
+        }
+
+        // Get the ability associated with this attack type from ACTION_RESULTS
+        const ability = CONFIG.marvel.actionResults[attackType].ability.toLowerCase();
     
         // Get the stored roll options or use defaults
         const stored = await game.user.getFlag("world", "marvelEquipmentOptions") || {
@@ -300,14 +320,19 @@ export class MarvelActorSheet extends ActorSheet {
                             columnShift: parseInt(form.querySelector('[name="columnShift"]')?.value || "0"),
                             karmaPoints: parseInt(form.querySelector('[name="karmaPoints"]')?.value || "0"),
                             weaponDamage: item.system.damage,
-                            range: item.system.range
+                            range: item.system.range,
+                            featType: "combat",
+                            actionType: attackType
                         };
     
                         // Store options for next time
-                        await game.user.setFlag("world", "marvelEquipmentOptions", options);
+                        await game.user.setFlag("world", "marvelEquipmentOptions", {
+                            columnShift: options.columnShift,
+                            karmaPoints: options.karmaPoints
+                        });
     
                         // Determine which ability to use based on equipment type
-                        let ability;
+                        /* let ability;
                         switch(item.system.type) {
                             case "S": ability = "agility"; break;  // Shooting
                             case "F": ability = "strength"; break; // Force
@@ -317,7 +342,7 @@ export class MarvelActorSheet extends ActorSheet {
                             case "ET":
                             case "BT": ability = "agility"; break;  // Thrown weapons
                             default: ability = "fighting";
-                        }
+                        } */
     
                         // Roll using the appropriate ability
                         await this.actor.rollAttack(ability, item.system.type, options);
@@ -479,8 +504,7 @@ export class MarvelActorSheet extends ActorSheet {
 
             // Equipment handlers
             html.find('.add-equipment').click(ev => this._onAddEquipment(ev));
-            //html.find('.roll-equipment').click(ev => this._onRollEquipment(ev));
-        
+            html.find('.equipment-row img').click(this._onEquipmentInfo.bind(this));
             html.find('.roll-equipment').click(this._onRollEquipment.bind(this));
             html.find('.item-edit').click(this._onEditEquipment.bind(this));
             html.find('.item-delete[data-type="equipment"]').click(ev => this._onDeleteEquipment(ev));
@@ -2013,6 +2037,35 @@ async _onPowerInfo(event) {
             </div>
         </div>
     `;
+
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+        content: messageContent
+    });
+}
+
+async _onEquipmentInfo(event) {
+    event.preventDefault();
+    const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+
+    // Create chat message with equipment info
+    const messageContent = `
+        <div class="marvel-roll">
+            <h3>${item.name} - Equipment Details</h3>
+            <div class="roll-details">
+                ${item.system.type ? `<div>Type: ${item.system.type}</div>` : ''}
+                ${item.system.damage ? `<div>Damage: ${item.system.damage}</div>` : ''}
+                ${item.system.range ? `<div>Range: ${item.system.range}</div>` : ''}
+                ${item.system.rate ? `<div>Rate: ${item.system.rate}</div>` : ''}
+                ${item.system.shots ? `<div>Shots: ${item.system.shots}</div>` : ''}
+                ${item.system.material ? `<div>Material: ${item.system.material}</div>` : ''}
+                ${item.system.price ? `<div>Price: ${item.system.price}</div>` : ''}
+                ${item.system.special ? `<div>Special: ${item.system.special}</div>` : ''}
+                ${item.system.description ? `<div class="description">${item.system.description}</div>` : ''}
+            </div>
+        </div>`;
 
     await ChatMessage.create({
         speaker: ChatMessage.getSpeaker({ actor: this.actor }),

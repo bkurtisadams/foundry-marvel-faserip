@@ -520,13 +520,13 @@ async rollAttack(ability, attackType, options = {}) {
 
         // Map equipment types to combat types
         const typeMapping = {
-            "S": "Shooting",    // Shooting weapons
-            "F": "Force",       // Force attacks
-            "E": "Energy",      // Energy attacks
-            "EA": "Edged",      // Edged attacks
-            "ET": "Throwing",   // Thrown edged weapons
-            "BA": "Blunt",      // Blunt attacks
-            "BT": "Throwing"    // Thrown blunt weapons
+            "S": "Sh",    // Shooting should map to "Sh"
+            "F": "Fo",    // Force maps to "Fo"
+            "E": "En",    // Energy maps to "En"
+            "EA": "EA",   // Edged Attack maps to "EA"
+            "ET": "TE",   // Edged Thrown maps to "TE"
+            "BA": "BA",   // Blunt Attack maps to "BA"
+            "BT": "TB"    // Blunt Thrown maps to "TB"
         };
 
         // Get the mapped combat type
@@ -573,18 +573,8 @@ async rollAttack(ability, attackType, options = {}) {
 
         // Get combat results based on combat type
         let resultText;
-        if (CONFIG.marvel.combatTypes?.[combatType]?.results?.[color]) {
-            resultText = CONFIG.marvel.combatTypes[combatType].results[color];
-        } else {
-            // Fallback results if specific combat type results aren't found
-            const genericResults = {
-                white: "Miss",
-                green: "Hit",
-                yellow: "Hit with Effect",
-                red: "Critical Hit"
-            };
-            resultText = genericResults[color] || "Miss";
-        }
+        const attackCode = typeMapping[attackType] || "BA";  // Default to Blunt Attack if type not found
+        resultText = CONFIG.marvel.actionResults[attackCode]?.results[color] || color.toUpperCase();
     
         // Create chat message content
         const messageContent = `
