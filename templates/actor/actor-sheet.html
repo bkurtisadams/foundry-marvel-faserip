@@ -49,29 +49,6 @@
         </div>
     </header>
 
-    <!-- <div class="attacks-section">
-        <button type="button" class="add-attack">+ Add Attack</button>
-        <div class="attacks-list">
-            {{#each attacks as |attack id|}}
-            <div class="attack-row item" data-item-id="{{attack._id}}" draggable="true">
-                <img src="{{attack.img}}" width="24" height="24"/>
-                <div class="attack-name item-name">{{attack.name}}</div>
-                <div class="attack-controls">
-                    <a class="item-control item-edit" title="Edit Attack">
-                        <i class="fas fa-edit"></i>
-                    </a>
-                    <button type="button" class="roll-attack" title="Roll Attack">
-                        <i class="fas fa-dice-d20"></i>
-                    </button>
-                    <a class="item-control item-delete" title="Delete Attack">
-                        <i class="fas fa-trash"></i>
-                    </a>
-                </div>
-            </div>
-            {{/each}}
-        </div>
-    </div> -->
-
         <div class="powers-list">
     <section class="sheet-body">
         <!-- In actor-sheet.html, replace the abilities-grid section (around line 150-300) with: -->
@@ -222,20 +199,8 @@
                                     <div class="resistances-list">
                                         {{#each actor.system.resistances.list as |resistance idx|}}
                                         <div class="resistance-row">
-                                            <select name="system.resistances.list.{{idx}}.type" class="resistance-type">
-                                                {{#select resistance.type}}
-                                                <option value="">Select Type</option>
-                                                <option value="physical">Physical</option>
-                                                <option value="energy">Energy</option>
-                                                <option value="force">Force</option>
-                                                <option value="heat">Heat</option>
-                                                <option value="cold">Cold</option>
-                                                <option value="electricity">Electricity</option>
-                                                <option value="radiation">Radiation</option>
-                                                <option value="toxins">Toxins</option>
-                                                <option value="psychic">Psychic</option>
-                                                <option value="magic">Magic</option>
-                                                {{/select}}
+                                            <select name="system.abilities.list.{{idx}}.type" class="resistance-type">
+                                                {{selectOptions resistanceTypes selected=resistance.type blank="Select Type"}}
                                             </select>
                                             <select name="system.resistances.list.{{idx}}.rank" class="rank-select">
                                                 {{selectOptions @root.config.ranks selected=resistance.rank blank=""}}
@@ -443,7 +408,7 @@
             {{/each}}
         </div>
     </div>
-    
+
     <!-- Headquarters Tab -->
     <div class="tab-panel" data-tab="headquarters">
         <button type="button" class="add-headquarters add-ability-button">+ Add Headquarters Feature</button>
