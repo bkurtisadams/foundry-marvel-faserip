@@ -1,0 +1,50 @@
+<form class="edit-equipment-dialog">
+    <div class="form-group">
+        <label>Equipment Name</label>
+        <input type="text" name="equipmentName" value="{{item.name}}"/>
+    </div>
+    <div class="form-group">
+        <label>Type</label>
+        <select name="type">
+            <option value="S" {{#if (eq item.system.type "S")}}selected{{/if}}>Shooting</option>
+            <option value="F" {{#if (eq item.system.type "F")}}selected{{/if}}>Force</option>
+            <option value="E" {{#if (eq item.system.type "E")}}selected{{/if}}>Energy</option>
+            <option value="EA" {{#if (eq item.system.type "EA")}}selected{{/if}}>Edged Attack</option>
+            <option value="ET" {{#if (eq item.system.type "ET")}}selected{{/if}}>Edged Thrown</option>
+            <option value="BA" {{#if (eq item.system.type "BA")}}selected{{/if}}>Blunt Attack</option>
+            <option value="BT" {{#if (eq item.system.type "BT")}}selected{{/if}}>Blunt Thrown</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Range</label>
+        <input type="number" name="range" value="{{item.system.range}}"/>
+    </div>
+    <div class="form-group">
+        <label>Damage</label>
+        <input type="number" name="damage" value="{{item.system.damage}}"/>
+    </div>
+    <div class="form-group">
+        <label>Rate of Fire</label>
+        <input type="number" name="rate" value="{{item.system.rate}}"/>
+    </div>
+    <div class="form-group">
+        <label>Shots</label>
+        <input type="number" name="shots" value="{{item.system.shots}}"/>
+    </div>
+    <div class="form-group">
+        <label>Material Strength</label>
+        <input type="text" name="material" value="{{item.system.material}}"/>
+    </div>
+    <div class="form-group">
+        <label>Price (Resource Rank)</label>
+        <input type="text" name="price" value="{{item.system.price}}"/>
+    </div>
+    <div class="form-group">
+        <label>Special Notes</label>
+        <textarea name="special">{{item.system.special}}</textarea>
+    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <textarea name="description">{{item.system.description}}</textarea>
+    </div>
+</form>

@@ -208,7 +208,8 @@ Hooks.once('init', async function() {
         "systems/marvel-faserip/templates/dialogs/ability-roll.html",
         "systems/marvel-faserip/templates/dialogs/popularity-roll.html",
         "systems/marvel-faserip/templates/items/attack-item.html",
-        "systems/marvel-faserip/templates/dialogs/add-attack.html"
+        "systems/marvel-faserip/templates/dialogs/add-attack.html",
+        "systems/marvel-faserip/templates/dialogs/edit-equipment.html"
     ]);
 });
 
