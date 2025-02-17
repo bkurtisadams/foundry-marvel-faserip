@@ -16,6 +16,12 @@
         </select>
         <p class="hint">Cannot purchase an item with a higher rank than your Resource rank</p>
     </div>
+    
+    <div class="form-group">
+        <label>Use Bank Loan?</label>
+        <input type="checkbox" name="useBank" {{#if useBank}}checked{{/if}}>
+        <p class="hint">Allows purchase one rank above Resources. Requires monthly payments.</p>
+    </div>
 
     <div class="form-group">
         <label>Current Resource Rank: {{resourceRank}}</label>
@@ -57,4 +63,11 @@
         Last failure: {{lastFailure.date}} (Rank: {{lastFailure.rank}})
     </div>
     {{/if}}
+
+    {{#if isGM}}
+    <div class="form-group">
+        <p class="gm-controls">GM Controls: Clear lockout to allow new resource roll attempts</p>
+    </div>
+    {{/if}}
+    
 </form>

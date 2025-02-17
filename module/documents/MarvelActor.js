@@ -985,26 +985,27 @@ async rollAttack(ability, attackType, options = {}) {
         
         // Create base message content
         let messageContent = `
-            <div class="marvel-roll">
-                <h3>${this.name} - Resource FEAT</h3>
-                <div class="roll-details">
-                    <div>Resource Rank: ${resourceRank}</div>
-                    <div>Item Rank: ${itemRank}</div>
-        `;
+        <div class="marvel-roll">
+            <h3>${this.name} - Resource FEAT</h3>
+            <div class="roll-details">
+                <div>Resource Rank: ${resourceRank}</div>
+                <div>Item Rank: ${itemRank}</div>
+    `;
 
-        // Check if attempt is allowed
-        const canAttempt = await this._canAttemptResourceFeat(itemRank);
-        if (!canAttempt.allowed) {
-            messageContent += `
-                <div class="resource-failure">${canAttempt.message}</div>
-            </div>`;
-            
-            await ChatMessage.create({
-                speaker: ChatMessage.getSpeaker({ actor: this }),
-                content: messageContent
-            });
-            return null;
-        }
+    // Check if attempt is allowed
+    const canAttempt = await this._canAttemptResourceFeat(itemRank);
+    if (!canAttempt.allowed) {
+        messageContent += `
+            <div class="resource-failure">${canAttempt.message}</div>
+        </div>`;
+        
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this }),
+            content: messageContent
+        });
+        return null;
+    }
+
 
         // Get difficulty assessment
         const difficulty = this._getResourceFeatDifficulty(resourceRank, itemRank);
@@ -1046,7 +1047,10 @@ async rollAttack(ability, attackType, options = {}) {
 
         // Apply column shifts and roll
         const shiftedRank = this.applyColumnShift(resourceRank, options.columnShift || 0);
-        const roll = new Roll("1d100").evaluateSync();
+        // const roll = new Roll("1d100").evaluateSync();
+        const roll = new Roll("1d100");
+        await roll.evaluate({async: true});
+
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
         
@@ -1117,7 +1121,7 @@ async rollAttack(ability, attackType, options = {}) {
 
         return { roll, success, color };
     }
-
+   
     /**
      * Roll a Popularity FEAT
      * @param {string} popularityType - Either "hero" or "secret"
@@ -1292,7 +1296,9 @@ async rollAttack(ability, attackType, options = {}) {
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
 
         // Roll with karma option
-        const roll = new Roll("1d100").evaluateSync();
+        //const roll = new Roll("1d100").evaluateSync();
+        const roll = new Roll("1d100");
+        await roll.evaluate({async: true});
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
 
@@ -1481,7 +1487,10 @@ async rollAttack(ability, attackType, options = {}) {
         // Apply column shifts and roll
         const baseRank = power.rank;
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
-        const roll = new Roll("1d100").evaluateSync();
+        //const roll = new Roll("1d100").evaluateSync();
+        const roll = new Roll("1d100");
+        await roll.evaluate({async: true});
+
         const finalRoll = roll.total;  // No karma allowed on power stunt attempts
 
         // Deduct karma cost
