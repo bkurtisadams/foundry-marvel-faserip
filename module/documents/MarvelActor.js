@@ -455,61 +455,6 @@ export class MarvelActor extends Actor {
         return { roll, color };
     }
     
-    // roll attack method 
-    /* async rollAttack(ability, attackType, options = {}) {
-        console.log("Rolling attack with:", { ability, attackType, options });
-        
-        // Get the ability data
-        const abilityData = this.system.primaryAbilities[ability.toLowerCase()];
-        if (!abilityData) {
-            console.error(`Ability ${ability} not found`);
-            throw new Error(`Ability ${ability} not found`);
-        }
-    
-        // Get base rank and apply column shift
-        const baseRank = abilityData.rank || this.getRankFromValue(abilityData.number);
-        const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
-    
-        // Roll the dice
-        const roll = await new Roll("1d100").evaluate();
-        const total = roll.total;
-    
-        console.log("Attack roll result:", { 
-            total, 
-            baseRank, 
-            shiftedRank,
-            abilityData 
-        });
-    
-        // Get the color result
-        const color = this.getColorResult(total, shiftedRank);
-    
-        // Create chat message
-        const messageContent = `
-            <div class="marvel-roll">
-                <h3>${this.name} - ${attackType} Attack</h3>
-                <div class="roll-details">
-                    <div>${ability}: ${abilityData.number} (${baseRank})</div>
-                    ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                    <div>Roll: ${total}</div>
-                </div>
-                <div class="roll-result ${this._getColorClass(color)}">
-                    ${color.toUpperCase()}
-                </div>
-            </div>`;
-    
-        await ChatMessage.create({
-            speaker: ChatMessage.getSpeaker({ actor: this }),
-            content: messageContent,
-            rolls: [roll],
-            sound: CONFIG.sounds.dice
-        });
-    
-        return { roll, color };
-    } */
-
-        // In MarvelActor.js, replace the rollAttack method with this updated version:
-
 async rollAttack(ability, attackType, options = {}) {
     try {
         const abilityData = this.system.primaryAbilities[ability.toLowerCase()];
@@ -526,11 +471,14 @@ async rollAttack(ability, attackType, options = {}) {
             "EA": "EA",   // Edged Attack maps to "EA"
             "ET": "TE",   // Edged Thrown maps to "TE"
             "BA": "BA",   // Blunt Attack maps to "BA"
-            "BT": "TB"    // Blunt Thrown maps to "TB"
+            "BT": "TB",    // Blunt Thrown maps to "TB"
+            "W": "Gr",     // Wrestling maps to "Gr" (Grappling)
+            "Gr": "Gp",   // Explicit Grappling maps to "Gp"
+            "Gp": "Gp"    // Direct Grappling code maps to "Gp"
         };
 
         // Get the mapped combat type
-        const combatType = typeMapping[attackType] || "Blunt";  // Default to Blunt if type not found
+        const combatType = typeMapping[attackType] || attackType;  // This allows it to pass through unmapped types
         
         // Get base rank and apply column shift
         const baseRank = abilityData.rank || this.getRankFromValue(abilityData.number);
