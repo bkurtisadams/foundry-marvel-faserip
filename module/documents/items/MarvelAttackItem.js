@@ -25,7 +25,15 @@ export class MarvelAttackItem extends Item {
     
         // Validate we have the required data
         if (!this.system.ability || !this.system.attackType) {
+            console.error("Attack type or ability is missing:", this);
             ui.notifications.error("Attack item is missing required data.");
+            return null;
+        }
+
+        // Check if attackType exists in actionResults
+        if (!CONFIG.marvel.actionResults[this.system.attackType]) {
+            console.error(`Invalid attackType: ${this.system.attackType}`);
+            ui.notifications.error(`Invalid attack type: ${this.system.attackType}`);
             return null;
         }
     
@@ -119,5 +127,6 @@ export class MarvelAttackItem extends Item {
         if (!this.system.weaponDamage) this.system.weaponDamage = 0;
         if (!this.system.range) this.system.range = 0;
         if (!this.system.columnShift) this.system.columnShift = 0;
+        console.log("Attack item prepared:", this.name, "Attack Type:", this.system.attackType);
     }
 }

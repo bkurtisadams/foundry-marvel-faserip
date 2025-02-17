@@ -258,33 +258,148 @@ export class MarvelActorSheet extends ActorSheet {
         }
     }
 
-async _onRollEquipment(event) {
-    event.preventDefault();
-    const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
-    const item = this.actor.items.get(itemId);
+    async _onRollEquipment(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
+        const item = this.actor.items.get(itemId);
+        
+        if (!item) {
+            ui.notifications.error("Equipment not found");
+            return;
+        }
     
-    if (!item) return;
-
-    // Determine which ability to use based on equipment type
-    let ability;
-    switch(item.system.type) {
-        case "S": ability = "agility"; break;
-        case "F": ability = "strength"; break;
-        case "E": ability = "reason"; break;
-        case "EA":
-        case "BA": ability = "fighting"; break;
-        case "ET":
-        case "BT": ability = "agility"; break;
-        default: ability = "fighting";
+        // Get the stored roll options or use defaults
+        const stored = await game.user.getFlag("world", "marvelEquipmentOptions") || {
+            columnShift: 0,
+            karmaPoints: 0
+        };
+    
+        // Prepare the template data
+        const templateData = {
+            config: CONFIG.marvel,
+            columnShift: stored.columnShift,
+            karmaPoints: stored.karmaPoints,
+            equipment: item
+        };
+    
+        // Render the roll dialog
+        const html = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/ability-roll.html",
+            templateData
+        );
+    
+        return new Dialog({
+            title: `${item.name} Equipment Roll`,
+            content: html,
+            buttons: {
+                roll: {
+                    label: "Roll",
+                    callback: async (html) => {
+                        const form = html[0].querySelector("form");
+                        const options = {
+                            columnShift: parseInt(form.querySelector('[name="columnShift"]')?.value || "0"),
+                            karmaPoints: parseInt(form.querySelector('[name="karmaPoints"]')?.value || "0"),
+                            weaponDamage: item.system.damage,
+                            range: item.system.range
+                        };
+    
+                        // Store options for next time
+                        await game.user.setFlag("world", "marvelEquipmentOptions", options);
+    
+                        // Determine which ability to use based on equipment type
+                        let ability;
+                        switch(item.system.type) {
+                            case "S": ability = "agility"; break;  // Shooting
+                            case "F": ability = "strength"; break; // Force
+                            case "E": ability = "reason"; break;   // Energy
+                            case "EA":
+                            case "BA": ability = "fighting"; break; // Edged/Blunt Attack
+                            case "ET":
+                            case "BT": ability = "agility"; break;  // Thrown weapons
+                            default: ability = "fighting";
+                        }
+    
+                        // Roll using the appropriate ability
+                        await this.actor.rollAttack(ability, item.system.type, options);
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
+                }
+            },
+            default: "roll"
+        }).render(true);
     }
-
-    // Roll using the appropriate ability
-    await this.actor.rollAbility(ability, {
-        featType: "combat",
-        actionType: item.system.type,
-        weaponDamage: item.system.damage
-    });
-}
+    
+    async _onEditEquipment(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
+        const item = this.actor.items.get(itemId);
+        
+        if (!item) {
+            ui.notifications.error("Equipment not found");
+            return;
+        }
+    
+        // Prepare dialog data
+        const dialogData = {
+            types: {
+                "S": "Shooting",
+                "F": "Force",
+                "E": "Energy",
+                "EA": "Edged Attack",
+                "ET": "Edged Thrown",
+                "BA": "Blunt Attack",
+                "BT": "Blunt Thrown"
+            },
+            item: item
+        };
+    
+        // Get the template
+        const template = "systems/marvel-faserip/templates/dialogs/edit-equipment.html";
+        const html = await renderTemplate(template, dialogData);
+    
+        return new Dialog({
+            title: `Edit Equipment: ${item.name}`,
+            content: html,
+            buttons: {
+                save: {
+                    label: "Save",
+                    callback: async (html) => {
+                        const form = html.find('form')[0];
+                        const formData = new FormData(form);
+                        
+                        const equipmentData = {
+                            name: formData.get("equipmentName"),
+                            system: {
+                                type: formData.get("type"),
+                                range: formData.get("range"),
+                                damage: parseInt(formData.get("damage")) || 0,
+                                rate: parseInt(formData.get("rate")) || 1,
+                                shots: parseInt(formData.get("shots")) || 0,
+                                material: formData.get("material"),
+                                price: formData.get("price"),
+                                special: formData.get("special"),
+                                description: formData.get("description")
+                            }
+                        };
+    
+                        try {
+                            await item.update(equipmentData);
+                            ui.notifications.info(`Updated equipment: ${equipmentData.name}`);
+                        } catch (error) {
+                            console.error("Error updating equipment:", error);
+                            ui.notifications.error("Error updating equipment");
+                        }
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
+                }
+            },
+            default: "save",
+        }).render(true);
+    }
 
     activateListeners(html) {
         super.activateListeners(html);
@@ -364,7 +479,10 @@ async _onRollEquipment(event) {
 
             // Equipment handlers
             html.find('.add-equipment').click(ev => this._onAddEquipment(ev));
-            html.find('.roll-equipment').click(ev => this._onRollEquipment(ev));
+            //html.find('.roll-equipment').click(ev => this._onRollEquipment(ev));
+        
+            html.find('.roll-equipment').click(this._onRollEquipment.bind(this));
+            html.find('.item-edit').click(this._onEditEquipment.bind(this));
             html.find('.item-delete[data-type="equipment"]').click(ev => this._onDeleteEquipment(ev));
     
             // Add attack button

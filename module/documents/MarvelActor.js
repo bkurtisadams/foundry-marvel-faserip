@@ -508,81 +508,112 @@ export class MarvelActor extends Actor {
         return { roll, color };
     } */
 
-        async rollAttack(ability, attackType, options = {}) {
-            try {
-                const abilityData = this.system.primaryAbilities[ability.toLowerCase()];
-                if (!abilityData) {
-                    console.error(`Ability ${ability} not found`);
-                    throw new Error(`Ability ${ability} not found`);
-                }
-            
-                // Get base rank and apply column shift
-                const baseRank = abilityData.rank || this.getRankFromValue(abilityData.number);
-                const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
-            
-                // Roll the dice
-                const roll = new Roll("1d100");
-                await roll.evaluate(); // Evaluate properly in Foundry V12
+        // In MarvelActor.js, replace the rollAttack method with this updated version:
 
-                const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
-                const total = Math.min(100, roll.total + karmaPoints);
-
-                console.log("Attack roll result:", { 
-                    total, 
-                    baseRank, 
-                    shiftedRank,
-                    abilityData 
-                });
-        
-                // Handle karma deduction if karma was spent
-                if (karmaPoints > 0) {
-                    // Update karma pool
-                    const currentKarma = this.system.karmaTracking.karmaPool;
-                    const currentHistory = this.system.karmaTracking.history || [];
-                    
-                    // Create new karma history entry
-                    const newEntry = {
-                        date: new Date().toLocaleString(),
-                        amount: -karmaPoints,
-                        description: `Spent on ${ability.toUpperCase()} Attack roll`
-                    };
-        
-                    // Update actor with new karma values and history
-                    await this.update({
-                        "system.karmaTracking.karmaPool": currentKarma - karmaPoints,
-                        "system.karmaTracking.history": [...currentHistory, newEntry]
-                    });
-                }
-            
-                // Get the color result
-                const color = this.getColorResult(total, shiftedRank);
-            
-                // Create chat message content
-                const messageContent = `
-                <div class="faserip-roll">
-                    <h3>${this.name} - ${ability.toUpperCase()} Roll (${attackType})</h3>
-                    <div>Base Rank: ${baseRank} (${abilityData.number})</div>
-                    ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                    <div>Roll: ${roll.total}${karmaPoints ? ` + Karma: ${karmaPoints} = ${total}` : ''}</div>
-                    <div class="roll-result" style="background-color: ${color}; color: ${color === 'white' || color === 'yellow' ? 'black' : 'white'}; padding: 5px; text-align: center; font-weight: bold; border: 1px solid black;">
-                        ${CONFIG.marvel.actionResults[attackType].results[color]} (${color.toUpperCase()})
-                    </div>
-                </div>`;
-            
-                await ChatMessage.create({
-                    speaker: ChatMessage.getSpeaker({ actor: this }),
-                    content: messageContent,
-                    rolls: [roll],
-                    sound: CONFIG.sounds.dice
-                });
-            
-                return { roll, color, total };
-            } catch (err) {
-                console.error("Error in rollAttack:", err);
-                ui.notifications.error("Error processing attack roll");
-                return null;
-            }
+async rollAttack(ability, attackType, options = {}) {
+    try {
+        const abilityData = this.system.primaryAbilities[ability.toLowerCase()];
+        if (!abilityData) {
+            console.error(`Ability ${ability} not found`);
+            throw new Error(`Ability ${ability} not found`);
         }
+
+        // Map equipment types to combat types
+        const typeMapping = {
+            "S": "Shooting",    // Shooting weapons
+            "F": "Force",       // Force attacks
+            "E": "Energy",      // Energy attacks
+            "EA": "Edged",      // Edged attacks
+            "ET": "Throwing",   // Thrown edged weapons
+            "BA": "Blunt",      // Blunt attacks
+            "BT": "Throwing"    // Thrown blunt weapons
+        };
+
+        // Get the mapped combat type
+        const combatType = typeMapping[attackType] || "Blunt";  // Default to Blunt if type not found
+        
+        // Get base rank and apply column shift
+        const baseRank = abilityData.rank || this.getRankFromValue(abilityData.number);
+        const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
+    
+        // Roll the dice
+        const roll = new Roll("1d100");
+        await roll.evaluate(); // Evaluate properly in Foundry V12
+
+        const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
+        const total = Math.min(100, roll.total + karmaPoints);
+
+        console.log("Attack roll result:", { 
+            total, 
+            baseRank, 
+            shiftedRank,
+            abilityData,
+            combatType
+        });
+
+        // Handle karma deduction if karma was spent
+        if (karmaPoints > 0) {
+            const currentKarma = this.system.karmaTracking.karmaPool;
+            const currentHistory = this.system.karmaTracking.history || [];
+            
+            const newEntry = {
+                date: new Date().toLocaleString(),
+                amount: -karmaPoints,
+                description: `Spent on ${ability.toUpperCase()} Attack roll`
+            };
+
+            await this.update({
+                "system.karmaTracking.karmaPool": currentKarma - karmaPoints,
+                "system.karmaTracking.history": [...currentHistory, newEntry]
+            });
+        }
+    
+        // Get the color result
+        const color = this.getColorResult(total, shiftedRank);
+
+        // Get combat results based on combat type
+        let resultText;
+        if (CONFIG.marvel.combatTypes?.[combatType]?.results?.[color]) {
+            resultText = CONFIG.marvel.combatTypes[combatType].results[color];
+        } else {
+            // Fallback results if specific combat type results aren't found
+            const genericResults = {
+                white: "Miss",
+                green: "Hit",
+                yellow: "Hit with Effect",
+                red: "Critical Hit"
+            };
+            resultText = genericResults[color] || "Miss";
+        }
+    
+        // Create chat message content
+        const messageContent = `
+        <div class="faserip-roll">
+            <h3>${this.name} - ${ability.toUpperCase()} Roll (${combatType})</h3>
+            <div>Base Rank: ${baseRank} (${abilityData.number})</div>
+            ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
+            <div>Roll: ${roll.total}${karmaPoints ? ` + Karma: ${karmaPoints} = ${total}` : ''}</div>
+            ${options.weaponDamage ? `<div>Weapon Damage: ${options.weaponDamage}</div>` : ''}
+            ${options.range ? `<div>Range: ${options.range}</div>` : ''}
+            <div class="roll-result" style="background-color: ${color}; color: ${color === 'white' || color === 'yellow' ? 'black' : 'white'}; padding: 5px; text-align: center; font-weight: bold; border: 1px solid black;">
+                ${resultText} (${color.toUpperCase()})
+            </div>
+        </div>`;
+    
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this }),
+            content: messageContent,
+            rolls: [roll],
+            sound: CONFIG.sounds.dice
+        });
+    
+        return { roll, color, total };
+    } catch (err) {
+        console.error("Error in rollAttack:", err);
+        ui.notifications.error("Error processing attack roll");
+        return null;
+    }
+}
 
     /**
      * Calculate damage from a combat hit
