@@ -980,41 +980,41 @@ async rollAttack(ability, attackType, options = {}) {
      * @param {Object} options - Roll options
      * @returns {Promise<Roll|null>} The roll result or null if automatic/failed
      */
-    async rollResourceFeat(itemRank, options = {}) {
+    // Add to MarvelActor.js - replace existing rollResourceFeat
+
+async rollResourceFeat(itemRank, options = {}) {
+    try {
         const resourceRank = this.system.secondaryAbilities.resources.rank;
-        
-        // Create base message content
+        const ranks = Object.keys(CONFIG.marvel.ranks);
+        const resourceIndex = ranks.indexOf(resourceRank);
+        const itemIndex = ranks.indexOf(itemRank);
+        const rankDiff = resourceIndex - itemIndex;
+
         let messageContent = `
-        <div class="marvel-roll">
-            <h3>${this.name} - Resource FEAT</h3>
-            <div class="roll-details">
-                <div>Resource Rank: ${resourceRank}</div>
-                <div>Item Rank: ${itemRank}</div>
-    `;
+            <div class="marvel-roll">
+                <h3>${this.name} - Resource FEAT</h3>
+                <div class="roll-details">
+                    <div>Resource Rank: ${resourceRank}</div>
+                    <div>Item Rank: ${itemRank}</div>`;
 
-    // Check if attempt is allowed
-    const canAttempt = await this._canAttemptResourceFeat(itemRank);
-    if (!canAttempt.allowed) {
-        messageContent += `
-            <div class="resource-failure">${canAttempt.message}</div>
-        </div>`;
-        
-        await ChatMessage.create({
-            speaker: ChatMessage.getSpeaker({ actor: this }),
-            content: messageContent
-        });
-        return null;
-    }
-
-
-        // Get difficulty assessment
-        const difficulty = this._getResourceFeatDifficulty(resourceRank, itemRank);
-        
-        if (!difficulty.allowed) {
+        // Handle bank loan attempts
+        if (options.useBank) {
+            if (rankDiff < -1) {
+                messageContent += `
+                    <div class="resource-failure">Bank loans only available for items one rank above Resources</div>
+                </div>`;
+                await ChatMessage.create({
+                    speaker: ChatMessage.getSpeaker({ actor: this }),
+                    content: messageContent
+                });
+                return null;
+            }
+        }
+        // Handle non-bank attempts above resource rank
+        else if (rankDiff < 0) {
             messageContent += `
-                <div class="resource-failure">${difficulty.message}</div>
+                <div class="resource-failure">Cannot purchase items above Resource rank without bank loan</div>
             </div>`;
-            
             await ChatMessage.create({
                 speaker: ChatMessage.getSpeaker({ actor: this }),
                 content: messageContent
@@ -1022,38 +1022,41 @@ async rollAttack(ability, attackType, options = {}) {
             return null;
         }
 
-        // Handle automatic success
-        if (difficulty.automatic) {
+        // Handle automatic success (3+ ranks below)
+        if (rankDiff >= 3 && !options.useBank) {
             messageContent += `
-                <div class="success">${difficulty.message}</div>
+                <div class="success">Automatic Success (item rank is 3+ ranks below Resources)</div>
             </div>`;
-            
             await ChatMessage.create({
                 speaker: ChatMessage.getSpeaker({ actor: this }),
                 content: messageContent
             });
 
-            // Record successful attempt
             await this.setFlag("marvel-faserip", "lastResourceAttempt", {
                 timestamp: Date.now(),
                 rank: itemRank,
                 date: new Date().toISOString()
             });
 
-            return null;
+            return { success: true, automatic: true };
         }
-     
-        // Previous method content remains the same until the automatic success check...
 
-        // Apply column shifts and roll
-        const shiftedRank = this.applyColumnShift(resourceRank, options.columnShift || 0);
-        // const roll = new Roll("1d100").evaluateSync();
+        // Determine required color
+        let requiredColor;
+        if (options.useBank) {
+            requiredColor = "yellow"; // Bank loans require yellow FEAT
+        } else if (rankDiff === 0) {
+            requiredColor = "yellow"; // Equal rank requires yellow
+        } else if (rankDiff > 0) {
+            requiredColor = "green"; // 1-2 ranks below requires green
+        }
+
+        // Roll with karma points
         const roll = new Roll("1d100");
         await roll.evaluate({async: true});
-
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
-        
+
         // Deduct karma if used
         if (karmaPoints > 0) {
             await this.update({
@@ -1061,66 +1064,84 @@ async rollAttack(ability, attackType, options = {}) {
             });
         }
 
-        // Get color result and determine success
-        const color = this.getColorResult(finalRoll, shiftedRank);
-        const colors = ["white", "green", "yellow", "red"];
-        const requiredColorIndex = colors.indexOf(difficulty.color);
-        const resultColorIndex = colors.indexOf(color);
-        const success = resultColorIndex >= requiredColorIndex;
+        // Get result color
+        let shiftedRank = resourceRank;
+        if (options.columnShift) {
+            shiftedRank = this.applyColumnShift(resourceRank, options.columnShift);
+        }
+        const result = this.getColorResult(finalRoll, shiftedRank);
+        const success = this.isSuccessfulColor(result, requiredColor);
 
         // Record attempt
-        await this.setFlag("marvel-faserip", "lastResourceAttempt", {
+        const attemptData = {
             timestamp: Date.now(),
             rank: itemRank,
             date: new Date().toISOString()
-        });
+        };
+        await this.setFlag("marvel-faserip", "lastResourceAttempt", attemptData);
 
-        // Handle failure
+        // If failed, record failure and lockout
         if (!success) {
-            const failureData = {
-                timestamp: Date.now(),
-                rank: itemRank,
-                date: new Date().toISOString()
-            };
-
-            await this.setFlag("marvel-faserip", "lastResourceFailure", failureData);
-
-            const nextAttemptDate = new Date(Date.now() + (7 * 24 * 60 * 60 * 1000));
-            messageContent += `
-                <div class="roll-details">
-                    ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                    <div>Roll: ${roll.total}${karmaPoints ? ` + ${karmaPoints} Karma = ${finalRoll}` : ''}</div>
-                </div>
-                <div class="roll-result ${this._getColorClass(color)}">
-                    FAILURE
-                </div>
-                <div class="resource-failure">
-                    <div>Resource FEAT failed. Cannot attempt same or higher rank for 7 days.</div>
-                    <div>Next attempt available: ${nextAttemptDate.toLocaleString()}</div>
-                </div>
-            </div>`;
-        } else {
-            messageContent += `
-                <div class="roll-details">
-                    ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                    <div>Roll: ${roll.total}${karmaPoints ? ` + ${karmaPoints} Karma = ${finalRoll}` : ''}</div>
-                </div>
-                <div class="roll-result ${this._getColorClass(color)}">
-                    SUCCESS
-                </div>
-            </div>`;
+            await this.setFlag("marvel-faserip", "lastResourceFailure", attemptData);
         }
+
+        // Complete message content
+        messageContent += `
+            ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
+            <div>Roll: ${roll.total}${karmaPoints ? ` + ${karmaPoints} Karma = ${finalRoll}` : ''}</div>
+            ${options.useBank ? '<div>Using Bank Loan</div>' : ''}
+            <div class="roll-result ${this._getColorClass(result)}">
+                ${result.toUpperCase()}
+            </div>
+            <div class="roll-success">
+                ${success ? 'Success!' : 'Failure - Cannot attempt purchases of this rank or higher for one week'}
+            </div>
+        </div>`;
 
         // Create chat message
         await ChatMessage.create({
             speaker: ChatMessage.getSpeaker({ actor: this }),
             content: messageContent,
-            rolls: [roll],
-            sound: CONFIG.sounds.dice
+            rolls: [roll]
         });
 
-        return { roll, success, color };
+        // Handle bank loan approval
+        if (success && options.useBank) {
+            // Calculate loan duration based on item rank value
+            const duration = CONFIG.marvel.ranks[itemRank]?.standard || 12;
+            // Calculate payment rank (2 ranks below item rank)
+            const paymentRankIndex = Math.max(0, itemIndex - 2);
+            const paymentRank = ranks[paymentRankIndex];
+
+            await this.setFlag("marvel-faserip", "activeLoan", {
+                itemRank: itemRank,
+                paymentRank: paymentRank,
+                remainingMonths: duration,
+                startDate: new Date().toISOString()
+            });
+
+            ui.notifications.info(`Loan approved! Monthly payments at ${paymentRank} rank for ${duration} months required.`);
+        }
+
+        return { roll, result, success };
+
+    } catch (error) {
+        console.error("Error in rollResourceFeat:", error);
+        ui.notifications.error("Error processing resource roll");
+        return null;
     }
+}
+
+// Add helper method to MarvelActor.js if not already present
+isSuccessfulColor(resultColor, requiredColor) {
+    const colorValues = {
+        "white": 0,
+        "green": 1,
+        "yellow": 2,
+        "red": 3
+    };
+    return colorValues[resultColor.toLowerCase()] >= colorValues[requiredColor.toLowerCase()];
+}
    
     /**
      * Roll a Popularity FEAT
