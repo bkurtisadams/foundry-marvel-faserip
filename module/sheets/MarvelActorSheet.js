@@ -1810,34 +1810,32 @@ async _onNumberChange(event) {
         });
     }
 
+// original version of onResourceRoll
 async _onResourceRoll(event) {
     event.preventDefault();
-
     if (!game.modules.get("simple-calendar")?.active) {
         ui.notifications.warn("Simple Calendar module is required for proper Resource FEAT timing restrictions.");
     }
-    
+   
     // Get resources from proper template.json path
     const resourceRank = this.actor.system.secondaryAbilities.resources.rank || "Shift 0";
     const resourceNumber = this.actor.system.secondaryAbilities.resources.number || 0;
-
     const stored = await game.user.getFlag("world", "marvelResourceOptions") || {
         itemRank: "Typical",
         columnShift: 0,
         karmaPoints: 0
     };
-
     const lastAttempt = this.actor.getFlag("marvel-faserip", "lastResourceAttempt");
     const lastFailure = this.actor.getFlag("marvel-faserip", "lastResourceFailure");
-
     let warningMessage = "";
     if (lastAttempt) {
         const daysSinceAttempt = Math.floor((Date.now() - lastAttempt.timestamp) / (24 * 60 * 60 * 1000));
         if (daysSinceAttempt < 7) {
+            //warningMessage = Warning: Last Resource FEAT attempt was ${daysSinceAttempt} days ago. Must wait 7 days between attempts.;
             warningMessage = `Warning: Last Resource FEAT attempt was ${daysSinceAttempt} days ago. Must wait 7 days between attempts.`;
+
         }
     }
-
     const html = await renderTemplate(
         "systems/marvel-faserip/templates/dialogs/resource-roll.html",
         {
@@ -1852,7 +1850,6 @@ async _onResourceRoll(event) {
             lastFailure: lastFailure
         }
     );
-
     return new Promise(resolve => {
         const dialog = new Dialog({
             title: "Resource FEAT Roll",
@@ -1867,15 +1864,12 @@ async _onResourceRoll(event) {
                             columnShift: parseInt(form.columnShift.value) || 0,
                             karmaPoints: parseInt(form.karmaPoints.value) || 0
                         };
-
                         await game.user.setFlag("world", "marvelResourceOptions", options);
-
                         const canAttempt = await this.actor._canAttemptResourceFeat(options.itemRank);
                         if (!canAttempt.allowed) {
                             ui.notifications.warn(canAttempt.message);
                             return;
                         }
-
                         await this.actor.rollResourceFeat(options.itemRank, options);
                         resolve(true);
                     }
@@ -1887,10 +1881,151 @@ async _onResourceRoll(event) {
             },
             default: "roll"
         });
-
         dialog.render(true);
     });
 }
+
+/* async _onResourceRoll(event) {
+    event.preventDefault();
+    
+    // Warn if Simple Calendar module not active
+    if (!game.modules.get("simple-calendar")?.active) {
+        ui.notifications.warn("Simple Calendar module is required for proper Resource FEAT timing restrictions.");
+    }
+   
+    // Get resources from template.json path
+    const resourceRank = this.actor.system.secondaryAbilities.resources.rank || "Shift 0";
+    const resourceNumber = CONFIG.marvel.ranks[resourceRank]?.standard || 0;
+    
+    // Get stored options
+    const stored = await game.user.getFlag("world", "marvelResourceOptions") || {
+        itemRank: "Typical",
+        columnShift: 0,
+        karmaPoints: 0
+    };
+
+    // Get last attempt info for display
+    const lastAttempt = this.actor.getFlag("marvel-faserip", "lastResourceAttempt");
+    let warningMessage = "";
+    if (lastAttempt) {
+        const daysSinceAttempt = Math.floor((Date.now() - lastAttempt.timestamp) / (24 * 60 * 60 * 1000));
+        if (daysSinceAttempt < 7) {
+            warningMessage = `Last attempt failed ${daysSinceAttempt} days ago. Cannot attempt purchases of rank ${lastAttempt.rank} or higher for ${7 - daysSinceAttempt} more days.`;
+        }
+    }
+
+    // Render dialog using resource-roll.html template
+    const html = await renderTemplate(
+        "systems/marvel-faserip/templates/dialogs/resource-roll.html",
+        {
+            config: CONFIG.marvel,
+            ranks: Object.keys(CONFIG.marvel.ranks),
+            resourceRank: resourceRank,
+            itemRank: stored.itemRank,
+            columnShift: stored.columnShift,
+            karmaPoints: stored.karmaPoints,
+            warningMessage: warningMessage,
+            lastAttempt: lastAttempt
+        }
+    );
+
+    return new Promise(resolve => {
+        const buttons = {
+            roll: {
+                label: "Roll",
+                callback: async (dialogHtml) => {
+                    const form = dialogHtml[0].querySelector("form");
+                    const itemRank = form.itemRank.value;
+                    const itemNumber = CONFIG.marvel.ranks[itemRank]?.standard || 0;
+                    
+                    // Check if item rank is higher than resource rank
+                    if (itemNumber > resourceNumber) {
+                        ui.notifications.error("Cannot attempt to purchase items of higher rank than your Resources rank.");
+                        return;
+                    }
+
+                    // Check if under previous failure restriction
+                    if (lastAttempt) {
+                        const daysSinceAttempt = Math.floor((Date.now() - lastAttempt.timestamp) / (24 * 60 * 60 * 1000));
+                        const lastAttemptNumber = CONFIG.marvel.ranks[lastAttempt.rank]?.standard || 0;
+                        if (daysSinceAttempt < 7 && itemNumber >= lastAttemptNumber) {
+                            ui.notifications.error(`Cannot attempt purchases of rank ${lastAttempt.rank} or higher for ${7 - daysSinceAttempt} more days.`);
+                            return;
+                        }
+                    }
+
+                    const rankDiff = resourceNumber - itemNumber;
+                    
+                    // Handle automatic success (3+ ranks lower)
+                    if (rankDiff >= 3) {
+                        await ChatMessage.create({
+                            speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+                            content: `<div class="marvel-roll">
+                                <h3>${this.actor.name} - Resource FEAT</h3>
+                                <div class="roll-details">
+                                    <div>Resource Rank: ${resourceRank}</div>
+                                    <div>Item Rank: ${itemRank}</div>
+                                    <div>Result: Automatic Success (item rank is 3+ ranks below Resources)</div>
+                                </div>
+                            </div>`
+                        });
+                        return;
+                    }
+
+                    // Determine FEAT color needed
+                    let featColor;
+                    if (rankDiff === 0) {
+                        featColor = "yellow";
+                    } else if (rankDiff > 0) {
+                        featColor = "green";
+                    }
+
+                    // Get roll options
+                    const options = {
+                        columnShift: parseInt(form.columnShift.value) || 0,
+                        karmaPoints: parseInt(form.karmaPoints.value) || 0,
+                        featColor: featColor
+                    };
+
+                    // Store options for next time
+                    await game.user.setFlag("world", "marvelResourceOptions", options);
+
+                    // Perform the roll
+                    const result = await this.actor.rollResourceFeat(itemRank, options);
+
+                    // If roll failed, set the restriction flag
+                    if (!result.success) {
+                        await this.actor.setFlag("marvel-faserip", "lastResourceAttempt", {
+                            timestamp: Date.now(),
+                            rank: itemRank
+                        });
+                    }
+                }
+            },
+            cancel: {
+                label: "Cancel"
+            }
+        };
+
+        // Add clear restriction button for GMs
+        if (game.user.isGM) {
+            buttons.clear = {
+                label: "Clear Restriction",
+                callback: async () => {
+                    await this.actor.unsetFlag("marvel-faserip", "lastResourceAttempt");
+                    ui.notifications.info("Resource FEAT roll restriction cleared");
+                }
+            };
+        }
+
+        new Dialog({
+            title: "Resource FEAT Roll",
+            content: html,
+            buttons: buttons,
+            default: "roll"
+        }).render(true);
+    });
+} */ 
 
 async _onAbilityRoll(event) {
     try {
