@@ -10,6 +10,68 @@ CONFIG.marvel.karmaReasons = {
     // Add more reasons...
 };
 
+CONFIG.marvel.ranks = {
+    'Shift 0': "Shift 0",
+    'Feeble': "Feeble",
+    'Poor': "Poor",
+    'Typical': "Typical",
+    'Good': "Good",
+    'Excellent': "Excellent",
+    'Remarkable': "Remarkable",
+    'Incredible': "Incredible",
+    'Amazing': "Amazing",
+    'Monstrous': "Monstrous",
+    'Unearthly': "Unearthly",
+    'Shift X': "Shift X",
+    'Shift Y': "Shift Y",
+    'Shift Z': "Shift Z",
+    'Class 1000': "Class 1000",
+    'Class 3000': "Class 3000",
+    'Class 5000': "Class 5000",
+    'Beyond': "Beyond"
+};
+
+// After MARVEL_RANKS in config.js
+CONFIG.marvel.ranks = MARVEL_RANKS;
+CONFIG.marvel.selectableRanks = Object.keys(MARVEL_RANKS).reduce((obj, key) => {
+    obj[key] = key;
+    return obj;
+}, {});
+
+CONFIG.marvel.selectableRanks = {
+    'Shift 0': "Shift 0",
+    'Feeble': "Feeble",
+    'Poor': "Poor",
+    'Typical': "Typical",
+    'Good': "Good",
+    'Excellent': "Excellent",
+    'Remarkable': "Remarkable",
+    'Incredible': "Incredible",
+    'Amazing': "Amazing",
+    'Monstrous': "Monstrous",
+    'Unearthly': "Unearthly",
+    'Shift X': "Shift X",
+    'Shift Y': "Shift Y",
+    'Shift Z': "Shift Z",
+    'Class 1000': "Class 1000",
+    'Class 3000': "Class 3000",
+    'Class 5000': "Class 5000",
+    'Beyond': "Beyond"
+};
+
+CONFIG.marvel.resistanceTypes = {
+    physical: "Physical",
+    energy: "Energy", 
+    force: "Force",
+    heat: "Heat",
+    cold: "Cold",
+    electricity: "Electricity",
+    radiation: "Radiation",
+    toxins: "Toxins",
+    psychic: "Psychic",
+    magic: "Magic"
+};
+
 CONFIG.marvel.karmaSpendTypes = {
     powerStunt: { id: "powerStunt", label: "Power Stunt" },
     advancement: { id: "advancement", label: "Advancement" },

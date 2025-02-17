@@ -116,12 +116,49 @@ Hooks.once('init', async function() {
         rollItemMacro
     };
 
+    // Add selectable ranks for dropdown menus
+    CONFIG.marvel.selectableRanks = {
+        'Shift 0': "Shift 0",
+        'Feeble': "Feeble",
+        'Poor': "Poor",
+        'Typical': "Typical",
+        'Good': "Good",
+        'Excellent': "Excellent",
+        'Remarkable': "Remarkable",
+        'Incredible': "Incredible",
+        'Amazing': "Amazing",
+        'Monstrous': "Monstrous",
+        'Unearthly': "Unearthly",
+        'Shift X': "Shift X",
+        'Shift Y': "Shift Y",
+        'Shift Z': "Shift Z",
+        'Class 1000': "Class 1000",
+        'Class 3000': "Class 3000",
+        'Class 5000': "Class 5000",
+        'Beyond': "Beyond"
+    };
+
+    // Initialize CONFIG.marvel before setting specific properties
     CONFIG.marvel = {
         ranks: MARVEL_RANKS,
         universalTableRanges: UNIVERSAL_TABLE_RANGES,
         actionResults: ACTION_RESULTS,
         combatTypes: COMBAT_TYPES,
         combatEffects: COMBAT_EFFECTS
+    };
+    
+    // Add resistance types configuration
+    CONFIG.marvel.resistanceTypes = {
+        physical: "Physical",
+        energy: "Energy", 
+        force: "Force",
+        heat: "Heat",
+        cold: "Cold",
+        electricity: "Electricity",
+        radiation: "Radiation",
+        toxins: "Toxins",
+        psychic: "Psychic",
+        magic: "Magic"
     };
 
     CONFIG.Combat.initiative = {
