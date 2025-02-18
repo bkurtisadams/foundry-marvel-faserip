@@ -1,0 +1,31 @@
+<div class="karma-history-container">
+    <button type="button" class="add-karma">+ Add Karma Entry</button>
+    
+    <div class="karma-entries">
+        <table>
+            <thead>
+                <tr>
+                    <th class="date-column">Date</th>
+                    <th class="amount-column">Amount</th>
+                    <th class="description-column">Description</th>
+                    <th class="actions-column">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each karmaHistory}}
+                <tr class="karma-entry" data-entry-index="{{@index}}">
+                    <td class="date-column">{{date}}</td>
+                    <td class="amount-column {{#if (gt amount 0)}}positive{{else}}negative{{/if}}">
+                        {{amount}}
+                    </td>
+                    <td class="description-column">{{description}}</td>
+                    <td class="actions-column">
+                        <a class="edit-entry" title="Edit Entry"><i class="fas fa-edit"></i></a>
+                        <a class="delete-entry" title="Delete Entry"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>

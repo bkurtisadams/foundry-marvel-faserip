@@ -1377,386 +1377,102 @@ select:focus {
     margin: 0;
 }
 
-/* Karma History Dialog Styling */
-.karma-history-dialog {
-    padding: 10px;
+/* Karma History Base Styles */
+.karma-history {
+    min-height: 400px;
+    min-width: 600px;
 }
 
-.karma-summary {
-    margin-bottom: 20px;
-    padding: 10px;
-    background: #f5f5f5;
-    border-radius: 5px;
-}
-
-.karma-totals {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-.karma-current, .karma-max {
-    text-align: center;
-}
-
-.karma-current label, .karma-max label {
-    font-weight: bold;
-    color: #782e22;
-    margin-bottom: 5px;
-}
-
-.karma-current .value, .karma-max .value {
-    font-size: 24px;
-    font-weight: bold;
-}
-
-.karma-history h2 {
-    color: #782e22;
-    border-bottom: 2px solid #782e22;
-    padding-bottom: 5px;
-    margin-bottom: 10px;
-}
-
-.karma-entries {
-    max-height: 400px;
-    overflow-y: auto;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-.karma-entry:last-child {
-    border-bottom: none;
-}
-
-.karma-date {
-    color: #666;
-    font-size: 0.9em;
-}
-
-.karma-amount {
-    text-align: right;
-    font-weight: bold;
-}
-
-.karma-earned {
-    color: #4CAF50;
-}
-
-.karma-spent {
-    color: #F44336;
-}
-
-.karma-description {
-    color: #333;
-}
-/* Karma Controls */
-.karma-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 10px 0;
-    gap: 10px;
-}
-
-.karma-filters {
-    display: flex;
-    gap: 10px;
-    flex: 1;
-}
-
-.karma-type-filter {
-    width: 120px;
-}
-
-.karma-search {
-    flex: 1;
-}
-
-.karma-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-/* Karma Table */
-.karma-table {
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    overflow: hidden;
-}
-
-.karma-header {
-    display: grid;
-    grid-template-columns: auto 100px 1fr;
-    gap: 10px;
+/* Add Karma Button */
+.add-karma {
     background: #782e22;
     color: white;
-    padding: 8px;
-    font-weight: bold;
-}
-
-.header-cell.sortable {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.header-cell.sortable:hover {
-    color: #ddd;
-}
-
-.header-cell.sorted-asc .fa-sort::before {
-    content: "\f0de";  /* up arrow */
-}
-
-.header-cell.sorted-desc .fa-sort::before {
-    content: "\f0dd";  /* down arrow */
-}
-
-/* Karma History Dialog */
-.karma-history-dialog {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    background: #e0ddd5;
-}
-
-/* Karma Summary Section */
-.karma-totals {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    text-align: center;
-    background: white;
-    padding: 10px;
-    border-radius: 3px;
-    margin-bottom: 10px;
-}
-
-.karma-totals h2 {
-    color: #782e22;
-    font-size: 14px;
-    border-bottom: 2px solid #782e22;
-    margin-bottom: 5px;
-    text-align: center;
-}
-
-.karma-totals .value {
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
-}
-
-/* Controls Row */
-.controls-row {
-    display: grid;
-    grid-template-columns: 150px 1fr auto;
-    gap: 8px;
-    margin-bottom: 10px;
-    align-items: center;
-}
-
-.karma-type-filter {
-    height: 24px;
-    border: 1px solid #782e22;
-    border-radius: 3px;
-    background: white;
-    width: 100%;
-}
-
-.karma-search {
-    height: 24px;
-    border: 1px solid #782e22;
-    border-radius: 3px;
-    padding: 0 8px;
-    width: 100%;
-    background: white;
-}
-
-.controls-buttons {
-    display: flex;
-    gap: 4px;
-}
-
-/* Control Buttons */
-.add-entry, .export-button {
-    height: 24px;
-    padding: 0;
-    background: #782e22;
-    color: white;
+    padding: 5px 10px;
     border: none;
     border-radius: 3px;
+    margin-bottom: 10px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    font-size: 13px;
 }
 
-.add-entry {
-    width: 24px;
+.karma-history-container {
+    padding: 10px;
 }
 
-.export-button {
-    width: 24px;
+.karma-history-header {
+    margin-bottom: 1rem;
 }
 
-.add-entry:hover,
-.export-button:hover {
-    background: #9e3c2d;
+/* Table Styling */
+.karma-entries table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-* Remove any previous button styles that might conflict */
-.add-entry.add-ability-button {
-    width: 24px;
-    background: #782e22;
+.karma-entries th {
+    background: #666;
     color: white;
+    padding: 5px;
+    text-align: left;
 }
 
-/* Make sure icons are visible */
-.add-entry i,
-.export-button i {
-    font-size: 12px;
-    line-height: 1;
+/* Column Widths */
+.date-column {
+    width: 150px;
+    max-width: 150px;
+    min-width: 150px;
 }
 
-/* Karma List Structure */
-.karma-list {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
+.amount-column {
+    width: 80px;
+    max-width: 80px;
+    min-width: 80px;
+    text-align: right;
 }
 
-/* Headers */
-.karma-headers {
-    display: grid;
-    grid-template-columns: 180px 80px 1fr 60px;
-    gap: 10px;
-    padding: 8px;
-    background: #782e22;
-    color: white;
-    font-weight: bold;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+.description-column {
+    /* This will take up remaining space */
 }
 
-.header-date,
-.header-amount,
-.header-description {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+.actions-column {
+    width: 60px;
+    max-width: 60px;
+    min-width: 60px;
+    text-align: center;
 }
 
-.header-date:hover,
-.header-amount:hover,
-.header-description:hover {
-    color: #ddd;
-}
-
-/* Entries Container */
-.karma-entries {
-    flex: 1;
-    overflow-y: auto;
-    background: white;
-    max-height: 400px;
-}
-
-/* Individual Entries */
-.karma-entry {
-    display: grid;
-    grid-template-columns: 180px 80px 1fr 60px;
-    gap: 10px;
-    padding: 8px;
+/* Table Cells */
+.karma-entries td {
+    padding: 5px;
     border-bottom: 1px solid #ddd;
 }
 
-.karma-entry:nth-child(even) {
-    background: rgba(0, 0, 0, 0.05);
+/* Amount Colors */
+.karma-entries .positive {
+    color: #00aa00;
 }
 
-.karma-entry:hover {
-    background: rgba(120, 46, 34, 0.05);
+.karma-entries .negative {
+    color: #aa0000;
 }
 
-.entry-date {
-    color: #666;
-}
-
-.entry-amount {
-    font-weight: bold;
-}
-
-.entry-amount.positive {
-    color: #4CAF50;
-}
-
-.entry-amount.negative {
-    color: #F44336;
-}
-
-/* Entry Actions */
-.entry-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-}
-
-.entry-actions a {
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* Action Icons */
+.karma-entries .edit-entry,
+.karma-entries .delete-entry {
     cursor: pointer;
-    border-radius: 3px;
-    transition: all 0.2s ease;
-}
-
-.entry-actions .edit-entry {
-    color: #005e8a;
-}
-
-.entry-actions .delete-entry {
-    color: #782e22;
-}
-
-.entry-actions .edit-entry:hover {
-    color: #0076ad;
-    background: rgba(0, 94, 138, 0.1);
-}
-
-.entry-actions .delete-entry:hover {
-    color: #9e3c2d;
-    background: rgba(120, 46, 34, 0.1);
-}
-
-/* Karma Entry Form */
-.karma-entry-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    padding: 10px;
-}
-
-.karma-entry-form .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.karma-entry-form label {
-    font-weight: bold;
-    color: #782e22;
-}
-
-.karma-entry-form .input-hint {
-    font-size: 0.9em;
+    margin: 0 3px;
     color: #666;
-    font-style: italic;
 }
 
+.karma-entries .edit-entry:hover,
+.karma-entries .delete-entry:hover {
+    color: #000;
+}
+
+/* Dialog Title Bar */
+.karma-history .window-title {
+    background: #782e22;
+}
 /* .karma-entry-form input[type="number"],
 .karma-entry-form input[type="text"] {
     width: 100%;

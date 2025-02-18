@@ -76,9 +76,18 @@
           }
         },
           "karmaTracking": {
-          "advancementFund": 0,
           "karmaPool": 0,
-          "lifetimeTotal": 0
+          "advancementFund": 0,
+          "lifetimeTotal": 0,
+          "history": {
+              "type": "Array",
+              "default": [],
+              "schema": {
+                  "date": "",
+                  "amount": 0,
+                  "description": ""
+              }
+          }
         },
         "resistances": {
           "list": []

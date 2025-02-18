@@ -476,7 +476,8 @@ export class MarvelActorSheet extends ActorSheet {
                 delete: html.find('.item-delete[data-type="power"]').length
             });
     
-            // Remove karma history listeners
+            // Add karma history button binding
+            html.find('.karma-history-button').click(this._onKarmaHistoryClick.bind(this));
             // this._onDeleteKarmaEntry = this._onDeleteKarmaEntry.bind(this);
             // this._onEditKarmaEntry = this._onEditKarmaEntry.bind(this);
             // html.find('.clickable-karma').click(this._onKarmaHistoryClick.bind(this));
@@ -598,102 +599,60 @@ export class MarvelActorSheet extends ActorSheet {
     }
 
     // handler for karma history
-    /* async _onKarmaHistoryClick(event) {
+    async _onKarmaHistoryClick(event) {
         event.preventDefault();
         
         // Initialize properties
-        this._karmaHistory = this.actor.system.karmaTracking.history || [];
-        this._filteredHistory = [...this._karmaHistory];
-        this._currentSort = { field: 'date', direction: 'desc' };
+        const history = this.actor.system.karmaTracking.history || [];
         
         const content = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/karma-history.html",
             {
                 actor: this.actor,
-                karmaHistory: this._sortKarmaHistory(this._filteredHistory, this._currentSort)
+                karmaHistory: history
             }
         );
     
-        const dialog = new Dialog({
+        new Dialog({
             title: `Karma History - ${this.actor.name}`,
             content: content,
             buttons: {
+                add: {
+                    label: "Add Entry",
+                    callback: async (html) => {
+                        const form = html.find('form')[0];
+                        const date = form.date.value;
+                        const amount = parseInt(form.amount.value);
+                        const description = form.description.value;
+                        
+                        if (!date || !amount || !description) {
+                            ui.notifications.warn("Please fill in all fields");
+                            return;
+                        }
+    
+                        const currentHistory = this.actor.system.karmaTracking.history || [];
+                        await this.actor.update({
+                            "system.karmaTracking.history": [...currentHistory, {
+                                date,
+                                amount,
+                                description
+                            }]
+                        });
+    
+                        this._onKarmaHistoryClick(event);
+                    }
+                },
                 close: {
                     label: "Close"
                 }
             },
-            
-        render: (html) => {
-            const dialog = this;
-            
-            // Sorting
-            html.find('.sortable').click(ev => {
-                const field = ev.currentTarget.dataset.sort;
-                if (dialog._currentSort.field === field) {
-                    dialog._currentSort.direction = dialog._currentSort.direction === 'asc' ? 'desc' : 'asc';
-                } else {
-                    dialog._currentSort = { field, direction: 'asc' };
-                }
-                dialog._updateKarmaDisplay(html, dialog._sortKarmaHistory(dialog._filteredHistory, dialog._currentSort));
-                dialog._updateSortIndicators(html, dialog._currentSort);
-            });
-
-            // Filtering
-            html.find('.karma-type-filter').change(ev => {
-                const filterType = ev.target.value;
-                dialog._filteredHistory = dialog._filterKarmaHistory(dialog._karmaHistory, filterType);
-                dialog._updateKarmaDisplay(html, dialog._sortKarmaHistory(dialog._filteredHistory, dialog._currentSort));
-            });
-
-            // Search
-            html.find('.karma-search').on('input', ev => {
-                const searchTerm = ev.target.value.toLowerCase();
-                dialog._filteredHistory = dialog._karmaHistory.filter(entry => 
-                    entry.description.toLowerCase().includes(searchTerm)
-                );
-                dialog._updateKarmaDisplay(html, dialog._sortKarmaHistory(dialog._filteredHistory, dialog._currentSort));
-            });
-
-            // Add the event listeners for edit and delete buttons
-            html.find('.karma-entries').on('click', '.edit-entry', async (ev) => {
-                ev.preventDefault();
-                const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
-                const entry = dialog._filteredHistory[index];
-                await dialog._onEditKarmaEntry(ev, entry);
-            });
-
-            html.find('.karma-entries').on('click', '.delete-entry', async (ev) => {
-                ev.preventDefault();
-                const entryDiv = $(ev.currentTarget).closest('.karma-entry');
-                const index = entryDiv.data('entry-index');
-                console.log("Deleting entry at index:", index); // Add logging
-                if (typeof index !== 'undefined') {
-                    await this._onDeleteKarmaEntry(ev, index);
-                } else {
-                    console.error("Could not find index for karma entry");
-                }
-            });
-
-            // Export
-            html.find('.export-button').click(() => dialog._exportKarmaHistory(dialog._karmaHistory));
-
-            // Add Entry
-            html.find('.add-entry').click(async (ev) => {
-                ev.preventDefault();
-                await dialog._onAddKarmaEntry(ev);
-            });
-        }
-        }, {
             classes: ["karma-history"],
             width: 600,
             height: 400,
             resizable: true
-        });
-    
-        dialog.render(true);
-    } */
-    
-    // Add this method to handle adding new karma entries
+        }).render(true);
+    }
+
     // In MarvelActorSheet.js, in the _onAddKarmaEntry method
 async _onAddKarmaEntry(event) {
     event.preventDefault();
@@ -978,17 +937,19 @@ async _onAddKarmaEntry(event) {
         event.preventDefault();
         
         // Initialize properties
-        const history = this.actor.system.karmaTracking.history || [];
+        this._karmaHistory = this.actor.system.karmaTracking.history || [];
+        this._filteredHistory = [...this._karmaHistory];
+        this._currentSort = { field: 'date', direction: 'desc' };
         
         const content = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/karma-history.html",
             {
                 actor: this.actor,
-                karmaHistory: history
+                karmaHistory: this._sortKarmaHistory(this._filteredHistory, this._currentSort)
             }
         );
     
-        new Dialog({
+        const dialog = new Dialog({
             title: `Karma History - ${this.actor.name}`,
             content: content,
             buttons: {
@@ -996,24 +957,51 @@ async _onAddKarmaEntry(event) {
                     label: "Close"
                 }
             },
-            classes: ["karma-history"],
-            width: 600,
-            height: 400,
-            resizable: true
-        }).render(true);
+            
+            render: (html) => {
+                const dialog = this;
+                
+                // Add event listeners
+                html.find('.karma-entries').on('click', '.edit-entry', async (ev) => {
+                    ev.preventDefault();
+                    const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
+                    const entry = dialog._filteredHistory[index];
+                    await dialog._onEditKarmaEntry(ev, entry);
+                });
+    
+                html.find('.karma-entries').on('click', '.delete-entry', async (ev) => {
+                    ev.preventDefault();
+                    const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
+                    await this._onDeleteKarmaEntry(ev, index);
+                });
+    
+                // Add Entry
+                html.find('.add-entry').click(async (ev) => {
+                    ev.preventDefault();
+                    await dialog._onAddKarmaEntry(ev);
+                });
+            }
+            }, {
+                classes: ["karma-history"],
+                width: 800,
+                height: 600,
+                resizable: true
+            });
+    
+        dialog.render(true);
     }
     
     async _onAddKarmaEntry(event) {
         event.preventDefault();
         
-        const content = await renderTemplate(
+        const addEntryContent = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
-            { entry: { amount: '', description: '' } }
+            { entry: { amount: '', description: '' } }  // Add default values
         );
         
         new Dialog({
             title: "Add Karma Entry",
-            content: content,
+            content: addEntryContent,
             buttons: {
                 add: {
                     label: "Add Entry",
@@ -1034,15 +1022,57 @@ async _onAddKarmaEntry(event) {
                             description: description
                         };
                         
-                        // Get current history and karma
+                        // Get current history
                         const currentHistory = this.actor.system.karmaTracking.history || [];
-                        const currentKarma = this.actor.system.secondaryAbilities.karma.value;
                         
                         // Update actor
                         await this.actor.update({
-                            "system.karmaTracking.history": [...currentHistory, newEntry],
-                            "system.secondaryAbilities.karma.value": currentKarma + amount
+                            "system.karmaTracking.history": [...currentHistory, newEntry]
                         });
+                        
+                        // Refresh the karma history window
+                        this._onKarmaHistoryClick(event);
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
+                }
+            },
+            default: "add"
+        }).render(true);
+    }
+    
+    async _onDeleteKarmaEntry(event, index) {
+        const confirmDelete = await Dialog.confirm({
+            title: "Delete Karma Entry",
+            content: "Are you sure you want to delete this karma entry?",
+            yes: () => true,
+            no: () => false,
+            defaultYes: false
+        });
+    
+        if (confirmDelete) {
+            const history = duplicate(this.actor.system.karmaTracking.history);
+            history.splice(index, 1);
+            await this.actor.update({"system.karmaTracking.history": history});
+            this._onKarmaHistoryClick(event);
+        }
+    }
+    
+    async _onEditKarmaEntry(event, entry) {
+        const editContent = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
+            { entry }
+        );
+    
+        new Dialog({
+            title: "Edit Karma Entry",
+            content: editContent,
+            buttons: {
+                save: {
+                    label: "Save",
+                    callback: async (html) => {
+                        // ... similar to add entry logic but updates existing entry
                     }
                 },
                 cancel: {
