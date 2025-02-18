@@ -739,7 +739,7 @@
   }
   
   /* Karma History and Controls */
-  .karma-history {
+  /* .karma-history {
     min-height: 400px;
     min-width: 600px;
   }
@@ -812,27 +812,32 @@
   .entry-controls a,
   .sortable {
     cursor: pointer;
-  }
+  } */
   
   .karma-history-button {
-    background: #4a4a4a;
-    color: white;
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 4px;
+    height: 18px;               /* Matches other small buttons on the sheet */
+    line-height: 18px;          /* Keeps text vertically centered */
+    font-size: 11px;            /* Smaller text */
+    padding: 0 5px;             /* Minimal padding; adjust as needed */
+    background: #e8e6e3;        /* Similar background as other sheet buttons */
+    color: #333;                /* Text color to match your theme */
+    border: 1px solid #7a7971;  /* Matches your sheet’s border style */
+    border-radius: 3px;         /* Rounded corners, if consistent with your sheet */
     cursor: pointer;
   }
   
   .karma-history-button:hover {
-    background: #333;
+    background: #d8d6d3;
+    border-color: #782e22;
   }
+  
   
   .sortable:hover {
     background-color: rgba(0, 0, 0, 0.05);
   }
   
   /* Karma Controls */
-  .karma-controls {
+  /* .karma-controls {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -886,7 +891,7 @@
   .add-entry:hover,
   .export-button:hover {
     background: #9e3c2d;
-  }
+  } */
   
   /* Karma List Structure */
   .karma-list {
@@ -898,11 +903,17 @@
   
   .karma-headers {
     display: grid;
-    grid-template-columns: 180px 80px 1fr 60px;
-    gap: 10px;
-    padding: 8px;
+    /* Four columns: Date, Amount, Description, Actions */
+    grid-template-columns: 180px 60px 1fr 40px;
+    gap: 2px;                        /* minimal gap between columns */
+    padding: 2px 5px;                /* minimal padding around row */
+    margin: 0;
+    box-sizing: border-box;
+    font-size: 11px;                 /* smaller text for a tighter look */
+    line-height: 14px;               /* reduce row height */
+    align-items: center;             /* vertically center text */
     background: #782e22;
-    color: white;
+    color: #fff;
     font-weight: bold;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   }
