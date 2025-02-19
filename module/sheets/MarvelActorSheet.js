@@ -205,7 +205,7 @@ export class MarvelActorSheet extends ActorSheet {
     
         const weaponSystem = game.marvel.WeaponSystem;
     
-        // Prepare dialog data
+        // Prepare dialog data (keeping your existing structure)
         const dialogData = {
             types: {
                 "S": "Shooting",
@@ -269,14 +269,13 @@ export class MarvelActorSheet extends ActorSheet {
                                 let equipmentData;
     
                                 if (equipmentSource === "predefined") {
-                                    // Get predefined weapon data
                                     const weaponKey = form.find('[name="predefinedWeapon"]').val();
                                     const weapon = weaponSystem.weapons[weaponKey];
                                     
                                     equipmentData = {
                                         name: weapon.name,
                                         type: "equipment",
-                                        img: "systems/marvel-faserip/assets/icons/weapons/generic-weapon.svg", // Updated image path
+                                        img: "systems/marvel-faserip/assets/icons/weapons/generic-weapon.svg",
                                         system: {
                                             subtype: "weapon",
                                             type: weapon.type,
@@ -298,11 +297,10 @@ export class MarvelActorSheet extends ActorSheet {
                                         equipmentData.system.powerPackMaxCharge = 10;
                                     }
                                 } else {
-                                    // Original custom equipment creation
                                     equipmentData = {
                                         name: form.find('[name="equipmentName"]').val(),
                                         type: "equipment",
-                                        img: "systems/marvel-faserip/assets/icons/weapons/generic-weapon.svg", // Updated image path
+                                        img: "systems/marvel-faserip/assets/icons/weapons/generic-weapon.svg",
                                         system: {
                                             subtype: "weapon",
                                             type: form.find('[name="type"]').val(),
@@ -315,14 +313,24 @@ export class MarvelActorSheet extends ActorSheet {
                                             price: form.find('[name="price"]').val(),
                                             weight: form.find('[name="weight"]').val(),
                                             legality: form.find('[name="legality"]').val(),
-                                            ammoType: form.find('[name="ammoType"]').val(),
                                             special: form.find('[name="special"]').val(),
                                             description: form.find('[name="description"]').val(),
                                             powerPack: form.find('[name="powerPack"]').prop("checked") || false
                                         }
                                     };
     
-                                    if (equipmentData.system.powerPack) {
+                                    // Add ammunition tracking for shooting weapons
+                                    if (equipmentData.system.type === "S") {
+                                        equipmentData.system.ammunition = {
+                                            type: form.find('[name="ammoType"]').val() || "standard",
+                                            current: parseInt(form.find('[name="shots"]').val()) || 6,
+                                            max: parseInt(form.find('[name="shots"]').val()) || 6
+                                        };
+                                    }
+    
+                                    // Add power pack for energy/force weapons
+                                    if (equipmentData.system.type === "E" || equipmentData.system.type === "F") {
+                                        equipmentData.system.powerPack = true;
                                         equipmentData.system.powerPackCharge = 10;
                                         equipmentData.system.powerPackMaxCharge = 10;
                                     }
@@ -356,17 +364,7 @@ export class MarvelActorSheet extends ActorSheet {
                         html.find('.predefined-section').toggle(source === "predefined");
                         html.find('.custom-section').toggle(source === "custom");
                     });
-                
-                    // Add magazine preset handler
-                    html.find('.magazine-presets').on('click', (event) => {
-                        const weaponType = html.find('[name="type"]').val();
-                        const presetSize = dialogData.magazinePresets[weaponType] || 6;
-                        html.find('[name="magazineSize"]').val(presetSize);
-                        
-                        // Also update shots field
-                        html.find('[name="shots"]').val(presetSize);
-                    });
-                
+    
                     // Enhanced weapon type change handler
                     html.find('[name="type"]').on('change', (event) => {
                         const weaponType = event.currentTarget.value;
@@ -377,18 +375,13 @@ export class MarvelActorSheet extends ActorSheet {
                         html.find('.range-group').toggle(isRanged);
                         html.find('.power-pack-group').toggle(isPowered);
                         html.find('.ammo-group').toggle(usesAmmo);
-                        html.find('.ammo-capacity-group').toggle(isRanged);
-                        html.find('.legality-group').toggle(true); // Always show legality
+                        html.find('.legality-group').toggle(true);
                         
-                        // Update magazine size based on weapon type
-                        const magazineSize = dialogData.magazinePresets[weaponType] || 6;
-                        html.find('[name="magazineSize"]').val(magazineSize);
-                        html.find('[name="shots"]').val(magazineSize);
-                
-                        // Original shots field logic
+                        // Set default shots based on weapon type
                         const shotsField = html.find('[name="shots"]');
                         if (weaponType === "S") shotsField.val(6);
                         else if (weaponType === "E" || weaponType === "F") shotsField.val(10);
+                        else shotsField.val(0);
                     });
                 }
             }).render(true);
@@ -400,6 +393,25 @@ export class MarvelActorSheet extends ActorSheet {
         }
     }
 
+    async _onReloadWeapon(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
+        const item = this.actor.items.get(itemId);
+        
+        if (!item) {
+            ui.notifications.error("Weapon not found");
+            return;
+        }
+    
+        // Reload to max shots
+        await item.update({
+            "system.shots": item.system.maxShots
+        });
+    
+        await item.update(updateData);
+        ui.notifications.info(`${item.name} reloaded!`);
+    }
+
     async _onRollEquipment(event) {
         event.preventDefault();
         const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
@@ -409,6 +421,20 @@ export class MarvelActorSheet extends ActorSheet {
             ui.notifications.error("Equipment not found");
             return;
         }
+
+        // Check ammo for shooting weapons
+    if (item.system.type === "S") {
+        const currentShots = item.system.shots ?? 0;
+        if (currentShots <= 0) {
+            ui.notifications.warn("Out of ammunition! Reload required.");
+            return;
+        }
+        
+        // Consume ammo
+        await item.update({
+            "system.shots": Math.max(0, currentShots - 1)
+        });
+    }
 
         // Map equipment types to attack types from ACTION_RESULTS
         const typeMap = {
@@ -585,18 +611,6 @@ export class MarvelActorSheet extends ActorSheet {
         }
     }
     
-    async _onReloadWeapon(event) {
-        event.preventDefault();
-        const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
-        const item = this.actor.items.get(itemId);
-        
-        if (!item) {
-            ui.notifications.error("Weapon not found");
-            return;
-        }
-        
-        await item.reload();
-    }
 
     activateListeners(html) {
         super.activateListeners(html);

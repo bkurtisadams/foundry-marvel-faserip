@@ -1623,6 +1623,33 @@
     grid-column: 1 / -1;
   }
 }
+
+.ammo-display {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #666;
+  padding: 0 4px;
+}
+
+/* ammo display */
+.ammo-display button {
+  height: 18px;
+  width: 18px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #782e22;
+  cursor: pointer;
+}
+
+.ammo-display button:hover {
+  color: #9e3c2d;
+}
   
   /* Stunts Section */
   /* Consolidated Stunt Row using grid layout */

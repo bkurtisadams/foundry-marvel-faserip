@@ -460,10 +460,15 @@
                     <button type="button" class="roll-equipment" title="Use Weapon">
                         <i class="fas fa-dice-d20"></i>
                     </button>
-                    {{#if (eq item.system.shots 0)}}
-                    <button type="button" class="reload-weapon" title="Reload Weapon">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
+                    {{#if (eq item.system.type "S")}}
+                    <div class="ammo-display">
+                        {{item.system.shots}}/{{item.system.maxShots}}
+                        {{#if (eq item.system.shots 0)}}
+                        <button type="button" class="reload-weapon" title="Reload Weapon">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        {{/if}}
+                    </div>
                     {{/if}}
                     {{/if}}
                     <a class="item-control item-delete" title="Delete Item">
