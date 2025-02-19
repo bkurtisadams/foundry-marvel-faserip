@@ -627,7 +627,8 @@ export class MarvelActorSheet extends ActorSheet {
             });
     
             // Karma history
-            html.find('.karma-history-button').click(ev => this._onKarmaHistoryClick(ev));
+            /* html.find('.karma-history-button').click(ev => this._onKarmaHistoryClick(ev)); */
+            html.find('.karma-history-button').click(this._onKarmaHistoryClick.bind(this));
     
             // Ability, popularity, and resource rolls
             html.find('.ability-label').click(ev => this._onAbilityRoll(ev));
@@ -773,7 +774,7 @@ export class MarvelActorSheet extends ActorSheet {
         }).render(true);
     }
 
-    // In MarvelActorSheet.js, in the _onAddKarmaEntry method
+
 async _onAddKarmaEntry(event) {
     event.preventDefault();
     
@@ -1053,155 +1054,6 @@ async _onAddKarmaEntry(event) {
         }
     }
 
-    async _onKarmaHistoryClick(event) {
-        event.preventDefault();
-        
-        // Initialize properties
-        this._karmaHistory = this.actor.system.karmaTracking.history || [];
-        this._filteredHistory = [...this._karmaHistory];
-        this._currentSort = { field: 'date', direction: 'desc' };
-        
-        const content = await renderTemplate(
-            "systems/marvel-faserip/templates/dialogs/karma-history.html",
-            {
-                actor: this.actor,
-                karmaHistory: this._sortKarmaHistory(this._filteredHistory, this._currentSort)
-            }
-        );
-    
-        const dialog = new Dialog({
-            title: `Karma History - ${this.actor.name}`,
-            content: content,
-            buttons: {
-                close: {
-                    label: "Close"
-                }
-            },
-            
-            render: (html) => {
-                const dialog = this;
-                
-                // Add event listeners
-                html.find('.karma-entries').on('click', '.edit-entry', async (ev) => {
-                    ev.preventDefault();
-                    const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
-                    const entry = dialog._filteredHistory[index];
-                    await dialog._onEditKarmaEntry(ev, entry);
-                });
-    
-                html.find('.karma-entries').on('click', '.delete-entry', async (ev) => {
-                    ev.preventDefault();
-                    const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
-                    await this._onDeleteKarmaEntry(ev, index);
-                });
-    
-                // Add Entry
-                html.find('.add-entry').click(async (ev) => {
-                    ev.preventDefault();
-                    await dialog._onAddKarmaEntry(ev);
-                });
-            }
-            }, {
-                classes: ["karma-history"],
-                width: 800,
-                height: 600,
-                resizable: true
-            });
-    
-        dialog.render(true);
-    }
-    
-    async _onAddKarmaEntry(event) {
-        event.preventDefault();
-        
-        const addEntryContent = await renderTemplate(
-            "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
-            { entry: { amount: '', description: '' } }  // Add default values
-        );
-        
-        new Dialog({
-            title: "Add Karma Entry",
-            content: addEntryContent,
-            buttons: {
-                add: {
-                    label: "Add Entry",
-                    callback: async (html) => {
-                        const form = html.find('form')[0];
-                        const amount = Number(form.amount.value);
-                        const description = form.description.value;
-                        
-                        if (isNaN(amount) || !description) {
-                            ui.notifications.error("Please enter a valid amount and description");
-                            return;
-                        }
-                        
-                        // Create new entry
-                        const newEntry = {
-                            date: new Date().toLocaleString(),
-                            amount: amount,
-                            description: description
-                        };
-                        
-                        // Get current history
-                        const currentHistory = this.actor.system.karmaTracking.history || [];
-                        
-                        // Update actor
-                        await this.actor.update({
-                            "system.karmaTracking.history": [...currentHistory, newEntry]
-                        });
-                        
-                        // Refresh the karma history window
-                        this._onKarmaHistoryClick(event);
-                    }
-                },
-                cancel: {
-                    label: "Cancel"
-                }
-            },
-            default: "add"
-        }).render(true);
-    }
-    
-    async _onDeleteKarmaEntry(event, index) {
-        const confirmDelete = await Dialog.confirm({
-            title: "Delete Karma Entry",
-            content: "Are you sure you want to delete this karma entry?",
-            yes: () => true,
-            no: () => false,
-            defaultYes: false
-        });
-    
-        if (confirmDelete) {
-            const history = duplicate(this.actor.system.karmaTracking.history);
-            history.splice(index, 1);
-            await this.actor.update({"system.karmaTracking.history": history});
-            this._onKarmaHistoryClick(event);
-        }
-    }
-    
-    async _onEditKarmaEntry(event, entry) {
-        const editContent = await renderTemplate(
-            "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
-            { entry }
-        );
-    
-        new Dialog({
-            title: "Edit Karma Entry",
-            content: editContent,
-            buttons: {
-                save: {
-                    label: "Save",
-                    callback: async (html) => {
-                        // ... similar to add entry logic but updates existing entry
-                    }
-                },
-                cancel: {
-                    label: "Cancel"
-                }
-            }
-        }).render(true);
-    }
-    
     _updateSortIndicators(html, currentSort) {
         const headers = html.find('.sortable');
         headers.removeClass('sorted-asc sorted-desc');

@@ -1,32 +1,34 @@
 <div class="karma-history">
-    <button type="button" class="add-karma-entry">+ Add Karma Entry</button>
-    
-    <div class="karma-entries-header">
-        <div class="header-date">Date</div>
-        <div class="header-amount">Amount</div>
-        <div class="header-description">Description</div>
-        <div class="header-actions">Actions</div>
-    </div>
-    
-    <div class="karma-entries">
-        {{#each karmaHistory as |entry|}}
-        <div class="karma-entry">
-            <div class="date">{{entry.date}}</div>
-            <div class="amount {{#if (lt entry.amount 0)}}negative{{else}}positive{{/if}}">
-                {{#if (gt entry.amount 0)}}+{{/if}}{{entry.amount}}
-            </div>
-            <div class="description">{{entry.description}}</div>
-            <div class="entry-actions">
-                <button type="button" class="edit-entry" title="Edit Entry">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button type="button" class="delete-entry" title="Delete Entry">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
+    <div class="karma-content">
+        <button type="button" class="add-karma-entry">
+            <i class="fas fa-plus"></i> Add Karma Entry
+        </button>
+        
+        <div class="karma-entries-header">
+            <div class="header-date">Date</div>
+            <div class="header-amount">Amount</div>
+            <div class="header-description">Description</div>
+            <div class="header-actions">Actions</div>
         </div>
-        {{/each}}
+        
+        <div class="karma-entries">
+            {{#each karmaHistory as |entry|}}
+            <div class="karma-entry">
+                <div class="date">{{entry.date}}</div>
+                <div class="amount {{#if (lt entry.amount 0)}}negative{{else}}positive{{/if}}">
+                    {{#if (gt entry.amount 0)}}+{{/if}}{{entry.amount}}
+                </div>
+                <div class="description">{{entry.description}}</div>
+                <div class="entry-actions">
+                    <button type="button" class="edit-entry" title="Edit Entry" data-entry-id="{{@index}}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button type="button" class="delete-entry" title="Delete Entry" data-entry-id="{{@index}}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            {{/each}}
+        </div>
     </div>
-    
-    <button type="button" class="close-button">Close</button>
 </div>
