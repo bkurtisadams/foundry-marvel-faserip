@@ -804,19 +804,16 @@
 .karma-history .karma-entries-header {
   display: grid;
   grid-template-columns: 180px 100px 1fr 80px;
-  background: #514d44;
-  color: white;
-  padding: 5px;
-  font-weight: bold;
   gap: 5px;
+  padding: 5px;
 }
 
 /* Entry Row */
 .karma-history .karma-entry {
   display: grid;
   grid-template-columns: 180px 100px 1fr 80px;
-  padding: 5px;
   gap: 5px;
+  padding: 5px;
   align-items: center;
 }
 

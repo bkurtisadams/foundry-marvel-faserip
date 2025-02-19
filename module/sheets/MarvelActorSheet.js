@@ -719,7 +719,7 @@ export class MarvelActorSheet extends ActorSheet {
     }
 
     // handler for karma history
-    async _onKarmaHistoryClick(event) {
+    /* async _onKarmaHistoryClick(event) {
         event.preventDefault();
         
         // Initialize properties
@@ -771,10 +771,10 @@ export class MarvelActorSheet extends ActorSheet {
             height: 400,
             resizable: true
         }).render(true);
-    }
+    } */
 
     // In MarvelActorSheet.js, in the _onAddKarmaEntry method
-async _onAddKarmaEntry(event) {
+/* async _onAddKarmaEntry(event) {
     event.preventDefault();
     
     const addEntryContent = await renderTemplate(
@@ -832,9 +832,9 @@ async _onAddKarmaEntry(event) {
             amountInput.focus();
         }
     }).render(true);
-}
+} */
     
-    async _onEditKarmaEntry(event, entry) {
+    /* async _onEditKarmaEntry(event, entry) {
         event.preventDefault();
         
         const addEntryContent = await renderTemplate(
@@ -909,7 +909,7 @@ async _onAddKarmaEntry(event) {
                 form.description.value = entry.description;
             }
         }).render(true);
-    }
+    } */
     
     // delete karma entry
     async _onDeleteKarmaEntry(event, index) {
@@ -1096,7 +1096,7 @@ async _onAddKarmaEntry(event) {
                 });
     
                 // Add Entry
-                html.find('.add-entry').click(async (ev) => {
+                html.find('.add-karma-entry').click(async (ev) => {
                     ev.preventDefault();
                     await dialog._onAddKarmaEntry(ev);
                 });
