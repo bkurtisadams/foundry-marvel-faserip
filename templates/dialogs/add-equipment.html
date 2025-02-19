@@ -1,122 +1,123 @@
 <!-- templates/dialogs/add-equipment.html -->
 <form>
+    <!-- Equipment Source Selection -->
     <div class="form-group">
-        <label>Name</label>
-        <input type="text" name="equipmentName" required/>
+        <label>Equipment Source</label>
+        <select name="equipmentSource" class="equipment-source">
+            <option value="custom">Custom Equipment</option>
+            <option value="predefined">Select from Predefined List</option>
+        </select>
     </div>
-   
-    <div class="form-group">
-        <label>Type</label>
-        <select name="type" required>
-            {{#each types as |label key|}}
-            <option value="{{key}}">{{label}}</option>
+
+    <!-- Predefined Weapon Selection -->
+    <div class="form-group predefined-section" style="display: none;">
+        <label>Select Weapon</label>
+        <select name="predefinedWeapon" class="weapon-list">
+            {{#each weapons as |weapon key|}}
+            <option value="{{key}}">{{weapon.name}}</option>
             {{/each}}
         </select>
     </div>
-   
-    <div class="form-group range-group">
-        <label>Range</label>
-        <select name="range">
-            <option value="Fe">Feeble</option>
-            <option value="Pr">Poor</option>
-            <option value="Ty">Typical</option>
-            <option value="Gd">Good</option>
-            <option value="Ex">Excellent</option>
-            <option value="Rm">Remarkable</option>
-            <option value="In">Incredible</option>
-            <option value="Am">Amazing</option>
-            <option value="Mn">Monstrous</option>
-            <option value="Un">Unearthly</option>
-        </select>
-    </div>
-   
-    <div class="form-group">
-        <label>Damage</label>
-        <input type="number" name="damage" value="0" min="0"/>
-    </div>
-   
-    <div class="form-group">
-        <label>Rate of Fire</label>
-        <input type="number" name="rate" value="1" min="1"/>
-    </div>
-   
-    <div class="form-group">
-        <label>Shots</label>
-        <input type="number" name="shots" value="0" min="0"/>
-    </div>
 
-    <!-- New Ammunition Section - Only shows for appropriate weapon types -->
-    <div class="form-group ammo-group" style="display: none;">
-        <label>Ammunition Type</label>
-        <select name="ammoType">
-            <option value="standard">Standard</option>
-            <option value="mercy">Mercy Shot</option>
-            <option value="ap">Armor Piercing</option>
-            <option value="rubber">Rubber Shot</option>
-            <option value="explosive">Explosive Shot</option>
-            <option value="canister">Canister Shot</option>
-        </select>
-    </div>
+    <!-- Custom Equipment Form -->
+    <div class="custom-section">
+        <div class="form-group">
+            <label>Name</label>
+            <input type="text" name="equipmentName" required/>
+        </div>
+       
+        <div class="form-group">
+            <label>Type</label>
+            <select name="type" required>
+                {{#each types as |label key|}}
+                <option value="{{key}}">{{label}}</option>
+                {{/each}}
+            </select>
+        </div>
+       
+        <div class="form-group range-group">
+            <label>Range</label>
+            <select name="range">
+                {{#each ranks as |label key|}}
+                <option value="{{key}}">{{label}}</option>
+                {{/each}}
+            </select>
+        </div>
+       
+        <div class="form-group">
+            <label>Damage</label>
+            <input type="number" name="damage" value="0" min="0"/>
+        </div>
+       
+        <div class="form-group">
+            <label>Rate of Fire</label>
+            <input type="number" name="rate" value="1" min="1"/>
+        </div>
+       
+        <div class="form-group">
+            <label>Shots</label>
+            <input type="number" name="shots" value="0" min="0"/>
+        </div>
 
-    <!-- Power Pack Section - Only shows for energy/force weapons -->
-    <div class="form-group power-pack-group" style="display: none;">
-        <label class="checkbox">
-            <input type="checkbox" name="powerPack"/>
-            Uses Power Pack
-        </label>
-    </div>
-   
-    <div class="form-group">
-        <label>Material Strength</label>
-        <select name="material">
-            <option value="Fe">Feeble</option>
-            <option value="Pr">Poor</option>
-            <option value="Ty">Typical</option>
-            <option value="Gd">Good</option>
-            <option value="Ex">Excellent</option>
-            <option value="Rm">Remarkable</option>
-            <option value="In">Incredible</option>
-            <option value="Am">Amazing</option>
-            <option value="Mn">Monstrous</option>
-            <option value="Un">Unearthly</option>
-        </select>
-    </div>
-   
-    <div class="form-group">
-        <label>Price (Resource Rank)</label>
-        <select name="price">
-            <option value="Fe">Feeble</option>
-            <option value="Pr">Poor</option>
-            <option value="Ty">Typical</option>
-            <option value="Gd">Good</option>
-            <option value="Ex">Excellent</option>
-            <option value="Rm">Remarkable</option>
-            <option value="In">Incredible</option>
-            <option value="Am">Amazing</option>
-            <option value="Mn">Monstrous</option>
-            <option value="Un">Unearthly</option>
-        </select>
-    </div>
+        <!-- Ammunition Section -->
+        <div class="form-group ammo-group" style="display: none;">
+            <label>Ammunition Type</label>
+            <select name="ammoType">
+                <option value="standard">Standard</option>
+                <option value="mercy">Mercy Shot</option>
+                <option value="ap">Armor Piercing</option>
+                <option value="rubber">Rubber Shot</option>
+                <option value="explosive">Explosive Shot</option>
+                <option value="canister">Canister Shot</option>
+            </select>
+        </div>
 
-    <!-- Legal Status - Only shows for weapons -->
-    <div class="form-group legality-group" style="display: none;">
-        <label>Legal Status</label>
-        <select name="legality">
-            <option value="legal">Legal</option>
-            <option value="restricted">Restricted</option>
-            <option value="military">Military Only</option>
-            <option value="illegal">Illegal</option>
-        </select>
-    </div>
-   
-    <div class="form-group">
-        <label>Special Notes</label>
-        <textarea name="special"></textarea>
-    </div>
-   
-    <div class="form-group">
-        <label>Description</label>
-        <textarea name="description"></textarea>
+        <!-- Power Pack Section -->
+        <div class="form-group power-pack-group" style="display: none;">
+            <label class="checkbox">
+                <input type="checkbox" name="powerPack"/>
+                Uses Power Pack
+            </label>
+        </div>
+       
+        <div class="form-group">
+            <label>Material Strength</label>
+            <select name="material">
+                {{#each ranks as |label key|}}
+                <option value="{{key}}">{{label}}</option>
+                {{/each}}
+            </select>
+        </div>
+       
+        <div class="form-group">
+            <label>Price (Resource Rank)</label>
+            <select name="price">
+                {{#each ranks as |label key|}}
+                <option value="{{key}}">{{label}}</option>
+                {{/each}}
+            </select>
+        </div>
+
+        <!-- Legal Status -->
+        <div class="form-group legality-group" style="display: none;">
+            <label>Legal Status</label>
+            <select name="legality">
+                <option value="legal">Legal</option>
+                <option value="restricted">Restricted</option>
+                <option value="military">Military Only</option>
+                <option value="illegal">Illegal</option>
+            </select>
+        </div>
+       
+        <div class="form-group">
+            <label>Special Notes</label>
+            <textarea name="special"></textarea>
+        </div>
+       
+        <div class="form-group">
+            <label>Description</label>
+            <textarea name="description"></textarea>
+        </div>
     </div>
 </form>
 
@@ -139,5 +140,22 @@
 
 .checkbox input[type="checkbox"] {
     margin: 0;
+}
+
+/* Add styles for the predefined section */
+.predefined-section {
+    background: rgba(120, 46, 34, 0.05);
+    padding: 8px;
+    border-radius: 3px;
+    margin-bottom: 10px;
+}
+
+.equipment-source {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.weapon-list {
+    width: 100%;
 }
 </style>

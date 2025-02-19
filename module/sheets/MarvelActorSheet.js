@@ -196,10 +196,18 @@ export class MarvelActorSheet extends ActorSheet {
         event.preventDefault();
         console.log("Starting _onAddEquipment method");
     
-        // Prepare dialog data with FASERIP weapon configurations
+        // Get the weapon system
+        if (!game.marvel?.WeaponSystem) {
+            console.error("Weapon system not initialized");
+            ui.notifications.error("Weapon system not available");
+            return;
+        }
+    
+        const weaponSystem = game.marvel.WeaponSystem;
+    
+        // Prepare dialog data
         const dialogData = {
             types: {
-                // Weapon Types from FASERIP
                 "S": "Shooting",
                 "F": "Force",
                 "E": "Energy",
@@ -208,9 +216,7 @@ export class MarvelActorSheet extends ActorSheet {
                 "BA": "Blunt Attack",
                 "BT": "Blunt Thrown"
             },
-            // Add FASERIP ranks for equipment properties
             ranks: CONFIG.marvel.ranks,
-            // Add material strengths
             materials: {
                 "Poor": "Poor",
                 "Typical": "Typical",
@@ -218,24 +224,21 @@ export class MarvelActorSheet extends ActorSheet {
                 "Excellent": "Excellent",
                 "Remarkable": "Remarkable"
             },
-            // Add ammunition types
             ammoTypes: {
                 "standard": "Standard",
                 "mercy": "Mercy Shot",
                 "ap": "Armor Piercing",
                 "rubber": "Rubber Shot",
                 "explosive": "Explosive Shot"
-            }
+            },
+            weapons: weaponSystem.weapons
         };
         
         console.log("Dialog data prepared:", dialogData);
     
         try {
             const template = "systems/marvel-faserip/templates/dialogs/add-equipment.html";
-            console.log("Template path:", template);
-            
             const html = await renderTemplate(template, dialogData);
-            console.log("Template rendered:", html);
     
             return new Dialog({
                 title: "Add Equipment",
@@ -245,58 +248,68 @@ export class MarvelActorSheet extends ActorSheet {
                         label: "Create",
                         callback: async (html) => {
                             try {
-                                console.log("Create button clicked");
-                                console.log("HTML object received:", html);
-                                
                                 const form = html.find('form');
-                                console.log("Form found:", form);
-                                
-                                // Log form values
-                                const formFields = [
-                                    "equipmentName", "type", "range", "damage", "rate",
-                                    "shots", "material", "price", "special", "description",
-                                    "ammoType", "powerPack"
-                                ];
-                                
-                                console.log("Form field values:");
-                                formFields.forEach(field => {
-                                    console.log(`${field}:`, form.find(`[name="${field}"]`).val());
-                                });
+                                const equipmentSource = form.find('[name="equipmentSource"]').val();
+                                let equipmentData;
     
-                                // Build equipment data
-                                const equipmentData = {
-                                    name: form.find('[name="equipmentName"]').val(),
-                                    type: "equipment",  // Always "equipment"
-                                    img: "icons/svg/item-bag.svg",
-                                    system: {
-                                        subtype: "weapon",  // Indicates this is a weapon
-                                        type: form.find('[name="type"]').val(),  // Specific weapon type (S, F, E, etc)
-                                        range: form.find('[name="range"]').val(),
-                                        damage: parseInt(form.find('[name="damage"]').val()) || 0,
-                                        rate: parseInt(form.find('[name="rate"]').val()) || 1,
-                                        shots: parseInt(form.find('[name="shots"]').val()) || 0,
-                                        maxShots: parseInt(form.find('[name="shots"]').val()) || 0,
-                                        material: form.find('[name="material"]').val(),
-                                        price: form.find('[name="price"]').val(),
-                                        special: form.find('[name="special"]').val(),
-                                        description: form.find('[name="description"]').val(),
-                                        powerPack: form.find('[name="powerPack"]').prop("checked") || false
+                                if (equipmentSource === "predefined") {
+                                    // Get predefined weapon data
+                                    const weaponKey = form.find('[name="predefinedWeapon"]').val();
+                                    const weapon = weaponSystem.weapons[weaponKey];
+                                    
+                                    equipmentData = {
+                                        name: weapon.name,
+                                        type: "equipment",
+                                        img: "systems/marvel-faserip/assets/icons/weapons/generic-weapon.svg", // Updated image path
+                                        system: {
+                                            subtype: "weapon",
+                                            type: weapon.type,
+                                            range: weapon.range,
+                                            damage: weapon.damage,
+                                            rate: weapon.rate,
+                                            shots: weapon.shots,
+                                            maxShots: weapon.shots,
+                                            material: weapon.material,
+                                            price: weapon.price,
+                                            special: weapon.notes?.join(", ") || "",
+                                            description: "",
+                                            powerPack: weapon.notes?.includes("Power pack") || false
+                                        }
+                                    };
+    
+                                    if (equipmentData.system.powerPack) {
+                                        equipmentData.system.powerPackCharge = 10;
+                                        equipmentData.system.powerPackMaxCharge = 10;
                                     }
-                                };
-
-                                // Add power pack charges if enabled
-                                if (form.find('[name="powerPack"]').prop("checked")) {
-                                    equipmentData.system.powerPackCharge = 10;
-                                    equipmentData.system.powerPackMaxCharge = 10;
-                                }
-
-                                // Set appropriate icon based on subtype
-                                if (equipmentData.system.subtype === "weapon") {
-                                    equipmentData.img = "/api/placeholder/24/24";  // Use placeholder API instead of trying to load icons
-                                }
-                                console.log("Equipment data prepared:", equipmentData);
+                                } else {
+                                    // Original custom equipment creation
+                                    equipmentData = {
+                                        name: form.find('[name="equipmentName"]').val(),
+                                        type: "equipment",
+                                        img: "systems/marvel-faserip/assets/icons/weapons/generic-weapon.svg", // Updated image path
+                                        system: {
+                                            subtype: "weapon",
+                                            type: form.find('[name="type"]').val(),
+                                            range: form.find('[name="range"]').val(),
+                                            damage: parseInt(form.find('[name="damage"]').val()) || 0,
+                                            rate: parseInt(form.find('[name="rate"]').val()) || 1,
+                                            shots: parseInt(form.find('[name="shots"]').val()) || 0,
+                                            maxShots: parseInt(form.find('[name="shots"]').val()) || 0,
+                                            material: form.find('[name="material"]').val(),
+                                            price: form.find('[name="price"]').val(),
+                                            special: form.find('[name="special"]').val(),
+                                            description: form.find('[name="description"]').val(),
+                                            powerPack: form.find('[name="powerPack"]').prop("checked") || false
+                                        }
+                                    };
     
-                                console.log("Actor before creation:", this.actor);
+                                    if (equipmentData.system.powerPack) {
+                                        equipmentData.system.powerPackCharge = 10;
+                                        equipmentData.system.powerPackMaxCharge = 10;
+                                    }
+                                }
+    
+                                console.log("Equipment data prepared:", equipmentData);
                                 const created = await this.actor.createEmbeddedDocuments("Item", [equipmentData]);
                                 console.log("Equipment created:", created);
                                 
@@ -318,19 +331,22 @@ export class MarvelActorSheet extends ActorSheet {
                 render: (html) => {
                     console.log("Dialog rendered with HTML:", html);
                     
-                    // Add dynamic form updates
+                    // Handle equipment source changes
+                    html.find('[name="equipmentSource"]').on('change', (event) => {
+                        const source = event.currentTarget.value;
+                        html.find('.predefined-section').toggle(source === "predefined");
+                        html.find('.custom-section').toggle(source === "custom");
+                    });
+    
+                    // Original weapon type change handler
                     html.find('[name="type"]').on('change', (event) => {
                         const weaponType = event.currentTarget.value;
                         const isRanged = ["S", "F", "E", "ET", "BT"].includes(weaponType);
                         const isPowered = ["E", "F"].includes(weaponType);
                         
-                        // Show/hide range field
                         html.find('.range-group').toggle(isRanged);
-                        
-                        // Show/hide power pack option
                         html.find('.power-pack-group').toggle(isPowered);
                         
-                        // Update shots field based on weapon type
                         const shotsField = html.find('[name="shots"]');
                         if (weaponType === "S") shotsField.val(6);
                         else if (weaponType === "E" || weaponType === "F") shotsField.val(10);

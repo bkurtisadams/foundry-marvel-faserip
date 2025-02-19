@@ -1,22 +1,43 @@
 console.log("Marvel FASERIP System: marvel-faserip.js has been loaded into Foundry VTT");
+
 // Import required classes and configurations
 import { MARVEL_RANKS, UNIVERSAL_TABLE_RANGES, ACTION_RESULTS, COMBAT_TYPES, COMBAT_EFFECTS } from "./config.js";
 import { MarvelActor } from "./documents/MarvelActor.js";
 import { MarvelActorSheet } from "./sheets/MarvelActorSheet.js";
 import { MarvelAttackItem } from "./documents/items/MarvelAttackItem.js";
 import { MarvelAttackItemSheet } from "./sheets/items/MarvelAttackItemSheet.js";
-/* import { WeaponItem } from "./module/items/weapon-item.js";
-Items.registerSheet("marvel-faserip", WeaponItem, {
-    types: ["weapon"],
-    makeDefault: true
-});
- */
-
 import { MarvelFaseripItem } from "./item/item.js";
+import WeaponSystem from "./weapons/weapon-system.js";
 
 Hooks.once('init', async function() {
     console.log('marvel-faserip | Initializing Marvel FASERIP System');
+    
+    // Initialize the game.marvel namespace
+    game.marvel = {
+        WeaponSystem: new WeaponSystem()
+    };
+    
+    // Make weapon system available globally for debugging
+    globalThis.marvelWeapons = game.marvel.WeaponSystem;
+    
+    // Configure document classes
     CONFIG.Item.documentClass = MarvelFaseripItem;
+    
+    // Register sheets
+    Actors.unregisterSheet("core", ActorSheet);
+    Items.unregisterSheet("core", ItemSheet);
+    
+    Items.registerSheet("marvel-faserip", MarvelAttackItemSheet, { 
+        types: ["attack"],
+        makeDefault: true,
+        label: "MARVEL.SheetAttack"
+    });
+
+    Actors.registerSheet("marvel-faserip", MarvelActorSheet, { 
+        makeDefault: true,
+        label: "MARVEL.SheetCharacter"
+    });
+    
     // ... rest of your initialization
 });
 

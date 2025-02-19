@@ -14,7 +14,10 @@
       "url": ""
     }
   ],
-  "esmodules": ["module/marvel-faserip.js"],
+  "esmodules": [
+    "module/marvel-faserip.js",
+    "module/weapons/weaon-system.js"
+  ],
   "styles": [
     "css/marvel-faserip.css",
     "css/weapon-sheet.css"
