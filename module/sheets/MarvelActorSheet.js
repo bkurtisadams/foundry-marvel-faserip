@@ -216,7 +216,10 @@ export class MarvelActorSheet extends ActorSheet {
                 "BA": "Blunt Attack",
                 "BT": "Blunt Thrown"
             },
-            ranks: CONFIG.marvel.ranks,
+            ranks: Object.entries(CONFIG.marvel.ranks).reduce((obj, [key, value]) => {
+                obj[key] = game.i18n.localize(`MARVEL.Rank${key.replace(/\s+/g, '')}`);
+                return obj;
+            }, {}),
             materials: {
                 "Poor": "Poor",
                 "Typical": "Typical",

@@ -26,15 +26,17 @@
             <input type="text" name="equipmentName" required/>
         </div>
        
+        <!-- For the Type select -->
         <div class="form-group">
             <label>Type</label>
             <select name="type" required>
-                {{#each types as |label key|}}
-                <option value="{{key}}">{{label}}</option>
+                {{#each types}}
+                <option value="{{@key}}">{{this}}</option>
                 {{/each}}
             </select>
         </div>
-       
+
+        <!-- For Range select -->       
         <div class="form-group range-group">
             <label>Range</label>
             <select name="range">
@@ -90,6 +92,7 @@
             </label>
         </div>
        
+        <!-- For Material Strength select -->
         <div class="form-group">
             <label>Material Strength</label>
             <select name="material">
@@ -109,6 +112,7 @@
             </select>
         </div>
        
+        <!-- For Price select -->
         <div class="form-group">
             <label>Price (Resource Rank)</label>
             <select name="price">
