@@ -803,7 +803,7 @@
 /* Table Header */
 .karma-history .karma-entries-header {
   display: grid;
-  grid-template-columns: 180px 100px 1fr 80px;
+  grid-template-columns: 180px 80px 1fr 60px;  /* Adjusted column widths */
   gap: 5px;
   padding: 5px;
 }
@@ -811,7 +811,7 @@
 /* Entry Row */
 .karma-history .karma-entry {
   display: grid;
-  grid-template-columns: 180px 100px 1fr 80px;
+  grid-template-columns: 180px 80px 1fr 60px;  /* Match header columns */
   gap: 5px;
   padding: 5px;
   align-items: center;
@@ -822,9 +822,10 @@
 }
 
 /* Amount Styling */
-.karma-history .amount {
-  text-align: right;
-  font-weight: bold;
+.karma-history .amount,
+.karma-history .header-amount {
+    text-align: left;  /* Right-align amounts */
+    padding-right: 5px;  /* Add some padding */
 }
 
 .karma-history .amount.negative {
