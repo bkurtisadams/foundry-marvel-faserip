@@ -441,49 +441,32 @@
 
         <div class="equipment-container">
             {{#each equipment as |item|}}
-            <div class="equipment-row item" data-item-id="{{item._id}}" data-type="{{item.system.subtype}}">
-                <!-- Icon column -->
-                <div class="item-img">
-                    <img src="{{item.img}}" width="24" height="24" alt="{{item.name}}"/>
-                </div>
-                
-                <!-- Name and type column -->
-                <div class="item-info">
-                    <span class="item-name">{{item.name}}</span>
-                    <span class="item-type">{{item.system.type}}</span>
-                </div>
-                
-                <!-- Details column -->
+            <div class="equipment-row item" data-item-id="{{item._id}}" draggable="true">
+                <img src="{{item.img}}" width="24" height="24"/>
+                <div class="equipment-name item-name">{{item.name}}</div>
                 <div class="item-details">
                     {{#if (eq item.system.subtype "weapon")}}
                         {{#if item.system.type}}<span class="detail-tag">{{item.system.type}}</span>{{/if}}
                         {{#if item.system.damage}}<span class="detail-tag">Damage: {{item.system.damage}}</span>{{/if}}
                         {{#if item.system.range}}<span class="detail-tag">Range: {{item.system.range}}</span>{{/if}}
                         {{#if item.system.shots}}<span class="detail-tag">Shots: {{item.system.shots}}/{{item.system.maxShots}}</span>{{/if}}
-                    {{else if (eq item.system.subtype "armor")}}
-                        {{#if item.system.protection}}<span class="detail-tag">Protection: {{item.system.protection}}</span>{{/if}}
-                        {{#if item.system.material}}<span class="detail-tag">Material: {{item.system.material}}</span>{{/if}}
-                    {{else}}
-                        {{#if item.system.type}}<span class="detail-tag">{{item.system.type}}</span>{{/if}}
                     {{/if}}
                 </div>
-                
-                <!-- Controls column -->
                 <div class="item-controls">
-                    <a class="item-control item-edit" title="Edit Item" data-item-id="{{item._id}}">
+                    <a class="item-control item-edit" title="Edit Item">
                         <i class="fas fa-edit"></i>
                     </a>
                     {{#if (eq item.system.subtype "weapon")}}
-                    <button type="button" class="roll-equipment" title="Use Weapon" data-item-id="{{item._id}}">
+                    <button type="button" class="roll-equipment" title="Use Weapon">
                         <i class="fas fa-dice-d20"></i>
                     </button>
                     {{#if (eq item.system.shots 0)}}
-                    <button type="button" class="reload-weapon" title="Reload Weapon" data-item-id="{{item._id}}">
+                    <button type="button" class="reload-weapon" title="Reload Weapon">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                     {{/if}}
                     {{/if}}
-                    <a class="item-control item-delete" title="Delete Item" data-item-id="{{item._id}}">
+                    <a class="item-control item-delete" title="Delete Item">
                         <i class="fas fa-trash"></i>
                     </a>
                 </div>

@@ -292,9 +292,8 @@ export class MarvelActorSheet extends ActorSheet {
 
                                 // Set appropriate icon based on subtype
                                 if (equipmentData.system.subtype === "weapon") {
-                                    equipmentData.img = "systems/marvel-faserip/assets/icons/weapon.webp";
+                                    equipmentData.img = "/api/placeholder/24/24";  // Use placeholder API instead of trying to load icons
                                 }
-    
                                 console.log("Equipment data prepared:", equipmentData);
     
                                 console.log("Actor before creation:", this.actor);
