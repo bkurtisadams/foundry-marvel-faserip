@@ -16,7 +16,7 @@
   ],
   "esmodules": [
     "module/marvel-faserip.js",
-    "module/weapons/weaon-system.js"
+    "module/weapons/weapon-system.js"
   ],
   "styles": [
     "css/marvel-faserip.css",
