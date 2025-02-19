@@ -231,6 +231,19 @@ export class MarvelActorSheet extends ActorSheet {
                 "rubber": "Rubber Shot",
                 "explosive": "Explosive Shot"
             },
+            weightClasses: {
+                "light": "Light",
+                "medium": "Medium", 
+                "heavy": "Heavy",
+                "superheavy": "Super Heavy"
+            },
+            magazinePresets: {
+                "S": 6,  // Standard firearms
+                "F": 10, // Force weapons
+                "E": 10, // Energy weapons
+                "ET": 1, // Thrown edged
+                "BT": 1  // Thrown blunt
+            },
             weapons: weaponSystem.weapons
         };
         
@@ -294,9 +307,12 @@ export class MarvelActorSheet extends ActorSheet {
                                             damage: parseInt(form.find('[name="damage"]').val()) || 0,
                                             rate: parseInt(form.find('[name="rate"]').val()) || 1,
                                             shots: parseInt(form.find('[name="shots"]').val()) || 0,
-                                            maxShots: parseInt(form.find('[name="shots"]').val()) || 0,
+                                            maxShots: parseInt(form.find('[name="magazineSize"]').val()) || 0,
                                             material: form.find('[name="material"]').val(),
                                             price: form.find('[name="price"]').val(),
+                                            weight: form.find('[name="weight"]').val(),
+                                            legality: form.find('[name="legality"]').val(),
+                                            ammoType: form.find('[name="ammoType"]').val(),
                                             special: form.find('[name="special"]').val(),
                                             description: form.find('[name="description"]').val(),
                                             powerPack: form.find('[name="powerPack"]').prop("checked") || false
@@ -337,16 +353,36 @@ export class MarvelActorSheet extends ActorSheet {
                         html.find('.predefined-section').toggle(source === "predefined");
                         html.find('.custom-section').toggle(source === "custom");
                     });
-    
-                    // Original weapon type change handler
+                
+                    // Add magazine preset handler
+                    html.find('.magazine-presets').on('click', (event) => {
+                        const weaponType = html.find('[name="type"]').val();
+                        const presetSize = dialogData.magazinePresets[weaponType] || 6;
+                        html.find('[name="magazineSize"]').val(presetSize);
+                        
+                        // Also update shots field
+                        html.find('[name="shots"]').val(presetSize);
+                    });
+                
+                    // Enhanced weapon type change handler
                     html.find('[name="type"]').on('change', (event) => {
                         const weaponType = event.currentTarget.value;
                         const isRanged = ["S", "F", "E", "ET", "BT"].includes(weaponType);
                         const isPowered = ["E", "F"].includes(weaponType);
+                        const usesAmmo = weaponType === "S";
                         
                         html.find('.range-group').toggle(isRanged);
                         html.find('.power-pack-group').toggle(isPowered);
+                        html.find('.ammo-group').toggle(usesAmmo);
+                        html.find('.ammo-capacity-group').toggle(isRanged);
+                        html.find('.legality-group').toggle(true); // Always show legality
                         
+                        // Update magazine size based on weapon type
+                        const magazineSize = dialogData.magazinePresets[weaponType] || 6;
+                        html.find('[name="magazineSize"]').val(magazineSize);
+                        html.find('[name="shots"]').val(magazineSize);
+                
+                        // Original shots field logic
                         const shotsField = html.find('[name="shots"]');
                         if (weaponType === "S") shotsField.val(6);
                         else if (weaponType === "E" || weaponType === "F") shotsField.val(10);
