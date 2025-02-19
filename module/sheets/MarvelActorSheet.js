@@ -1114,9 +1114,12 @@ export class MarvelActorSheet extends ActorSheet {
     async _onAddKarmaEntry(event) {
         event.preventDefault();
         
+        // First close existing karma history dialog
+        $('.karma-history').remove();
+        
         const addEntryContent = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
-            { entry: { amount: '', description: '' } }  // Add default values
+            { entry: { amount: '', description: '' } }
         );
         
         new Dialog({
@@ -1126,6 +1129,7 @@ export class MarvelActorSheet extends ActorSheet {
                 add: {
                     label: "Add Entry",
                     callback: async (html) => {
+                        // Get form data
                         const form = html.find('form')[0];
                         const amount = Number(form.amount.value);
                         const description = form.description.value;
@@ -1135,27 +1139,25 @@ export class MarvelActorSheet extends ActorSheet {
                             return;
                         }
                         
-                        // Create new entry
+                        // Create and save new entry
                         const newEntry = {
                             date: new Date().toLocaleString(),
                             amount: amount,
                             description: description
                         };
                         
-                        // Get current history
                         const currentHistory = this.actor.system.karmaTracking.history || [];
-                        
-                        // Update actor
                         await this.actor.update({
                             "system.karmaTracking.history": [...currentHistory, newEntry]
                         });
                         
-                        // Refresh the karma history window
-                        this._onKarmaHistoryClick(event);
+                        // Reopen karma history with new data
+                        this._onKarmaHistoryClick(new Event('click'));
                     }
                 },
                 cancel: {
-                    label: "Cancel"
+                    label: "Cancel",
+                    callback: () => this._onKarmaHistoryClick(new Event('click'))
                 }
             },
             default: "add"
@@ -1163,6 +1165,15 @@ export class MarvelActorSheet extends ActorSheet {
     }
     
     async _onDeleteKarmaEntry(event, index) {
+        // Currently keeps karma history open during confirmation
+        // Should:
+        // 1. Close karma history
+        // 2. Show confirmation
+        // 3. After delete, reopen karma history
+        
+        // Suggested fix:
+        $('.karma-history').remove();
+        
         const confirmDelete = await Dialog.confirm({
             title: "Delete Karma Entry",
             content: "Are you sure you want to delete this karma entry?",
@@ -1175,11 +1186,23 @@ export class MarvelActorSheet extends ActorSheet {
             const history = duplicate(this.actor.system.karmaTracking.history);
             history.splice(index, 1);
             await this.actor.update({"system.karmaTracking.history": history});
-            this._onKarmaHistoryClick(event);
         }
+        
+        // Always reopen karma history
+        this._onKarmaHistoryClick(new Event('click'));
     }
     
     async _onEditKarmaEntry(event, entry) {
+        // Currently keeps karma history open while editing
+        // Should follow same pattern as add:
+        // 1. Close karma history
+        // 2. Show edit dialog
+        // 3. After edit, reopen karma history
+        
+        // Suggested fix:
+        event.preventDefault();
+        $('.karma-history').remove();
+        
         const editContent = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
             { entry }
@@ -1192,11 +1215,16 @@ export class MarvelActorSheet extends ActorSheet {
                 save: {
                     label: "Save",
                     callback: async (html) => {
-                        // ... similar to add entry logic but updates existing entry
+                        // Update entry logic here
+                        // ...
+                        
+                        // Reopen karma history
+                        this._onKarmaHistoryClick(new Event('click'));
                     }
                 },
                 cancel: {
-                    label: "Cancel"
+                    label: "Cancel",
+                    callback: () => this._onKarmaHistoryClick(new Event('click'))
                 }
             }
         }).render(true);
