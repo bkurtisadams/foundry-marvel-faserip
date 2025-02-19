@@ -5,6 +5,20 @@ import { MarvelActor } from "./documents/MarvelActor.js";
 import { MarvelActorSheet } from "./sheets/MarvelActorSheet.js";
 import { MarvelAttackItem } from "./documents/items/MarvelAttackItem.js";
 import { MarvelAttackItemSheet } from "./sheets/items/MarvelAttackItemSheet.js";
+/* import { WeaponItem } from "./module/items/weapon-item.js";
+Items.registerSheet("marvel-faserip", WeaponItem, {
+    types: ["weapon"],
+    makeDefault: true
+});
+ */
+
+import { MarvelFaseripItem } from "./item/item.js";
+
+Hooks.once('init', async function() {
+    console.log('marvel-faserip | Initializing Marvel FASERIP System');
+    CONFIG.Item.documentClass = MarvelFaseripItem;
+    // ... rest of your initialization
+});
 
 // Define Combat Phases
 const COMBAT_PHASES = {

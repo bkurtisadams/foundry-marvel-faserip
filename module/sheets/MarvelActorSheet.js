@@ -12,6 +12,12 @@ export class MarvelActorSheet extends ActorSheet {
         });
     }
 
+    static equipmentTypes = {
+        "weapon": "Weapons",
+        "armor": "Armor", 
+        "gear": "Gear"
+    };
+
     async getData(options = {}) {
         const context = await super.getData(options);
         console.log("Sheet data context:", context.actor.system.primaryAbilities);
@@ -20,6 +26,13 @@ export class MarvelActorSheet extends ActorSheet {
         const system = context.actor.system || {};
 
         console.log("Current actor items:", this.actor.items);
+
+        // equipment organization here
+        context.equipmentTypes = MarvelActorSheet.equipmentTypes;
+        context.equipmentByType = {};
+        for (let type in MarvelActorSheet.equipmentTypes) {
+            context.equipmentByType[type] = context.items.filter(i => i.type === type);
+        }
         
         // Initialize primary abilities if not set
         if (!system.primaryAbilities) {
@@ -53,6 +66,26 @@ export class MarvelActorSheet extends ActorSheet {
             };
         }
 
+        // Get equipment items
+        context.equipment = context.items.filter(item => 
+            ["weapon", "armor", "gear"].includes(item.type)
+        );
+        
+        // Get weapons specifically for weapon-related features
+        context.weapons = context.items.filter(item => item.type === "weapon");
+        
+        // Add equipment configuration
+        context.equipmentConfig = {
+            types: {
+                weapon: "Weapon",
+                armor: "Armor",
+                gear: "Gear"
+            },
+            weaponTypes: CONFIG.marvel.weaponTypes,
+            armorTypes: CONFIG.marvel.armorTypes,
+            materialTypes: CONFIG.marvel.materialTypes
+        };
+    
         // Calculate Lifetime Total
         /* if (context.actor.system.karmaTracking) {
             context.actor.system.karmaTracking.lifetimeTotal = 
@@ -162,12 +195,11 @@ export class MarvelActorSheet extends ActorSheet {
     async _onAddEquipment(event) {
         event.preventDefault();
         console.log("Starting _onAddEquipment method");
-        
-        const template = "systems/marvel-faserip/templates/dialogs/add-equipment.html";
-        console.log("Template path:", template);
-        
+    
+        // Prepare dialog data with FASERIP weapon configurations
         const dialogData = {
             types: {
+                // Weapon Types from FASERIP
                 "S": "Shooting",
                 "F": "Force",
                 "E": "Energy",
@@ -175,11 +207,33 @@ export class MarvelActorSheet extends ActorSheet {
                 "ET": "Edged Thrown",
                 "BA": "Blunt Attack",
                 "BT": "Blunt Thrown"
+            },
+            // Add FASERIP ranks for equipment properties
+            ranks: CONFIG.marvel.ranks,
+            // Add material strengths
+            materials: {
+                "Poor": "Poor",
+                "Typical": "Typical",
+                "Good": "Good",
+                "Excellent": "Excellent",
+                "Remarkable": "Remarkable"
+            },
+            // Add ammunition types
+            ammoTypes: {
+                "standard": "Standard",
+                "mercy": "Mercy Shot",
+                "ap": "Armor Piercing",
+                "rubber": "Rubber Shot",
+                "explosive": "Explosive Shot"
             }
         };
+        
         console.log("Dialog data prepared:", dialogData);
     
         try {
+            const template = "systems/marvel-faserip/templates/dialogs/add-equipment.html";
+            console.log("Template path:", template);
+            
             const html = await renderTemplate(template, dialogData);
             console.log("Template rendered:", html);
     
@@ -194,39 +248,52 @@ export class MarvelActorSheet extends ActorSheet {
                                 console.log("Create button clicked");
                                 console.log("HTML object received:", html);
                                 
-                                // Using jQuery form selector
                                 const form = html.find('form');
                                 console.log("Form found:", form);
                                 
-                                // Log each form field value
+                                // Log form values
+                                const formFields = [
+                                    "equipmentName", "type", "range", "damage", "rate",
+                                    "shots", "material", "price", "special", "description",
+                                    "ammoType", "powerPack"
+                                ];
+                                
                                 console.log("Form field values:");
-                                console.log("equipmentName:", form.find('[name="equipmentName"]').val());
-                                console.log("type:", form.find('[name="type"]').val());
-                                console.log("range:", form.find('[name="range"]').val());
-                                console.log("damage:", form.find('[name="damage"]').val());
-                                console.log("rate:", form.find('[name="rate"]').val());
-                                console.log("shots:", form.find('[name="shots"]').val());
-                                console.log("material:", form.find('[name="material"]').val());
-                                console.log("price:", form.find('[name="price"]').val());
-                                console.log("special:", form.find('[name="special"]').val());
-                                console.log("description:", form.find('[name="description"]').val());
+                                formFields.forEach(field => {
+                                    console.log(`${field}:`, form.find(`[name="${field}"]`).val());
+                                });
     
+                                // Build equipment data
                                 const equipmentData = {
                                     name: form.find('[name="equipmentName"]').val(),
-                                    type: "equipment",
+                                    type: "equipment",  // Always "equipment"
                                     img: "icons/svg/item-bag.svg",
                                     system: {
-                                        type: form.find('[name="type"]').val(),
+                                        subtype: "weapon",  // Indicates this is a weapon
+                                        type: form.find('[name="type"]').val(),  // Specific weapon type (S, F, E, etc)
                                         range: form.find('[name="range"]').val(),
                                         damage: parseInt(form.find('[name="damage"]').val()) || 0,
                                         rate: parseInt(form.find('[name="rate"]').val()) || 1,
                                         shots: parseInt(form.find('[name="shots"]').val()) || 0,
+                                        maxShots: parseInt(form.find('[name="shots"]').val()) || 0,
                                         material: form.find('[name="material"]').val(),
                                         price: form.find('[name="price"]').val(),
                                         special: form.find('[name="special"]').val(),
-                                        description: form.find('[name="description"]').val()
+                                        description: form.find('[name="description"]').val(),
+                                        powerPack: form.find('[name="powerPack"]').prop("checked") || false
                                     }
                                 };
+
+                                // Add power pack charges if enabled
+                                if (form.find('[name="powerPack"]').prop("checked")) {
+                                    equipmentData.system.powerPackCharge = 10;
+                                    equipmentData.system.powerPackMaxCharge = 10;
+                                }
+
+                                // Set appropriate icon based on subtype
+                                if (equipmentData.system.subtype === "weapon") {
+                                    equipmentData.img = "systems/marvel-faserip/assets/icons/weapon.webp";
+                                }
     
                                 console.log("Equipment data prepared:", equipmentData);
     
@@ -249,8 +316,29 @@ export class MarvelActorSheet extends ActorSheet {
                 },
                 default: "create",
                 width: 400,
-                render: (html) => console.log("Dialog rendered with HTML:", html)
+                render: (html) => {
+                    console.log("Dialog rendered with HTML:", html);
+                    
+                    // Add dynamic form updates
+                    html.find('[name="type"]').on('change', (event) => {
+                        const weaponType = event.currentTarget.value;
+                        const isRanged = ["S", "F", "E", "ET", "BT"].includes(weaponType);
+                        const isPowered = ["E", "F"].includes(weaponType);
+                        
+                        // Show/hide range field
+                        html.find('.range-group').toggle(isRanged);
+                        
+                        // Show/hide power pack option
+                        html.find('.power-pack-group').toggle(isPowered);
+                        
+                        // Update shots field based on weapon type
+                        const shotsField = html.find('[name="shots"]');
+                        if (weaponType === "S") shotsField.val(6);
+                        else if (weaponType === "E" || weaponType === "F") shotsField.val(10);
+                    });
+                }
             }).render(true);
+            
         } catch (error) {
             console.error("Error rendering dialog:", error);
             console.error("Error stack:", error.stack);
@@ -426,6 +514,36 @@ export class MarvelActorSheet extends ActorSheet {
         }).render(true);
     }
 
+    async _onDeleteEquipment(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
+        
+        const confirmDelete = await Dialog.confirm({
+            title: "Delete Equipment",
+            content: "<p>Are you sure you want to delete this equipment?</p>",
+            yes: () => true,
+            no: () => false,
+            defaultYes: false
+        });
+    
+        if (confirmDelete) {
+            await this.actor.deleteEmbeddedDocuments("Item", [itemId]);
+        }
+    }
+    
+    async _onReloadWeapon(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
+        const item = this.actor.items.get(itemId);
+        
+        if (!item) {
+            ui.notifications.error("Weapon not found");
+            return;
+        }
+        
+        await item.reload();
+    }
+
     activateListeners(html) {
         super.activateListeners(html);
     
@@ -441,7 +559,7 @@ export class MarvelActorSheet extends ActorSheet {
                 li.addEventListener("dragstart", handler, false);
             });
     
-            // Test each method exists before binding
+            // Testing bindings remain the same
             const bindings = [
                 { selector: '.add-power', method: this._onAddPower },
                 { selector: '.add-talent', method: this._onAddTalent },
@@ -455,92 +573,79 @@ export class MarvelActorSheet extends ActorSheet {
                 { selector: '.power-edit', method: this._onPowerEdit },
                 { selector: '.roll-power', method: this._onPowerRoll },
                 { selector: '.power-info-icon', method: this._onPowerInfo },
-                // Remove karma history button binding
-                // { selector: '.karma-history-button', method: this._onKarmaTracking },
                 { selector: '.add-power-stunt', method: this._onCreatePowerStunt },
                 { selector: '.roll-power-stunt', method: this._onRollPowerStunt }
             ];
     
-            // Add power button binding
-            html.find('.add-power').click(async (ev) => this._onAddPower(ev));
-    
+            // Power related listeners - keep only one set
+            html.find('.add-power').click(ev => this._onAddPower(ev));
             html.find('.power-info-icon').click(ev => this._onPowerInfo(ev));
             html.find('.power-edit').click(ev => this._onPowerEdit(ev));
             html.find('.roll-power').click(ev => this._onPowerRoll(ev));
             html.find('.item-delete[data-type="power"]').click(ev => this._onDeletePower(ev));
     
-            console.log("Power buttons found:", {
-                info: html.find('.power-info-icon').length,
-                edit: html.find('.power-edit').length,
-                roll: html.find('.roll-power').length,
-                delete: html.find('.item-delete[data-type="power"]').length
+            // Equipment related listeners - consolidated
+            html.find('.add-equipment').click(ev => this._onAddEquipment(ev));
+            html.find('.equipment-row img').click(ev => this._onEquipmentInfo(ev));
+            html.find('.roll-equipment').click(ev => this._onRollEquipment(ev));
+            html.find('.item-edit[data-type="equipment"]').click(ev => this._onEditEquipment(ev));
+            html.find('.item-delete[data-type="equipment"]').click(ev => this._onDeleteEquipment(ev));
+            html.find('.reload-weapon').click(ev => this._onReloadWeapon(ev));
+
+            // Equipment related listeners - corrected selectors
+            html.find('.item-controls .item-edit').click(ev => this._onEditEquipment(ev));
+            html.find('.item-controls .item-delete').click(ev => this._onDeleteEquipment(ev));
+            html.find('.item-controls .reload-weapon').click(ev => this._onReloadWeapon(ev));
+            
+            // Equipment filters
+            html.find('.filter-btn').click(ev => {
+                const filter = ev.currentTarget.dataset.filter;
+                html.find('.filter-btn').removeClass('active');
+                ev.currentTarget.classList.add('active');
+                
+                if (filter === 'all') {
+                    html.find('.equipment-row').show();
+                } else {
+                    html.find('.equipment-row').hide();
+                    html.find(`.equipment-row[data-type="${filter}"]`).show();
+                }
             });
     
-            // Add karma history button binding
-            html.find('.karma-history-button').click(this._onKarmaHistoryClick.bind(this));
-            // this._onDeleteKarmaEntry = this._onDeleteKarmaEntry.bind(this);
-            // this._onEditKarmaEntry = this._onEditKarmaEntry.bind(this);
-            // html.find('.clickable-karma').click(this._onKarmaHistoryClick.bind(this));
-            // html.find('.delete-entry').click(...);
-            // html.find('.edit-entry').click(...);
+            // Karma history
+            html.find('.karma-history-button').click(ev => this._onKarmaHistoryClick(ev));
     
-            // Add event listeners for ability, popularity, and resource rolls
-            html.find('.ability-label').click(async (ev) => this._onAbilityRoll(ev));
-            html.find('.clickable-popularity').on('click', this._onPopularityRoll.bind(this));
-            html.find('.clickable-resources').on('click', this._onResourceRoll.bind(this));
+            // Ability, popularity, and resource rolls
+            html.find('.ability-label').click(ev => this._onAbilityRoll(ev));
+            html.find('.clickable-popularity').click(ev => this._onPopularityRoll(ev));
+            html.find('.clickable-resources').click(ev => this._onResourceRoll(ev));
             
-            // Alternative approach using arrow functions
-            html.find('.add-talent').on('click', (ev) => this._onAddTalent(ev));
-            html.find('.add-contact').on('click', (ev) => this._onAddContact(ev));
+            // Talents and contacts
+            html.find('.add-talent').click(ev => this._onAddTalent(ev));
+            html.find('.add-contact').click(ev => this._onAddContact(ev));
     
-            // Add resistance change handlers
+            // Resistance handlers
             html.find('.resistance-number').change(this._onResistanceNumberChange.bind(this));
             html.find('.rank-select').change(this._onResistanceRankChange.bind(this));
-            
-            // Add resistance controls
-            html.find('.add-resistance').click(this._onAddResistance.bind(this));
+            html.find('.add-resistance').click(ev => this._onAddResistance(ev));
     
             // Navigation tabs
-            html.find('.nav-item').off('click').on('click', this._onTabChange.bind(this));
-
-            // Equipment handlers
-            html.find('.add-equipment').click(ev => this._onAddEquipment(ev));
-            html.find('.equipment-row img').click(this._onEquipmentInfo.bind(this));
-            html.find('.roll-equipment').click(this._onRollEquipment.bind(this));
-            html.find('.item-edit').click(this._onEditEquipment.bind(this));
-            html.find('.item-delete[data-type="equipment"]').click(ev => this._onDeleteEquipment(ev));
+            html.find('.nav-item').off('click').on('click', ev => this._onTabChange(ev));
     
-            // Add attack button
-            html.find('.add-attack').click(async (ev) => this._onAddAttack(ev));
+            // Attack handlers
+            html.find('.add-attack').click(ev => this._onAddAttack(ev));
+            html.find('.roll-attack').click(ev => this._onAttackRoll(ev));
+            html.find('.attack-row img').click(ev => this._onAttackInfo(ev));
     
-            // Attack roll buttons
-            html.find('.roll-attack').click(this._onAttackRoll.bind(this));
-            html.find('.attack-row img').click(this._onAttackInfo.bind(this));
-    
-            // Edit attack button
-            html.find('.item-edit').click(ev => {
-                ev.preventDefault();
-                const attackRow = ev.currentTarget.closest(".attack-row");
-                if (!attackRow) return;
-                const itemId = attackRow.dataset.itemId;
-                const item = this.actor.items.get(itemId);
-                if (!item) return;
-                item.sheet.render(true);
-            });
-    
-            // [Rest of existing code remains unchanged]
-    
-            // Add karma input listeners for the simplified karma system
-            // Remove/modify this section in activateListeners
-            html.find('input[name="system.karmaTracking.advancementFund"], input[name="system.karmaTracking.karmaPool"], input[name="system.karmaTracking.lifetimeTotal"]').on('change', async (event) => {
-                const target = event.currentTarget;
-                const value = parseInt(target.value) || 0;
-                const field = target.name;
-                
-                await this.actor.update({
-                    [field]: value
+            // Karma input listeners
+            html.find('input[name="system.karmaTracking.advancementFund"], input[name="system.karmaTracking.karmaPool"], input[name="system.karmaTracking.lifetimeTotal"]')
+                .on('change', async (event) => {
+                    const target = event.currentTarget;
+                    const value = parseInt(target.value) || 0;
+                    const field = target.name;
+                    await this.actor.update({
+                        [field]: value
+                    });
                 });
-            });;
         }
     }
 

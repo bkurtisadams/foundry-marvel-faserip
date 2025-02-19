@@ -15,7 +15,10 @@
     }
   ],
   "esmodules": ["module/marvel-faserip.js"],
-  "styles": ["css/marvel-faserip.css"],
+  "styles": [
+    "css/marvel-faserip.css",
+    "css/weapon-sheet.css"
+  ],
   "languages": [
     {
       "lang": "en",
@@ -31,23 +34,25 @@
   "manifest": "",
   "download": "",
   "license": "LICENSE.txt",
-  
+ 
   "documentTypes": {
-    "Item": ["attack", "power", "equipment"]
+    "Item": ["attack", "power", "equipment", "weapon"]
   },
-  
+ 
   "relationships": {
     "requires": []
   },
-  
+ 
   "socket": false,
   "initiative": "1d10",
-  
+ 
   "templatePaths": [
     "templates/actor/actor-sheet.html",
     "templates/items/attack-item.html",
     "templates/items/power-item.html",
     "templates/items/equipment-item.html",
-    "templates/dialogs/add-equipment.html"
+    "templates/items/item-sheet.html",
+    "templates/dialogs/add-equipment.html",
+    "templates/dialogs/add-weapon.html"
   ]
 }

@@ -1,14 +1,18 @@
 /* Main Sheet Structure */
 .marvel-faserip {
-    min-height: 600px;
-    min-width: 600px;
-    background: #514d44;
-  }
-  
-  .marvel-faserip .window-content {
-    padding: 3px;
-    font-size: 12px;
-  }
+  min-height: 600px;
+  min-width: 600px;
+  background: #514d44;
+  display: flex;
+  flex-direction: column;
+}
+
+.marvel-faserip .window-content {
+  padding: 3px;
+  font-size: 12px;
+  height: 100%;
+  overflow-y: auto; /* Added to enable scrolling */
+}
   
   /* Header Layout */
   .sheet-header {
@@ -432,16 +436,18 @@
   }
   
   /* Navigation Categories */
-.nav-categories {
+  .nav-categories {
     display: flex;
     gap: 2px;
     margin-bottom: 10px;
     background: #514d44;
     padding: 2px;
+    flex-wrap: wrap; /* Added to prevent overflow */
   }
   
   .nav-item {
     flex: 1;
+    min-width: 80px; /* Added to prevent squishing */
     text-align: center;
     padding: 3px 5px;
     background: #e8e6e3;
@@ -676,8 +682,8 @@
     gap: 10px;
     align-items: start;
   }
-  
-  /* Talents and Contacts Boxes */
+
+ /* Talents and Contacts Boxes */
   .talents-box,
   .contacts-box {
     background: #e8e6e3;
@@ -748,81 +754,111 @@
     margin-bottom: 0;
   }
   
-  /* Karma History and Controls */
-  /* .karma-history {
-    min-height: 400px;
-    min-width: 600px;
-  }
-  
-  .karma-history-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-  }
-  
-  .karma-history-header {
-    margin-bottom: 1rem;
-  }
-  
-  .karma-history-input {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr) auto;
-    gap: 0.5rem;
-    align-items: center;
-    padding: 0.5rem;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 4px;
-  }
-  
-  .karma-entries table,
-  .karma-history-table table {
-    width: 100%;
-    border-collapse: collapse;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    overflow: hidden;
-  }
-  
-  .karma-entries th,
-  .karma-entries td,
-  .karma-history-table th,
-  .karma-history-table td {
-    padding: 0.5rem;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .karma-history-table {
-    max-height: 300px;
-    overflow-y: auto;
-  }
-  
-  .karma-history-table th {
-    background: #f5f5f5;
-    position: sticky;
-    top: 0;
-  }
-  
-  .karma-entries .positive,
-  .karma-history-table .positive {
-    color: green;
-  }
-  
-  .karma-entries .negative,
-  .karma-history-table .negative {
-    color: red;
-  }
-  
-  .entry-controls {
-    display: flex;
-    gap: 0.5rem;
-  }
-  
-  .entry-controls a,
-  .sortable {
-    cursor: pointer;
-  } */
+  /* Karma History Dialog Styling */
+.karma-history {
+  min-width: 600px;
+}
+
+.karma-history .window-content {
+  padding: 0;
+}
+
+/* Header styling */
+.karma-history-header {
+  background: #782e22;
+  color: white;
+  padding: 5px 10px;
+  font-weight: bold;
+}
+
+/* Add Entry Button */
+.karma-history .add-karma-entry {
+  width: 100%;
+  text-align: left;
+  padding: 8px;
+  background: #e8e6e3;
+  border: 1px solid #7a7971;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+.karma-history .add-karma-entry:hover {
+  background: #d8d6d3;
+  border-color: #782e22;
+}
+
+/* Table Header */
+.karma-history .karma-entries-header {
+  display: grid;
+  grid-template-columns: 180px 100px 1fr 80px;
+  background: #514d44;
+  color: white;
+  padding: 5px;
+  font-weight: bold;
+  gap: 5px;
+}
+
+/* Entry Row */
+.karma-history .karma-entry {
+  display: grid;
+  grid-template-columns: 180px 100px 1fr 80px;
+  padding: 5px;
+  gap: 5px;
+  align-items: center;
+}
+
+.karma-history .karma-entry:nth-child(even) {
+  background: rgba(0,0,0,0.05);
+}
+
+/* Amount Styling */
+.karma-history .amount {
+  text-align: right;
+  font-weight: bold;
+}
+
+.karma-history .amount.negative {
+  color: #782e22;
+}
+
+.karma-history .amount.positive {
+  color: #2e7d32;
+}
+
+/* Action Buttons */
+.karma-history .entry-actions {
+  display: flex;
+  gap: 5px;
+  justify-content: flex-end;
+}
+
+.karma-history .entry-actions button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: #666;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.karma-history .entry-actions button:hover {
+  color: #000;
+}
+
+.karma-history .close-button {
+  width: 100%;
+  padding: 8px;
+  background: #e8e6e3;
+  border: 1px solid #7a7971;
+  margin-top: 5px;
+  cursor: pointer;
+}
+
+.karma-history .close-button:hover {
+  background: #d8d6d3;
+  border-color: #782e22;
+}
   
   .karma-history-button {
     height: 18px;               /* Matches other small buttons on the sheet */
@@ -1260,97 +1296,311 @@
     font-weight: bold;
   }
   
-  /* Equipment Styling */
-  .equipment-row {
-    display: flex;
-    align-items: center;
-    padding: 2px 5px;
-    margin-bottom: 2px;
-    background: white;
-    border: 1px solid #7a7971;
-    border-radius: 3px;
-    height: 20px;
-    min-height: 20px;
+  /* Equipment Tab Styling */
+.marvel-faserip .tab-panel[data-tab="equipment"] {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  width: 100%;
+  max-width: 100%;
+  padding: 10px;
+  gap: 10px;
+  overflow: visible;
+}
+
+/* Equipment Section Container */
+.marvel-faserip .equipment-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Equipment Header & Controls */
+.marvel-faserip .equipment-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Equipment Filter Section */
+.marvel-faserip .equipment-filters {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+
+.marvel-faserip .filter-btn,
+.marvel-faserip .add-equipment {
+  padding: 3px 8px;
+  height: 20px;
+  background: #e8e6e3;
+  border: 1px solid #7a7971;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+
+.marvel-faserip .add-equipment {
+  width: 100%;
+  text-align: left;
+  margin: 1px 0;
+}
+
+.marvel-faserip .filter-btn:hover,
+.marvel-faserip .add-equipment:hover {
+  background: #d8d6d3;
+  border-color: #782e22;
+}
+
+.marvel-faserip .filter-btn.active {
+  background: #782e22;
+  color: white;
+  border-color: #782e22;
+}
+
+/* Equipment Tab Container */
+.marvel-faserip .tab-panel[data-tab="equipment"] {
+  padding: 5px;
+  gap: 5px;
+}
+
+/* Equipment List */
+.marvel-faserip .equipment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+/* Equipment Row */
+.marvel-faserip .equipment-row {
+  display: grid;
+  grid-template-columns: 32px 2fr 3fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  background: white;
+  border: 1px solid #7a7971;
+  border-radius: 3px;
+  margin-bottom: 4px;
+}
+
+/* Item Image */
+.marvel-faserip .item-img {
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.marvel-faserip .item-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Item Info */
+.marvel-faserip .item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.marvel-faserip .item-name {
+  font-weight: bold;
+  color: #444;
+}
+
+.marvel-faserip .item-type {
+  font-size: 11px;
+  color: #666;
+}
+
+/* Item Details */
+.marvel-faserip .item-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.marvel-faserip .detail-tag {
+  font-size: 11px;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* Item Controls */
+.marvel-faserip .item-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.marvel-faserip .item-controls a,
+.marvel-faserip .item-controls button {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 3px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.marvel-faserip .item-controls .item-edit:hover {
+  color: #2196F3;
+}
+
+.marvel-faserip .item-controls .roll-equipment:hover {
+  color: #782e22;
+}
+
+.marvel-faserip .item-controls .reload-weapon:hover {
+  color: #4CAF50;
+}
+
+.marvel-faserip .item-controls .item-delete:hover {
+  color: #F44336;
+}
+
+.marvel-faserip .equipment-name {
+  font-weight: bold;
+  color: #444;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.marvel-faserip .equipment-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  color: #666;
+  font-size: 11px;
+}
+
+.marvel-faserip .equipment-details span {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* Equipment Controls */
+.marvel-faserip .equipment-controls {
+  display: flex;
+  gap: 4px;
+  padding-left: 5px;
+  flex-shrink: 0;
+}
+
+.marvel-faserip .equipment-controls button,
+.marvel-faserip .equipment-controls a {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+}
+
+.marvel-faserip .equipment-controls .roll-equipment {
+  color: #782e22;
+}
+
+.marvel-faserip .equipment-controls .reload-weapon {
+  color: #2196F3;
+}
+
+.marvel-faserip .equipment-controls button:hover,
+.marvel-faserip .equipment-controls a:hover {
+  color: #000;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Equipment Form Styling */
+.marvel-faserip .add-equipment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+}
+
+.marvel-faserip .add-equipment-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.marvel-faserip .add-equipment-form label {
+  font-weight: bold;
+  color: #782e22;
+}
+
+.marvel-faserip .add-equipment-form input[type="text"],
+.marvel-faserip .add-equipment-form input[type="number"],
+.marvel-faserip .add-equipment-form select,
+.marvel-faserip .add-equipment-form textarea {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #7a7971;
+  border-radius: 3px;
+  background: white;
+}
+
+.marvel-faserip .add-equipment-form textarea {
+  height: 60px;
+  resize: vertical;
+}
+
+.marvel-faserip .add-equipment-form input[type="number"] {
+  width: 80px;
+}
+
+/* Equipment Type Buttons */
+.marvel-faserip .equipment-type-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.marvel-faserip .equipment-type-button {
+  text-align: left;
+  padding: 5px;
+  background: #e8e6e3;
+  border: 1px solid #7a7971;
+  border-radius: 3px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .marvel-faserip .equipment-row {
+    grid-template-columns: 24px 1fr 80px;
   }
   
-  .equipment-row img {
-    margin-right: 5px;
-    width: 16px;
-    height: 16px;
+  .marvel-faserip .equipment-details {
+    grid-column: 1 / -1;
   }
-  
-  .equipment-name {
-    flex: 1;
-    font-size: 11px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  .equipment-details {
-    display: flex;
-    gap: 5px;
-    margin: 0 5px;
-    color: #666;
-    font-size: 10px;
-  }
-  
-  .equipment-details span {
-    white-space: nowrap;
-  }
-  
-  .equipment-controls {
-    display: flex;
-    gap: 2px;
-  }
-  
-  .equipment-controls a,
-  .equipment-controls button {
-    width: 16px;
-    height: 16px;
-    padding: 0;
-    line-height: 16px;
-    font-size: 10px;
-  }
-  
-  /* Equipment Form Styling */
-  .add-equipment-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
-  }
-  
-  .add-equipment-form .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-  
-  .add-equipment-form label {
-    font-weight: bold;
-    color: #782e22;
-  }
-  
-  .add-equipment-form input[type="text"],
-  .add-equipment-form input[type="number"],
-  .add-equipment-form select,
-  .add-equipment-form textarea {
-    width: 100%;
-    padding: 5px;
-    border: 1px solid #7a7971;
-    border-radius: 3px;
-    background: white;
-  }
-  
-  .add-equipment-form textarea {
-    height: 60px;
-    resize: vertical;
-  }
-  
-  .add-equipment-form input[type="number"] {
-    width: 80px;
-  }
+}
   
   /* Stunts Section */
   /* Consolidated Stunt Row using grid layout */
