@@ -35,6 +35,336 @@ CONFIG.marvel.HQ_TYPES = {
     "mansion": { name: "Mansion", cost: "Am/Mn", size: "Deluxe", material: "Ex" } 
 };
 
+// Add to config.js after HQ_TYPES
+
+CONFIG.marvel.ROOM_PACKAGES = {
+    "livingRoom": {
+        name: "Living Room",
+        cost: "Gd",
+        size: 1,
+        description: "Sofa, two easy chairs, two end tables, coffee tables, two lamps",
+        upgrades: {
+            entertainment: {
+                name: "Entertainment System",
+                cost: "Ex",
+                description: "Television, stereo setup, piano"
+            }
+        }
+    },
+    "diningRoom": {
+        name: "Dining Room",
+        cost: "Gd",
+        size: 1,
+        description: "Table, four chairs, ceiling lamp",
+        upgrades: {
+            expanded: {
+                name: "Expanded Setup",
+                cost: "Ex",
+                description: "Large table, bureau, four more chairs"
+            },
+            luxury: {
+                name: "Luxury Setup",
+                cost: "Rm",
+                description: "China cabinet, set of good china, sterling tableware"
+            }
+        }
+    },
+    "kitchen": {
+        name: "Kitchen",
+        cost: "Gd", 
+        size: 1,
+        description: "Sink, stove, four cabinets, dishware, counterspace",
+        upgrades: {
+            appliances: {
+                name: "Modern Appliances",
+                cost: "Ex",
+                description: "Refrigerator, dishwasher, microwave, fire extinguisher"
+            }
+        }
+    },
+    "library": {
+        name: "Library",
+        cost: "Ex",
+        size: 1,
+        description: "Two easy chairs, table, desk, straight chair, five bookcases with general texts",
+        upgrades: {
+            research: {
+                name: "Research Equipment",
+                cost: "Rm",
+                description: "Globe, microfiche reader, computer terminal"
+            }
+        }
+    },
+    "computerRoom": {
+        name: "Computer Room",
+        cost: "Rm",
+        size: 1,
+        description: "Computer system with Excellent processing ability",
+        upgrades: {
+            advanced: {
+                name: "Advanced System",
+                cost: "In",
+                description: "Upgraded to Remarkable processing ability"
+            }
+        }
+    },
+    "commsRoom": {
+        name: "Communications Room",
+        cost: "Rm",
+        size: 1,
+        description: "Short-wave monitor, computer network access, police band",
+        upgrades: {
+            security: {
+                name: "Security Monitoring",
+                cost: "In",
+                description: "National security alert equipment, visual display screens"
+            }
+        }
+    },
+    "crimeFiles": {
+        name: "Crime Files Room",
+        cost: "Ex",
+        size: 1,
+        description: "Specialized computer for tracking villains and modi operandi"
+    },
+    "workshop": {
+        name: "Workshop",
+        cost: "Rm",
+        size: 2,
+        description: "Basic equipment for metal and woodworking",
+        upgrades: {
+            precision: {
+                name: "Precision Equipment",
+                cost: "In",
+                description: "Laser guided instruments"
+            },
+            automated: {
+                name: "Automated Systems",
+                cost: "Am",
+                description: "Automatic processing materials"
+            }
+        }
+    },
+    "laboratory": {
+        name: "Laboratory",
+        cost: "Rm",
+        size: 2,
+        description: "Basic lab equipment: scales, sinks, chemicals, microscope",
+        upgrades: {
+            advanced: {
+                name: "Advanced Equipment",
+                cost: "In",
+                description: "Computer analysis system, clean room"
+            },
+            specialized: {
+                name: "Specialized Systems",
+                cost: "Am",
+                description: "Poison analysis, serum dispenser"
+            }
+        }
+    },
+    "office": {
+        name: "Office",
+        cost: "Gd",
+        size: 1,
+        description: "Desk, three chairs, two lamps",
+        upgrades: {
+            business: {
+                name: "Business Setup",
+                cost: "Ex",
+                description: "Additional desk set, file cabinet, typewriter"
+            },
+            executive: {
+                name: "Executive Suite",
+                cost: "Rm",
+                description: "Computer terminal, decorative art, plants"
+            }
+        }
+    },
+    "recRoom": {
+        name: "Recreation Room",
+        cost: "Ex",
+        size: 2,
+        description: "Sofa, chairs, pool/ping-pong table, TV",
+        upgrades: {
+            gaming: {
+                name: "Gaming Setup",
+                cost: "Rm",
+                description: "Video games, pinball machines, hot tub option"
+            },
+            holographic: {
+                name: "Holographic System",
+                cost: "Am",
+                description: "Computer-assisted holographic entertainment"
+            }
+        }
+    },
+    "gym": {
+        name: "Gymnasium",
+        cost: "Ex",
+        size: 2,
+        description: "Weight-lifting equipment, universal gym, lockers",
+        upgrades: {
+            athletic: {
+                name: "Athletic Equipment",
+                cost: "Rm",
+                description: "Rings, parallel bars, short horse"
+            },
+            advanced: {
+                name: "Advanced Training",
+                cost: "In",
+                description: "Diagnostic displays, steam room"
+            },
+            combat: {
+                name: "Combat Training",
+                cost: "Am",
+                description: "Boxing area, robotic opponents, electronic weights"
+            }
+        }
+    },
+    "pool": {
+        name: "Swimming Pool",
+        cost: "Rm",
+        size: 3,
+        description: "Olympic swimming pool, diving boards",
+        upgrades: {
+            indoor: {
+                name: "Indoor Installation",
+                cost: "In",
+                description: "Indoor pool with climate control"
+            }
+        }
+    },
+    "dangerRoom": {
+        name: "Danger Room",
+        cost: "In",
+        size: 4,
+        description: "Advanced training facility with active dangers and security",
+        upgrades: {
+            enhanced: {
+                name: "Enhanced Systems",
+                cost: "Am",
+                description: "Increased threat level, holographic capabilities"
+            }
+        }
+    },
+    "conferenceRoom": {
+        name: "Conference Room",
+        cost: "Rm",
+        size: 1,
+        description: "Large table, 10 chairs or platform with 30 chairs",
+        upgrades: {
+            luxury: {
+                name: "Luxury Finish",
+                cost: "In",
+                description: "Wood paneling, premium furnishings"
+            }
+        }
+    },
+    "medical": {
+        name: "Medical Bay",
+        cost: "Rm",
+        size: 2,
+        description: "Emergency room care, standard medication",
+        upgrades: {
+            surgical: {
+                name: "Surgical Suite",
+                cost: "In",
+                description: "X-ray, clean room, operating room"
+            },
+            advanced: {
+                name: "Advanced Care",
+                cost: "Am",
+                description: "Cryogenics, specialized treatment"
+            }
+        }
+    },
+    "powerRoom": {
+        name: "Power Room",
+        cost: "Rm",
+        size: 1,
+        description: "12-hour backup power supply",
+        upgrades: {
+            enhanced: {
+                name: "Enhanced Power",
+                cost: "In",
+                description: "24-hour supply, automatic cutover"
+            },
+            solar: {
+                name: "Solar Power",
+                cost: "Am",
+                description: "Solar-powered cells, self-sustaining"
+            }
+        }
+    }
+};
+
+CONFIG.marvel.SECURITY_SYSTEMS = {
+    "none": {
+        name: "None",
+        cost: 0,
+        description: "No security system installed"
+    },
+    "basic": {
+        name: "Basic Security",
+        cost: "Gd",
+        description: "Hand-set alarms on windows and doors, mechanical locks"
+    },
+    "advanced": {
+        name: "Advanced Security",
+        cost: "Ex",
+        description: "Computer-code system, automatic alarms"
+    },
+    "enhanced": {
+        name: "Enhanced Security",
+        cost: "Rm",
+        description: "Palm-print scan, defense system activation"
+    },
+    "maximum": {
+        name: "Maximum Security",
+        cost: "In",
+        description: "Full body scan, hostile intent detection"
+    }
+};
+
+CONFIG.marvel.DEFENSE_SYSTEMS = {
+    "none": {
+        name: "None",
+        cost: 0,
+        description: "No defense system installed"
+    },
+    "standard": {
+        name: "Standard Defense",
+        cost: "Ex",
+        description: "Pre-set defenses of Remarkable strength"
+    },
+    "enhanced": {
+        name: "Enhanced Defense",
+        cost: "Rm",
+        description: "Activated defenses of Incredible strength"
+    },
+    "maximum": {
+        name: "Maximum Defense",
+        cost: "In",
+        description: "Multiple defense systems of Amazing strength"
+    }
+};
+
+// Helper function to convert rank to numeric value for calculations
+CONFIG.marvel.RANK_VALUES = {
+    "Sh0": 0,
+    "Fe": 2,
+    "Pr": 4,
+    "Ty": 6,
+    "Gd": 10,
+    "Ex": 20,
+    "Rm": 30,
+    "In": 40,
+    "Am": 50,
+    "Mn": 75,
+    "Un": 100
+};
+
 // After MARVEL_RANKS in config.js
 CONFIG.marvel.ranks = MARVEL_RANKS;
 CONFIG.marvel.selectableRanks = Object.keys(MARVEL_RANKS).reduce((obj, key) => {

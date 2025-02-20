@@ -1,3 +1,5 @@
+# File: templates/items/headquarters-sheet.html
+
 <form class="{{cssClass}} headquarters-sheet" autocomplete="off">
     <header class="sheet-header">
         <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}"/>
@@ -13,6 +15,7 @@
     </nav>
 
     <section class="sheet-body">
+        {{!-- Basic Info Tab --}}
         <div class="tab-content" data-tab="basic">
             <div class="form-group">
                 <label>Type</label>
@@ -48,6 +51,7 @@
             </div>
         </div>
 
+        {{!-- Room Packages Tab --}}
         <div class="tab-content" data-tab="rooms">
             <div class="room-packages">
                 {{#each config.ROOM_PACKAGES as |package key|}}
@@ -57,6 +61,7 @@
                            data-room="{{key}}"
                            {{checked (lookup ../system.rooms key 'installed')}}>
                     <label>{{package.name}} ({{package.cost}}, {{package.size}} areas)</label>
+                    <div class="package-description">{{package.description}}</div>
                     
                     {{#if (lookup ../system.rooms key 'installed')}}
                     <div class="package-upgrades">
@@ -66,6 +71,7 @@
                                    name="system.rooms.{{key}}.upgrades.{{upgradeKey}}"
                                    {{checked (lookup ../upgrades upgradeKey)}}>
                             <label>{{upgrade.name}} ({{upgrade.cost}})</label>
+                            <div class="upgrade-description">{{upgrade.description}}</div>
                         </div>
                         {{/each}}
                     </div>
@@ -75,30 +81,34 @@
             </div>
         </div>
 
+        {{!-- Security Tab --}}
         <div class="tab-content" data-tab="security">
             <div class="form-group">
                 <label>Security System</label>
                 <select name="system.security.type">
                     {{#select system.security.type}}
-                    <option value="">None</option>
-                    <option value="basic">Basic (Good) - Hand-set alarms</option>
-                    <option value="advanced">Advanced (Excellent) - Computer-code system</option>
-                    <option value="enhanced">Enhanced (Remarkable) - Palm-print scan</option>
-                    <option value="maximum">Maximum (Incredible) - Full body scan</option>
+                    {{#each config.SECURITY_SYSTEMS as |security key|}}
+                    <option value="{{key}}">{{security.name}} ({{security.cost}})</option>
+                    {{/each}}
                     {{/select}}
                 </select>
+                {{#with (lookup config.SECURITY_SYSTEMS system.security.type) as |current|}}
+                <div class="system-description">{{current.description}}</div>
+                {{/with}}
             </div>
 
             <div class="form-group">
                 <label>Defense System</label>
                 <select name="system.defense.type">
                     {{#select system.defense.type}}
-                    <option value="">None</option>
-                    <option value="standard">Standard (Excellent) - Basic defenses</option>
-                    <option value="enhanced">Enhanced (Remarkable) - Advanced defenses</option>
-                    <option value="maximum">Maximum (Incredible) - Maximum defenses</option>
+                    {{#each config.DEFENSE_SYSTEMS as |defense key|}}
+                    <option value="{{key}}">{{defense.name}} ({{defense.cost}})</option>
+                    {{/each}}
                     {{/select}}
                 </select>
+                {{#with (lookup config.DEFENSE_SYSTEMS system.defense.type) as |current|}}
+                <div class="system-description">{{current.description}}</div>
+                {{/with}}
             </div>
         </div>
     </section>
