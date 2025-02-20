@@ -16,11 +16,13 @@
   ],
   "esmodules": [
     "module/marvel-faserip.js",
-    "module/weapons/weapon-system.js"
+    "module/weapons/weapon-system.js",
+    "module/combat/FaseripCombatSystem.js"
   ],
   "styles": [
     "css/marvel-faserip.css",
-    "css/weapon-sheet.css"
+    "css/weapon-sheet.css",
+    "css/combat.css"
   ],
   "languages": [
     {
@@ -57,6 +59,7 @@
     "templates/items/item-sheet.html",
     "templates/dialogs/add-equipment.html",
     "templates/dialogs/add-weapon.html",
-    "templates/dialogs/add-headquarters.html"
+    "templates/dialogs/add-headquarters.html",
+    "module/combat/templates/combat-attack.html"
   ]
 }

@@ -9,17 +9,20 @@ import { MarvelAttackItemSheet } from "./sheets/items/MarvelAttackItemSheet.js";
 import { MarvelFaseripItem } from "./item/item.js";
 import WeaponSystem from "./weapons/weapon-system.js";
 import { MarvelHeadquartersSheet } from "./sheets/items/MarvelHeadquartersSheet.js";
+import { FaseripCombatSystem } from "./combat/FaseripCombatSystem.js";
 
 Hooks.once('init', async function() {
     console.log('marvel-faserip | Initializing Marvel FASERIP System');
     
     // Initialize the game.marvel namespace
     game.marvel = {
-        WeaponSystem: new WeaponSystem()
+        WeaponSystem: new WeaponSystem(),
+        combatSystem: new FaseripCombatSystem()
     };
     
     // Make weapon system available globally for debugging
     globalThis.marvelWeapons = game.marvel.WeaponSystem;
+    globalThis.marvelCombat = game.marvel.combatSystem;
     
     // Configure document classes
     CONFIG.Item.documentClass = MarvelFaseripItem;

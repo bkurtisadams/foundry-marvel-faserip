@@ -1,0 +1,43 @@
+/* In your css/combat.css file */
+.faserip-attack-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+}
+
+.faserip-attack-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.faserip-attack-form label {
+    font-weight: bold;
+}
+
+.faserip-attack-form select,
+.faserip-attack-form input {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+/* Token HUD button styling */
+.control-icon.faserip-attack {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid #000;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    margin: 2px;
+    padding: 4px;
+    text-align: center;
+    width: 24px;
+    height: 24px;
+}
+
+.control-icon.faserip-attack:hover {
+    background: rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 10px var(--color-shadow-primary);
+}
