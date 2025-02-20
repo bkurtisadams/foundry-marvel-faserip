@@ -1205,12 +1205,12 @@ export class MarvelActorSheet extends ActorSheet {
 
     async _onKarmaHistoryClick(event) {
         event.preventDefault();
-        
+       
         // Initialize properties
         this._karmaHistory = this.actor.system.karmaTracking.history || [];
         this._filteredHistory = [...this._karmaHistory];
         this._currentSort = { field: 'date', direction: 'desc' };
-        
+       
         const content = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/karma-history.html",
             {
@@ -1227,10 +1227,10 @@ export class MarvelActorSheet extends ActorSheet {
                     label: "Close"
                 }
             },
-            
+           
             render: (html) => {
                 const dialog = this;
-                
+               
                 // Add event listeners
                 html.find('.karma-entries').on('click', '.edit-entry', async (ev) => {
                     ev.preventDefault();
@@ -1250,13 +1250,40 @@ export class MarvelActorSheet extends ActorSheet {
                     ev.preventDefault();
                     await dialog._onAddKarmaEntry(ev);
                 });
+    
+                // Add Clear All handler
+                html.find('.clear-all-karma').click(async (ev) => {
+                    ev.preventDefault();
+                    
+                    // Close current dialog
+                    dialog.close();
+    
+                    // Show confirmation dialog
+                    const confirm = await Dialog.confirm({
+                        title: "Clear All Karma History",
+                        content: "<p>Are you sure you want to delete ALL karma history entries? This cannot be undone.</p>",
+                        yes: () => true,
+                        no: () => false,
+                        defaultYes: false
+                    });
+    
+                    if (confirm) {
+                        await this.actor.update({
+                            "system.karmaTracking.history": []
+                        });
+                        ui.notifications.info("All karma history entries have been cleared.");
+                    }
+                    
+                    // Reopen karma history dialog
+                    this._onKarmaHistoryClick(new Event('click'));
+                });
             }
-            }, {
-                classes: ["karma-history"],
-                width: 600,
-                height: 400,
-                resizable: true
-            });
+        }, {
+            classes: ["karma-history"],
+            width: 600,
+            height: 400,
+            resizable: true
+        });
     
         dialog.render(true);
     }
