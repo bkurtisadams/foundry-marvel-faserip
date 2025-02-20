@@ -1210,12 +1210,16 @@ export class MarvelActorSheet extends ActorSheet {
         this._karmaHistory = this.actor.system.karmaTracking.history || [];
         this._filteredHistory = [...this._karmaHistory];
         this._currentSort = { field: 'date', direction: 'desc' };
+
+        // Calculate total karma
+        const karmaTotal = this._karmaHistory.reduce((sum, entry) => sum + entry.amount, 0);
        
         const content = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/karma-history.html",
             {
                 actor: this.actor,
-                karmaHistory: this._sortKarmaHistory(this._filteredHistory, this._currentSort)
+                karmaHistory: this._sortKarmaHistory(this._filteredHistory, this._currentSort),
+                karmaTotal: karmaTotal  // Pass the total to the template
             }
         );
     
