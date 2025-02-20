@@ -300,7 +300,8 @@
     <a class="nav-item {{#if tabs.special}}active{{/if}}" data-tab="special">Special Ability</a>
     <a class="nav-item {{#if tabs.stunts}}active{{/if}}" data-tab="stunts">Stunts</a>
     <a class="nav-item {{#if tabs.attacks}}active{{/if}}" data-tab="attacks">Attacks</a><a class="nav-item" data-tab="equipment">Equipment</a>
-    <a class="nav-item" data-tab="headquarters">Headquarters</a>
+    <!-- <a class="nav-item" data-tab="headquarters">Headquarters</a> -->
+    <a class="nav-item {{#if tabs.headquarters}}active{{/if}}" data-tab="headquarters">Headquarters</a>
     <a class="nav-item" data-tab="vehicles">Vehicles</a>
 </nav>
 
@@ -482,11 +483,14 @@
 </div>
     
     <!-- Headquarters Tab -->
-    <div class="tab-panel" data-tab="headquarters">
-        <button type="button" class="add-headquarters add-ability-button">+ Add Headquarters Feature</button>
-        <div class="headquarters-list">
-            <!-- Headquarters list content will go here -->
-        </div>
+    <div class="tab-panel" data-tab="headquarters" {{#if tabs.headquarters}}style="display: block;"{{else}}style="display: none;"{{/if}}>
+        {{#if headquarters.length}}
+            {{#with (lookup headquarters "0")}}
+                {{> "systems/marvel-faserip/templates/actor/tabs/headquarters-tab.html"}}
+            {{/with}}
+        {{else}}
+            <button type="button" class="add-headquarters add-ability-button">+ Add Headquarters</button>
+        {{/if}}
     </div>
 
     <!-- Vehicles Tab -->

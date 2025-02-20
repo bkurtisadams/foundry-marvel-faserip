@@ -24,8 +24,18 @@ export class MarvelActorSheet extends ActorSheet {
         
         // Ensure context.actor.system exists and initialize if needed
         const system = context.actor.system || {};
-
         console.log("Current actor items:", this.actor.items);
+
+        // headquarters context
+        context.headquarters = this.actor.items.filter(item => item.type === "headquarters");
+
+        // Add HQ CONFIG references
+        context.config = {
+            ...context.config,
+            HQ_TYPES: CONFIG.marvel.HQ_TYPES,
+            ROOM_PACKAGES: CONFIG.marvel.ROOM_PACKAGES,
+            SECURITY_PACKAGES: CONFIG.marvel.SECURITY_PACKAGES
+        };
 
         // equipment organization here
         context.equipmentTypes = MarvelActorSheet.equipmentTypes;
