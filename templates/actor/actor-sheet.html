@@ -483,25 +483,65 @@
 </div>
     
     <!-- Headquarters Tab -->
-    <div class="tab-panel" data-tab="headquarters" {{#if tabs.headquarters}}style="display: block;"{{else}}style="display: none;"{{/if}}>
-        <button type="button" class="add-headquarters add-ability-button">+ Add Headquarters</button>
-        <div class="headquarters-list">
-            {{#each headquarters as |hq id|}}
-            <div class="item headquarters-row" data-item-id="{{hq._id}}">
-                <img src="{{hq.img}}" width="24" height="24"/>
-                <div class="headquarters-name">{{hq.name}}</div>
-                <div class="headquarters-details">
-                    <span class="hq-type">{{lookup @root.config.HQ_TYPES hq.system.type 'name'}}</span>
-                    <span class="hq-size">{{hq.system.size}}</span>
-                </div>
-                <div class="item-controls">
-                    <a class="item-control item-edit" title="Edit Headquarters"><i class="fas fa-edit"></i></a>
-                    <a class="item-control item-delete" title="Delete Headquarters"><i class="fas fa-trash"></i></a>
-                </div>
-            </div>
-            {{/each}}
+<div class="tab-panel" data-tab="headquarters" {{#if tabs.headquarters}}style="display: block;"{{else}}style="display: none;"{{/if}}>
+    <div class="headquarters-simple">
+        <div class="form-group">
+            <label class="input-label">Headquarters Name</label>
+            <input type="text" name="system.headquarters.name" value="{{actor.system.headquarters.name}}"/>
+        </div>
+        <div class="form-group">
+            <label class="input-label">Type</label>
+            <select name="system.headquarters.type" class="hq-type-select">
+                {{#select actor.system.headquarters.type}}
+                <optgroup label="Residences">
+                    <option value="">None</option>
+                    <option value="1br_apartment">1 BR Apartment (Fe/Ex)</option>
+                    <option value="2br_apartment">2 BR Apartment (Pr/Ex)</option>
+                    <option value="3br_apartment">3 BR Apartment (Gd/Rm)</option>
+                    <option value="cottage">Cottage - 2 rooms (Pr/Gd)</option>
+                    <option value="small_house">Small House - 4 rooms (Ty/Ex)</option>
+                    <option value="medium_house">Medium House - 8 rooms (Ty/Rm)</option>
+                    <option value="large_house">Large House - 12 rooms (Ex/In)</option>
+                    <option value="small_manor">Small Manor - 18 rooms (Rm/Am)</option>
+                    <option value="large_manor">Large Manor - 24 rooms (In/Mn)</option>
+                    <option value="mansion">Mansion - 30+ rooms (Am/Mn)</option>
+                </optgroup>
+                <optgroup label="Commercial">
+                    <option value="office">Office - 3 rooms (Gd/Rm)</option>
+                    <option value="storefront">Storefront - 4 rooms (Ty/Rm)</option>
+                    <option value="office_suite">Office Suite - 6 rooms (Ex/In)</option>
+                    <option value="office_floor">Office Floor - 12 rooms (Rm/Am)</option>
+                    <option value="two_office_floors">2 Office Floors - 24 rooms (In/Mn)</option>
+                    <option value="brownstone">Brownstone (Ex/Rm)</option>
+                </optgroup>
+                <optgroup label="Buildings">
+                    <option value="office_building_4">Office Building - 4 floors (Rm/Am)</option>
+                    <option value="office_building_8">Office Building - 8 floors (In/Mn)</option>
+                    <option value="office_building_12">Office Building - 12 floors (Am/Un)</option>
+                    <option value="office_building_20">Office Building - 20 floors (Mn/ShX)</option>
+                    <option value="office_building_30">Office Building - 30+ floors (Un/ShZ)</option>
+                </optgroup>
+                <optgroup label="Industrial">
+                    <option value="small_warehouse">Small Warehouse (Ty/Rm)</option>
+                    <option value="medium_warehouse">Medium Warehouse (Gd/In)</option>
+                    <option value="large_warehouse">Large Warehouse (Ex/Am)</option>
+                    <option value="small_factory">Small Factory (Gd/In)</option>
+                    <option value="medium_factory">Medium Factory (Ex/Am)</option>
+                    <option value="large_factory">Large Factory (Rm/Mn)</option>
+                </optgroup>
+                {{/select}}
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="input-label">Location</label>
+            <input type="text" name="system.headquarters.location" value="{{actor.system.headquarters.location}}"/>
+        </div>
+        <div class="form-group">
+            <label class="input-label">Description</label>
+            <textarea name="system.headquarters.description" rows="3">{{actor.system.headquarters.description}}</textarea>
         </div>
     </div>
+</div>
 
     <!-- Vehicles Tab -->
     <div class="tab-panel" data-tab="vehicles">

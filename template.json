@@ -103,7 +103,16 @@
             "status": "untried",
             "description": ""
           }
+        },
+        "headquarters": {
+        "name": "",
+        "type": "",
+        "location": "",
+        "description": "",
+        "rooms": {
+            "list": []
         }
+    }
       },
       "contacts": {
         "contacts": {

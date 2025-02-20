@@ -1,0 +1,263 @@
+/* Headquarters Section Styles */
+.headquarters-section {
+  padding: 1rem;
+}
+
+.hq-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.hq-type-select {
+  min-width: 200px;
+}
+
+.hq-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.hq-stats span {
+  padding: 0.25rem 0.5rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+/* Room Packages Styles */
+.room-packages {
+  margin-top: 1.5rem;
+}
+
+.packages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.package-group {
+  border: 1px solid var(--color-border-light-primary);
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.package-group h4 {
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border-light-primary);
+}
+
+.package-item {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 4px;
+}
+
+.package-upgrades {
+  margin-top: 0.5rem;
+  padding-left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Security and Defense Sections */
+.security-section,
+.defense-section {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-top: 1px solid var(--color-border-light-primary);
+}
+
+.hq-summary {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Add Headquarters Dialog Styles */
+.marvel-dialog.add-headquarters-dialog {
+  min-height: 320px;
+}
+
+.add-headquarters {
+  padding: 1rem;
+}
+
+.add-headquarters .form-group {
+  margin-bottom: 1rem;
+}
+
+.add-headquarters label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.add-headquarters select {
+  width: 100%;
+  min-height: 32px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid #999;
+  border-radius: 3px;
+  padding: 4px;
+  margin: 4px 0;
+}
+
+.add-headquarters select:focus {
+  box-shadow: 0 0 5px red;
+  outline: none;
+}
+
+.add-headquarters input[type="text"] {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #999;
+  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.add-headquarters .cost-info {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.add-headquarters .cost-info p {
+  margin: 0.25rem 0;
+}
+
+/* Dialog Window Buttons */
+.dialog .dialog-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-top: 1px solid #ddd;
+}
+
+.dialog .dialog-button {
+  padding: 0.5rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dialog .dialog-button.ok {
+  background: #2a6f97;
+  color: white;
+}
+
+.dialog .dialog-button:hover {
+  opacity: 0.9;
+}
+
+.dialog .dialog-button.cancel {
+  background: #e0e0e0;
+  color: #444;
+}
+
+/* headquarters.css - Dialog specific styles */
+.marvel-dialog.add-headquarters {
+  background: var(--color-sheet-bg, white);
+  border-radius: 4px;
+  padding: 1rem;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.marvel-dialog.add-headquarters .form-group {
+  margin-bottom: 1rem;
+}
+
+.marvel-dialog.add-headquarters label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  color: var(--color-text-dark-primary, #333);
+}
+
+/* Dropdown specific styles */
+.marvel-dialog.add-headquarters select {
+  width: 100% !important;
+  height: auto !important;
+  padding: 8px !important;
+  border: 1px solid var(--color-border-light-tertiary, #ddd) !important;
+  border-radius: 4px !important;
+  background: var(--color-bg-field, white) !important;
+  color: var(--color-text-dark-primary, #333) !important;
+  font-size: var(--font-size-14) !important;
+  margin: 0 !important;
+  -webkit-appearance: menulist !important;
+  -moz-appearance: menulist !important;
+  appearance: menulist !important;
+}
+
+.marvel-dialog.add-headquarters select:focus {
+  box-shadow: 0 0 0 1px var(--color-shadow-primary) !important;
+  outline: none !important;
+}
+
+.marvel-dialog.add-headquarters input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--color-border-light-tertiary, #ddd);
+  border-radius: 4px;
+  background: var(--color-bg-field, white);
+  color: var(--color-text-dark-primary, #333);
+  font-size: var(--font-size-14);
+}
+
+.marvel-dialog.add-headquarters .cost-info {
+  margin-top: auto;
+  padding: 1rem;
+  background: var(--color-bg-alt, #f0f0f0);
+  border-radius: 4px;
+}
+
+.marvel-dialog.add-headquarters .cost-info p {
+  margin: 0.5rem 0;
+  color: var(--color-text-dark-secondary, #666);
+}
+
+.marvel-dialog.add-headquarters .dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.marvel-dialog.add-headquarters .dialog-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--font-size-13);
+  line-height: 1;
+}
+
+.marvel-dialog.add-headquarters .dialog-button.ok {
+  background: var(--color-button-confirm, #2a6f97);
+  color: white;
+}
+
+.marvel-dialog.add-headquarters .dialog-button.cancel {
+  background: var(--color-button-default, #e0e0e0);
+  color: var(--color-text-dark-primary, #333);
+}

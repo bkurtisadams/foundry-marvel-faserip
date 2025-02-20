@@ -34,12 +34,6 @@
   gap: 5px;
 }
 
-/* .header-top-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-} */
-
 .header-top-row {
   display: flex;
   align-items: flex-start;
@@ -47,15 +41,6 @@
   margin-bottom: -6px;  /* Add negative margin to reduce overall height */
 }
   
-/* .profile-img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  object-position: top;
-  border: 2px solid #782e22;
-  border-radius: 5px;
-  cursor: pointer;
-} */
 .profile-img {
   width: 60px;  /* Reduced from 80px */
   height: 60px; /* Reduced from 80px */
@@ -66,14 +51,6 @@
   cursor: pointer;
 }
   
-/* Marvel logo */
-/* .marvel-logo {
-  height: 24px;
-  width: 160px;
-  margin-left: auto;
-  margin-top: 8px;
-  object-fit: contain;
-} */
 .marvel-logo {
   height: 20px;  /* Reduced from 24px */
   width: 160px;
@@ -1817,4 +1794,53 @@
     justify-content: flex-end;
     gap: 0.5em;
     margin-top: 1em;
+}
+
+/* Simple Headquarters Styling */
+.headquarters-simple {
+  padding: 5px;
+  background: #E8E6E3;
+  border: 1px solid #000;
+  border-radius: 3px;
+}
+
+.headquarters-simple .form-group {
+  margin-bottom: 5px;
+}
+
+.headquarters-simple .input-label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 2px;
+  color: #444;
+  font-size: 12px;
+}
+
+.headquarters-simple input[type="text"],
+.headquarters-simple select,
+.headquarters-simple textarea {
+  width: 100%;
+  border: 1px solid #000;
+  border-radius: 2px;
+  background: white;
+  padding: 1px 3px;
+}
+
+.headquarters-simple input[type="text"],
+.headquarters-simple select {
+  height: 20px;
+}
+
+.headquarters-simple select {
+  font-size: 12px;
+}
+
+.headquarters-simple select optgroup {
+  font-weight: bold;
+  color: #782e22;
+}
+
+.headquarters-simple textarea {
+  height: 60px;
+  resize: vertical;
 }
