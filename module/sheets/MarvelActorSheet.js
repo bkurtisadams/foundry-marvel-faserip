@@ -710,8 +710,13 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.clickable-resources').click(ev => this._onResourceRoll(ev));
             
             // Talents and contacts
+            /* html.find('.add-talent').click(ev => this._onAddTalent(ev));
+            html.find('.add-contact').click(ev => this._onAddContact(ev)); */
+            // Talents and contacts
             html.find('.add-talent').click(ev => this._onAddTalent(ev));
             html.find('.add-contact').click(ev => this._onAddContact(ev));
+            html.find('.item-delete[data-type="talents"]').click(ev => this._onDeleteTalent(ev));
+            html.find('.item-delete[data-type="contacts"]').click(ev => this._onDeleteContact(ev));
     
             // Resistance handlers
             html.find('.resistance-number').change(this._onResistanceNumberChange.bind(this));
@@ -1031,6 +1036,31 @@ export class MarvelActorSheet extends ActorSheet {
         }).render(true);
     } */
     
+    async _onDeleteTalent(event) {
+        event.preventDefault();
+        const index = event.currentTarget.dataset.id;
+        const talents = foundry.utils.getProperty(this.actor.system, "talents.list") || [];
+        
+        // Create updated talents array without the deleted talent
+        const updatedTalents = talents.filter((_, i) => i !== parseInt(index));
+        
+        await this.actor.update({
+            "system.talents.list": updatedTalents
+        });
+    }
+    
+    async _onDeleteContact(event) {
+        event.preventDefault();
+        const index = event.currentTarget.dataset.id;
+        const contacts = foundry.utils.getProperty(this.actor.system, "contacts.list") || [];
+        
+        // Create updated contacts array without the deleted contact
+        const updatedContacts = contacts.filter((_, i) => i !== parseInt(index));
+        
+        await this.actor.update({
+            "system.contacts.list": updatedContacts
+        });
+    }
     // delete karma entry
     async _onDeleteKarmaEntry(event, index) {
         event.preventDefault();
