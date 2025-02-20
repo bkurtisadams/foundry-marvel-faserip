@@ -48,7 +48,7 @@ export class MarvelActorSheet extends ActorSheet {
                 material: ""
             };
         }
-        
+
         // equipment organization here
         context.equipmentTypes = MarvelActorSheet.equipmentTypes;
         context.equipmentByType = {};
@@ -734,14 +734,22 @@ export class MarvelActorSheet extends ActorSheet {
             }); */
 
             // SIMPLE HQ
-            html.find('.hq-type-select').change(ev => {
+            html.find('.hq-type-select').change(async (ev) => {
                 const selectedType = ev.currentTarget.value;
-                const hqData = CONFIG.MARVEL.headquarters[selectedType] || { cost: "", size: "", material: "" };
+                const hqData = MARVEL.headquarters[selectedType] || { cost: "", size: "", material: "" };
                 
-                this.actor.update({
-                    'system.headquarters.cost': hqData.cost,
-                    'system.headquarters.size': hqData.size,
-                    'system.headquarters.material': hqData.material
+                // Debug log to verify data
+                console.log("Selected HQ type:", selectedType);
+                console.log("HQ Data:", hqData);
+
+                await this.actor.update({
+                    'system.headquarters': {
+                        ...this.actor.system.headquarters,
+                        type: selectedType,
+                        cost: hqData.cost,
+                        size: hqData.size,
+                        material: hqData.material
+                    }
                 });
             });
 
