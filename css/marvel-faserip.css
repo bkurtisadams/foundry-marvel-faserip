@@ -800,56 +800,108 @@
   border-color: #782e22;
 }
 
-/* Table Header */
+/* Table Header with fixed column widths */
 .karma-history .karma-entries-header {
   display: grid;
-  grid-template-columns: 180px 80px 1fr 60px;  /* Adjusted column widths */
+  grid-template-columns: 100px 70px 1fr 80px;  /* Reduced widths */
   gap: 5px;
   padding: 5px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  font-weight: bold;
 }
 
-/* Entry Row */
+/* Entry Row - must match header exactly */
 .karma-history .karma-entry {
   display: grid;
-  grid-template-columns: 180px 80px 1fr 60px;  /* Match header columns */
+  grid-template-columns: 100px 70px 1fr 80px;  /* Match header */
+  gap: 5px;
+  padding: 5px;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+}
+
+/* Date column specific styling */
+.karma-history .karma-entry .date,
+.karma-history .header-date {
+  width: 100px;
+  min-width: 0;
+  padding: 0 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Amount column specific styling */
+.karma-history .amount,
+.karma-history .header-amount,
+.karma-history .karma-entry .amount {
+  width: 70px;
+  text-align: left !important; /* Force left alignment */
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Remove any potential spacing between amount and description */
+.karma-history .karma-entry {
+  display: grid;
+  grid-template-columns: 100px 70px 1fr 80px;
   gap: 5px;
   padding: 5px;
   align-items: center;
 }
 
-.karma-history .karma-entry:nth-child(even) {
-  background: rgba(0,0,0,0.05);
+/* Ensure grid areas don't have extra padding */
+.karma-history .karma-entry > *,
+.karma-history .karma-entries-header > * {
+  padding: 0 5px;
 }
 
-/* Amount Styling */
-.karma-history .amount,
-.karma-history .header-amount {
-    text-align: left;  /* Right-align amounts */
-    padding-right: 5px;  /* Add some padding */
+/* Description column styling */
+.karma-history .karma-entry .description,
+.karma-history .header-description {
+  min-width: 0;
+  padding: 0 5px;
+  word-break: break-word;
 }
 
-.karma-history .amount.negative {
-  color: #782e22;
-}
-
-.karma-history .amount.positive {
-  color: #2e7d32;
-}
-
-/* Action Buttons */
-.karma-history .entry-actions {
+/* Actions column styling */
+.karma-history .karma-entry .entry-actions,
+.karma-history .header-actions {
+  width: 80px;
   display: flex;
   gap: 5px;
   justify-content: flex-end;
 }
 
+/* Entry styling */
+.karma-history .karma-entry:nth-child(even) {
+  background: rgba(0,0,0,0.05);
+}
+
+/* Amount colors */
+/* Ensure amounts are properly colored even when left-aligned */
+.karma-history .amount.positive {
+  color: #2e7d32;
+  text-align: left !important;
+}
+
+.karma-history .amount.negative {
+  color: #782e22;
+  text-align: left !important;
+}
+
+/* Action Buttons */
 .karma-history .entry-actions button {
   width: 24px;
   height: 24px;
   padding: 0;
-  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
+  color: #666;
   cursor: pointer;
 }
 
@@ -857,6 +909,7 @@
   color: #000;
 }
 
+/* Close button */
 .karma-history .close-button {
   width: 100%;
   padding: 8px;
@@ -870,28 +923,32 @@
   background: #d8d6d3;
   border-color: #782e22;
 }
-  
-  .karma-history-button {
-    height: 18px;               /* Matches other small buttons on the sheet */
-    line-height: 18px;          /* Keeps text vertically centered */
-    font-size: 11px;            /* Smaller text */
-    padding: 0 5px;             /* Minimal padding; adjust as needed */
-    background: #e8e6e3;        /* Similar background as other sheet buttons */
-    color: #333;                /* Text color to match your theme */
-    border: 1px solid #7a7971;  /* Matches your sheet’s border style */
-    border-radius: 3px;         /* Rounded corners, if consistent with your sheet */
-    cursor: pointer;
-  }
-  
-  .karma-history-button:hover {
-    background: #d8d6d3;
-    border-color: #782e22;
-  }
-  
-  
-  .sortable:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-  }
+
+/* Karma history button */
+.karma-history-button {
+  height: 18px;
+  line-height: 18px;
+  font-size: 11px;
+  padding: 0 5px;
+  background: #e8e6e3;
+  color: #333;
+  border: 1px solid #7a7971;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.karma-history-button:hover {
+  background: #d8d6d3;
+  border-color: #782e22;
+}
+
+.sortable:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sortable:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
   
   /* Karma Controls */
   /* .karma-controls {
