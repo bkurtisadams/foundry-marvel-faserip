@@ -1,0 +1,31 @@
+<form class="marvel-dialog add-headquarters">
+    <div class="form-group">
+        <label>Headquarters Type</label>
+        <select name="type" required>
+            <option value="">Select Type</option>
+            {{#each config.HQ_TYPES as |hq key|}}
+            <option value="{{key}}">{{hq.name}} (Rent: {{hq.cost}}, Size: {{hq.size}})</option>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Name</label>
+        <input type="text" name="name" value="New Headquarters" required/>
+    </div>
+
+    <div class="cost-info">
+        <p class="size-hint"></p>
+        <p class="cost-hint"></p>
+        <p class="material-hint"></p>
+    </div>
+
+    <div class="dialog-buttons">
+        <button class="dialog-button ok" type="submit">
+            <i class="fas fa-check"></i> Create
+        </button>
+        <button class="dialog-button cancel" type="button">
+            <i class="fas fa-times"></i> Cancel
+        </button>
+    </div>
+</form>

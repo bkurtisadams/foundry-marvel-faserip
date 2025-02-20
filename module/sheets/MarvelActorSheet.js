@@ -1,4 +1,5 @@
 import { MARVEL_RANKS } from "../config.js";
+import { AddHeadquartersDialog } from "../dialogs/AddHeadquartersDialog.js";
 
 export class MarvelActorSheet extends ActorSheet {
     /** @override */
@@ -715,13 +716,19 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.attack-row img').click(ev => this._onAttackInfo(ev));
 
             // Add headquarters
-            html.find('.add-headquarters').click(async ev => {
+           /*  html.find('.add-headquarters').click(async ev => {
                 const itemData = {
                     name: "New Headquarters",
                     type: "headquarters",
                     img: "icons/svg/house.svg"
                 };
                 await this.actor.createEmbeddedDocuments("Item", [itemData]);
+            }); */
+            html.find('.add-headquarters').click(async ev => {
+                const itemData = await AddHeadquartersDialog.create(this.actor);
+                if (itemData) {
+                    await this.actor.createEmbeddedDocuments("Item", [itemData]);
+                }
             });
 
             // Edit headquarters

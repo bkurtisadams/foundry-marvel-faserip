@@ -1757,3 +1757,41 @@
     margin: 0;
   }
   
+  /* headquarters styles*/
+  .marvel-dialog.add-headquarters {
+    padding: 1em;
+}
+
+.marvel-dialog .form-group {
+    margin-bottom: 1em;
+}
+
+.marvel-dialog .form-group label {
+    display: block;
+    margin-bottom: 0.5em;
+    font-weight: bold;
+}
+
+.marvel-dialog select,
+.marvel-dialog input[type="text"] {
+    width: 100%;
+    padding: 0.5em;
+}
+
+.marvel-dialog .cost-info {
+    margin: 1em 0;
+    padding: 0.5em;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+}
+
+.marvel-dialog .cost-info p {
+    margin: 0.25em 0;
+}
+
+.marvel-dialog .dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5em;
+    margin-top: 1em;
+}
