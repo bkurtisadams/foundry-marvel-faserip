@@ -22,21 +22,38 @@ export const MARVEL_RANKS = {
     'Beyond': { range: [5001, Infinity], standard: Infinity }
 };
 
-CONFIG.marvel.HQ_TYPES = { 
-    "1BR": { name: "1 BR Apartment", cost: "Fe/Ex", size: "Small", material: "Gd" }, 
-    "2BR": { name: "2 BR Apartment", cost: "Pr/Ex", size: "Small", material: "Gd" }, 
-    "3BR": { name: "3 BR Apartment", cost: "Gd/Rm", size: "Small", material: "Gd" }, 
-    "cottage": { name: "Cottage", cost: "Pr/Gd", size: "Small", material: "Pr" }, 
-    "smallHouse": { name: "Small House", cost: "Ty/Ex", size: "Small", material: "Ty" }, 
-    "mediumHouse": { name: "Medium House", cost: "Ty/Rm", size: "Mid-sized", material: "Ty" }, 
-    "largeHouse": { name: "Large House", cost: "Ex/In", size: "Mid-sized", material: "Gd" }, 
-    "smallManor": { name: "Small Manor", cost: "Rm/Am", size: "Large", material: "Ex" }, 
-    "largeManor": { name: "Large Manor", cost: "In/Mn", size: "Deluxe", material: "Ex" }, 
-    "mansion": { name: "Mansion", cost: "Am/Mn", size: "Deluxe", material: "Ex" } 
-};
-
-// Add to config.js after HQ_TYPES
-
+export const MARVEL = {
+    headquarters: {
+      "1br_apartment": { cost: "Fe/Ex", size: "Small", material: "Gd" },
+      "2br_apartment": { cost: "Pr/Ex", size: "Small", material: "Gd" },
+      "3br_apartment": { cost: "Gd/Rm", size: "Small", material: "Gd" },
+      "cottage": { cost: "Pr/Gd", size: "Small", material: "Pr" },
+      "small_house": { cost: "Ty/Ex", size: "Small", material: "Ty" },
+      "medium_house": { cost: "Ty/Rm", size: "Mid-sized", material: "Ty" },
+      "large_house": { cost: "Ex/In", size: "Mid-sized", material: "Gd" },
+      "small_manor": { cost: "Rm/Am", size: "Large", material: "Ex" },
+      "large_manor": { cost: "In/Mn", size: "Deluxe", material: "Ex" },
+      "mansion": { cost: "Am/Mn", size: "Deluxe", material: "Ex" },
+      "office": { cost: "Gd/Rm", size: "Mid-sized", material: "Ex" },
+      "storefront": { cost: "Ty/Rm", size: "Small", material: "Gd" },
+      "office_suite": { cost: "Ex/In", size: "Mid-sized", material: "Ex" },
+      "office_floor": { cost: "Rm/Am", size: "Mid-sized", material: "Ex" },
+      "two_office_floors": { cost: "In/Mn", size: "Large", material: "Ex" },
+      "brownstone": { cost: "Ex/Rm", size: "Mid-sized", material: "Gd" },
+      "office_building_4": { cost: "Rm/Am", size: "Large", material: "Ex" },
+      "office_building_8": { cost: "In/Mn", size: "Deluxe", material: "Rm" },
+      "office_building_12": { cost: "Am/Un", size: "Deluxe", material: "Rm" },
+      "office_building_20": { cost: "Mn/ShX", size: "Deluxe", material: "Rm" },
+      "office_building_30": { cost: "Un/ShZ", size: "Deluxe", material: "Rm" },
+      "small_warehouse": { cost: "Ty/Rm", size: "Mid-sized", material: "Ty" },
+      "medium_warehouse": { cost: "Gd/In", size: "Large", material: "Ty" },
+      "large_warehouse": { cost: "Ex/Am", size: "Deluxe", material: "Gd" },
+      "small_factory": { cost: "Gd/In", size: "Mid-sized", material: "Rm" },
+      "medium_factory": { cost: "Ex/Am", size: "Large", material: "Rm" },
+      "large_factory": { cost: "Rm/Mn", size: "Deluxe", material: "In" }
+    }
+  };
+  
 CONFIG.marvel.ROOM_PACKAGES = {
     "livingRoom": {
         name: "Living Room",

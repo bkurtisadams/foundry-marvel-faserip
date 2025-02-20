@@ -1,5 +1,4 @@
-import { MARVEL_RANKS } from "../config.js";
-import { AddHeadquartersDialog } from "../dialogs/AddHeadquartersDialog.js";
+import { MARVEL_RANKS, MARVEL } from "../config.js";
 
 export class MarvelActorSheet extends ActorSheet {
     /** @override */
@@ -27,17 +26,29 @@ export class MarvelActorSheet extends ActorSheet {
         const system = context.actor.system || {};
         console.log("Current actor items:", this.actor.items);
 
-        // headquarters context
-        context.headquarters = this.actor.items.filter(item => item.type === "headquarters");
+        // Add headquarters data to context
+        context.headquarters = MARVEL.headquarters;
 
         // Add HQ CONFIG references
         context.config = {
             ...context.config,
-            HQ_TYPES: CONFIG.marvel.HQ_TYPES,
-            ROOM_PACKAGES: CONFIG.marvel.ROOM_PACKAGES,
-            SECURITY_PACKAGES: CONFIG.marvel.SECURITY_PACKAGES
+            headquarters: MARVEL.headquarters
         };
 
+        // Initialize headquarters if not set
+        if (!system.headquarters) {
+            system.headquarters = {
+                name: "",
+                type: "",
+                location: "",
+                description: "",
+                ownership: "",
+                cost: "",
+                size: "",
+                material: ""
+            };
+        }
+        
         // equipment organization here
         context.equipmentTypes = MarvelActorSheet.equipmentTypes;
         context.equipmentByType = {};
@@ -715,22 +726,26 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.roll-attack').click(ev => this._onAttackRoll(ev));
             html.find('.attack-row img').click(ev => this._onAttackInfo(ev));
 
-            // Add headquarters
-           /*  html.find('.add-headquarters').click(async ev => {
-                const itemData = {
-                    name: "New Headquarters",
-                    type: "headquarters",
-                    img: "icons/svg/house.svg"
-                };
-                await this.actor.createEmbeddedDocuments("Item", [itemData]);
-            }); */
-            html.find('.add-headquarters').click(async ev => {
+            /* html.find('.add-headquarters').click(async ev => {
                 const itemData = await AddHeadquartersDialog.create(this.actor);
                 if (itemData) {
                     await this.actor.createEmbeddedDocuments("Item", [itemData]);
                 }
+            }); */
+
+            // SIMPLE HQ
+            html.find('.hq-type-select').change(ev => {
+                const selectedType = ev.currentTarget.value;
+                const hqData = CONFIG.MARVEL.headquarters[selectedType] || { cost: "", size: "", material: "" };
+                
+                this.actor.update({
+                    'system.headquarters.cost': hqData.cost,
+                    'system.headquarters.size': hqData.size,
+                    'system.headquarters.material': hqData.material
+                });
             });
 
+            /* 
             // Edit headquarters
             html.find('.item-edit').click(ev => {
                 const li = ev.currentTarget.closest(".item");
@@ -746,8 +761,8 @@ export class MarvelActorSheet extends ActorSheet {
                     await item.delete();
                 }
             });
-
-    
+            */    
+           
             // Karma input listeners
             html.find('input[name="system.karmaTracking.advancementFund"], input[name="system.karmaTracking.karmaPool"], input[name="system.karmaTracking.lifetimeTotal"]')
                 .on('change', async (event) => {

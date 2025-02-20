@@ -105,14 +105,15 @@
           }
         },
         "headquarters": {
-        "name": "",
-        "type": "",
-        "location": "",
-        "description": "",
-        "rooms": {
-            "list": []
-        }
-    }
+          "name": "",
+          "type": "",
+          "location": "",
+          "description": "",
+          "ownership": "",
+          "cost": "",
+          "size": "",
+          "material": ""
+      }
       },
       "contacts": {
         "contacts": {
