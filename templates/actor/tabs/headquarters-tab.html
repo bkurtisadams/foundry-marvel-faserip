@@ -1,18 +1,12 @@
 <div class="headquarters-section">
     <div class="hq-header">
-        {{#select actor.system.headquarters.type}}
-        <option value="">Select HQ Type</option>
-        {{#each config.HQ_TYPES as |hq key|}}
-        <option value="{{key}}">{{hq.name}} ({{hq.cost}}, {{hq.size}})</option>
-        {{/each}}
-        {{/select}}
-      
+      <h2>{{name}}</h2>
       <div class="hq-stats">
-        <span>Size: {{actor.system.headquarters.size}}</span>
-        <span>Cost: {{actor.system.headquarters.cost}}</span>
-        <span>Material Strength: {{actor.system.headquarters.materialStrength}}</span>
+          <span>Type: {{system.type}}</span>
+          <span>Size: {{system.size}}</span>
+          <span>Material Strength: {{system.materialStrength}}</span>
       </div>
-    </div>
+  </div>
   
     <div class="room-packages">
       <h3>Room Packages</h3>

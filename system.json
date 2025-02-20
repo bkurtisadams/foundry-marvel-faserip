@@ -56,7 +56,6 @@
     "templates/items/equipment-item.html",
     "templates/items/item-sheet.html",
     "templates/dialogs/add-equipment.html",
-    "templates/dialogs/add-weapon.html",
-    "templates/actor/tabs/headquarters-tab.html"
+    "templates/dialogs/add-weapon.html"
   ]
 }

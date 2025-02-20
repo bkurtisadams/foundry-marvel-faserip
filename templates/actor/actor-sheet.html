@@ -484,13 +484,23 @@
     
     <!-- Headquarters Tab -->
     <div class="tab-panel" data-tab="headquarters" {{#if tabs.headquarters}}style="display: block;"{{else}}style="display: none;"{{/if}}>
-        {{#if headquarters.length}}
-            {{#with (lookup headquarters "0")}}
-                {{> "systems/marvel-faserip/templates/actor/tabs/headquarters-tab.html"}}
-            {{/with}}
-        {{else}}
-            <button type="button" class="add-headquarters add-ability-button">+ Add Headquarters</button>
-        {{/if}}
+        <button type="button" class="add-headquarters add-ability-button">+ Add Headquarters</button>
+        <div class="headquarters-list">
+            {{#each headquarters as |hq id|}}
+            <div class="item headquarters-row" data-item-id="{{hq._id}}">
+                <img src="{{hq.img}}" width="24" height="24"/>
+                <div class="headquarters-name">{{hq.name}}</div>
+                <div class="headquarters-details">
+                    <span class="hq-type">{{lookup @root.config.HQ_TYPES hq.system.type 'name'}}</span>
+                    <span class="hq-size">{{hq.system.size}}</span>
+                </div>
+                <div class="item-controls">
+                    <a class="item-control item-edit" title="Edit Headquarters"><i class="fas fa-edit"></i></a>
+                    <a class="item-control item-delete" title="Delete Headquarters"><i class="fas fa-trash"></i></a>
+                </div>
+            </div>
+            {{/each}}
+        </div>
     </div>
 
     <!-- Vehicles Tab -->

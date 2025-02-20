@@ -713,6 +713,33 @@ export class MarvelActorSheet extends ActorSheet {
             html.find('.add-attack').click(ev => this._onAddAttack(ev));
             html.find('.roll-attack').click(ev => this._onAttackRoll(ev));
             html.find('.attack-row img').click(ev => this._onAttackInfo(ev));
+
+            // Add headquarters
+            html.find('.add-headquarters').click(async ev => {
+                const itemData = {
+                    name: "New Headquarters",
+                    type: "headquarters",
+                    img: "icons/svg/house.svg"
+                };
+                await this.actor.createEmbeddedDocuments("Item", [itemData]);
+            });
+
+            // Edit headquarters
+            html.find('.item-edit').click(ev => {
+                const li = ev.currentTarget.closest(".item");
+                const item = this.actor.items.get(li.dataset.itemId);
+                item.sheet.render(true);
+            });
+
+            // Delete headquarters
+            html.find('.item-delete').click(async ev => {
+                const li = ev.currentTarget.closest(".item");
+                const item = this.actor.items.get(li.dataset.itemId);
+                if (item) {
+                    await item.delete();
+                }
+            });
+
     
             // Karma input listeners
             html.find('input[name="system.karmaTracking.advancementFund"], input[name="system.karmaTracking.karmaPool"], input[name="system.karmaTracking.lifetimeTotal"]')

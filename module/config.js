@@ -1,3 +1,5 @@
+// At the top of config.js, before any other CONFIG settings
+CONFIG.marvel = CONFIG.marvel || {};
 // Your existing MARVEL_RANKS and other config settings...
 export const MARVEL_RANKS = {
     'Shift 0': { range: [0, 0], standard: 0 },
@@ -19,8 +21,19 @@ export const MARVEL_RANKS = {
     'Class 5000': { range: [5000, 5000], standard: 5000 },
     'Beyond': { range: [5001, Infinity], standard: Infinity }
 };
-// At the top of config.js, before any other CONFIG settings
-CONFIG.marvel = CONFIG.marvel || {};
+
+CONFIG.marvel.HQ_TYPES = { 
+    "1BR": { name: "1 BR Apartment", cost: "Fe/Ex", size: "Small", material: "Gd" }, 
+    "2BR": { name: "2 BR Apartment", cost: "Pr/Ex", size: "Small", material: "Gd" }, 
+    "3BR": { name: "3 BR Apartment", cost: "Gd/Rm", size: "Small", material: "Gd" }, 
+    "cottage": { name: "Cottage", cost: "Pr/Gd", size: "Small", material: "Pr" }, 
+    "smallHouse": { name: "Small House", cost: "Ty/Ex", size: "Small", material: "Ty" }, 
+    "mediumHouse": { name: "Medium House", cost: "Ty/Rm", size: "Mid-sized", material: "Ty" }, 
+    "largeHouse": { name: "Large House", cost: "Ex/In", size: "Mid-sized", material: "Gd" }, 
+    "smallManor": { name: "Small Manor", cost: "Rm/Am", size: "Large", material: "Ex" }, 
+    "largeManor": { name: "Large Manor", cost: "In/Mn", size: "Deluxe", material: "Ex" }, 
+    "mansion": { name: "Mansion", cost: "Am/Mn", size: "Deluxe", material: "Ex" } 
+};
 
 // After MARVEL_RANKS in config.js
 CONFIG.marvel.ranks = MARVEL_RANKS;

@@ -180,6 +180,28 @@
       "attempts": 0,
       "status": "untried",
       "description": ""
+    },
+    "headquarters": {
+      "templates": ["base"],
+      "type": "",
+      "size": "",
+      "cost": {
+        "rent": "",
+        "purchase": ""
+      },
+      "materialStrength": "",
+      "rooms": [],
+      "security": {
+        "type": "",
+        "cost": ""
+      },
+      "defense": {
+        "type": "",
+        "cost": ""
+      },
+      "roomsUsed": 0,
+      "maxRooms": 0,
+      "monthlyMaintenance": 0
     }
   }
 }

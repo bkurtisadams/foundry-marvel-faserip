@@ -8,6 +8,7 @@ import { MarvelAttackItem } from "./documents/items/MarvelAttackItem.js";
 import { MarvelAttackItemSheet } from "./sheets/items/MarvelAttackItemSheet.js";
 import { MarvelFaseripItem } from "./item/item.js";
 import WeaponSystem from "./weapons/weapon-system.js";
+import { MarvelHeadquartersSheet } from "./sheets/items/MarvelHeadquartersSheet.js";
 
 Hooks.once('init', async function() {
     console.log('marvel-faserip | Initializing Marvel FASERIP System');
@@ -36,6 +37,12 @@ Hooks.once('init', async function() {
     Actors.registerSheet("marvel-faserip", MarvelActorSheet, { 
         makeDefault: true,
         label: "MARVEL.SheetCharacter"
+    });
+
+    // HQ registration
+    Items.registerSheet("marvel-faserip", MarvelHeadquartersSheet, {
+        types: ["headquarters"],
+        makeDefault: true
     });
     
     // ... rest of your initialization
