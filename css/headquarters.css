@@ -1,0 +1,157 @@
+.headquarters-section {
+  padding: 1rem;
+}
+
+.hq-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.hq-type-select {
+  min-width: 200px;
+}
+
+.hq-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.hq-stats span {
+  padding: 0.25rem 0.5rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.room-packages {
+  margin-top: 1.5rem;
+}
+
+.packages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.package-group {
+  border: 1px solid var(--color-border-light-primary);
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.package-group h4 {
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border-light-primary);
+}
+
+.package-item {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 4px;
+}
+
+.package-upgrades {
+  margin-top: 0.5rem;
+  padding-left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.security-section,
+.defense-section {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-top: 1px solid var(--color-border-light-primary);
+}
+
+.hq-summary {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+}.headquarters-section {
+    padding: 1rem;
+  }
+  
+  .hq-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .hq-type-select {
+    min-width: 200px;
+  }
+  
+  .hq-stats {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .hq-stats span {
+    padding: 0.25rem 0.5rem;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+  }
+  
+  .room-packages {
+    margin-top: 1.5rem;
+  }
+  
+  .packages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  
+  .package-group {
+    border: 1px solid var(--color-border-light-primary);
+    border-radius: 4px;
+    padding: 1rem;
+  }
+  
+  .package-group h4 {
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-border-light-primary);
+  }
+  
+  .package-item {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 4px;
+  }
+  
+  .package-upgrades {
+    margin-top: 0.5rem;
+    padding-left: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .security-section,
+  .defense-section {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-top: 1px solid var(--color-border-light-primary);
+  }
+  
+  .hq-summary {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+  }

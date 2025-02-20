@@ -1,0 +1,64 @@
+<form class="{{cssClass}}" autocomplete="off">
+    <header class="sheet-header">
+        <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}"/>
+        <div class="header-fields">
+            <h1 class="charname"><input name="name" type="text" value="{{item.name}}" placeholder="Headquarters Name"/></h1>
+        </div>
+    </header>
+
+    <nav class="sheet-tabs tabs" data-group="primary">
+        <a class="item" data-tab="rooms">Rooms</a>
+        <a class="item" data-tab="security">Security</a>
+        <a class="item" data-tab="description">Description</a>
+    </nav>
+
+    <section class="sheet-body">
+        <div class="tab-content" data-tab="rooms">
+            <div class="hq-header">
+                <select name="system.type" class="hq-type-select">
+                    {{#select item.system.type}}
+                    <option value="">Select HQ Type</option>
+                    {{#each HQ_TYPES as |hq key|}}
+                    <option value="{{key}}">{{hq.name}} ({{hq.cost}}, {{hq.size}})</option>
+                    {{/each}}
+                    {{/select}}
+                </select>
+                
+                <div class="hq-stats">
+                    <span>Size: {{item.system.size}}</span>
+                    <span>Cost: {{item.system.cost}}</span>
+                    <span>Material: {{item.system.materialStrength}}</span>
+                </div>
+            </div>
+
+            <div class="room-packages">
+                <h2>Room Packages</h2>
+                <div class="packages-grid">
+                    {{#each ROOM_PACKAGES as |package key|}}
+                    <div class="package-item">
+                        <label>
+                            <input type="checkbox" 
+                                   data-room="{{key}}"
+                                   name="system.rooms.{{key}}.installed" 
+                                   {{checked (lookup ../item.system.rooms key "installed")}}>
+                            {{package.name}} ({{package.cost}}, {{package.size}} areas)
+                        </label>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+
+            <div class="hq-summary">
+                <span>Space Used: {{roomsUsed}} / {{maxRooms}} areas</span>
+            </div>
+        </div>
+
+        <div class="tab-content" data-tab="security">
+            <!-- Security tab content here -->
+        </div>
+
+        <div class="tab-content" data-tab="description">
+            {{editor item.system.description target="system.description" button=true owner=owner editable=editable}}
+        </div>
+    </section>
+</form>
