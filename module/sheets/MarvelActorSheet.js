@@ -1370,19 +1370,12 @@ export class MarvelActorSheet extends ActorSheet {
     }
     
     async _onEditKarmaEntry(event, entry) {
-        // Currently keeps karma history open while editing
-        // Should follow same pattern as add:
-        // 1. Close karma history
-        // 2. Show edit dialog
-        // 3. After edit, reopen karma history
-        
-        // Suggested fix:
         event.preventDefault();
         $('.karma-history').remove();
         
         const editContent = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
-            { entry }
+            { entry }  // Entry data is being passed but not used in the template
         );
     
         new Dialog({
@@ -1392,10 +1385,29 @@ export class MarvelActorSheet extends ActorSheet {
                 save: {
                     label: "Save",
                     callback: async (html) => {
-                        // Update entry logic here
-                        // ...
-                        
-                        // Reopen karma history
+                        const form = html.find('form')[0];
+                        const updatedEntry = {
+                            date: form.querySelector('[name="date"]').value,
+                            amount: parseInt(form.querySelector('[name="amount"]').value),
+                            description: form.querySelector('[name="description"]').value
+                        };
+    
+                        // Get current history
+                        const history = duplicate(this.actor.system.karmaTracking.history);
+                        const index = history.findIndex(e => 
+                            e.date === entry.date && 
+                            e.amount === entry.amount && 
+                            e.description === entry.description
+                        );
+    
+                        if (index !== -1) {
+                            history[index] = updatedEntry;
+                            await this.actor.update({
+                                "system.karmaTracking.history": history
+                            });
+                        }
+    
+                        // Reopen karma history dialog
                         this._onKarmaHistoryClick(new Event('click'));
                     }
                 },
