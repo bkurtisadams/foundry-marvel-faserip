@@ -63,6 +63,10 @@ export class MarvelActor extends Actor {
                 popularity: { hero: 0, secret: 0 }
             };
         }
+        // Calculate derived values
+        this._calculateHealth();
+        this._calculateKarma();
+        this._updateResourceRank();
 
         if (!this.system.resistances) {
             this.system.resistances = {
@@ -181,41 +185,30 @@ export class MarvelActor extends Actor {
      */
     _calculateHealth() {
         if (!this.system.primaryAbilities) return;
-
         const health = Number(this.system.primaryAbilities.fighting.number || 0) +
                       Number(this.system.primaryAbilities.agility.number || 0) +
                       Number(this.system.primaryAbilities.strength.number || 0) +
                       Number(this.system.primaryAbilities.endurance.number || 0);
-        
-        // Update maximum health
+       
+        // Always update both max and current health
         this.system.secondaryAbilities.health.max = health;
-        
-        // Initialize current health if not set
-        if (!this.system.secondaryAbilities.health.value) {
-            this.system.secondaryAbilities.health.value = health;
-        }
+        this.system.secondaryAbilities.health.value = health;
     }
-
+    
     /**
      * Calculate Karma from mental abilities
      * @private
      */
     _calculateKarma() {
         if (!this.system.primaryAbilities) return;
-
         const karma = Number(this.system.primaryAbilities.reason.number || 0) +
                      Number(this.system.primaryAbilities.intuition.number || 0) +
                      Number(this.system.primaryAbilities.psyche.number || 0);
-        
-        // Update maximum karma
+       
+        // Always update both max and current karma
         this.system.secondaryAbilities.karma.max = karma;
-        
-        // Initialize current karma if not set
-        if (!this.system.secondaryAbilities.karma.value) {
-            this.system.secondaryAbilities.karma.value = karma;
-        }
+        this.system.secondaryAbilities.karma.value = karma;
     }
-
     /* async updateKarma(advancementFund, karmaPool) {
         const lifetimeTotal = karmaPool + advancementFund;
         await this.update({
