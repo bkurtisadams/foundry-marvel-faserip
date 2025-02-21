@@ -3,9 +3,9 @@ export class MarvelActor extends Actor {
     prepareData() {
         // Always call super first to ensure core data is initialized
         super.prepareData();
-
+    
         console.log("Preparing actor data:", this.system.primaryAbilities);
-
+    
         // Initialize base template data structure if needed
         this._initializeBaseTemplate();
         
@@ -21,11 +21,24 @@ export class MarvelActor extends Actor {
                 this._initializeNPCTemplate();
                 break;
         }
-
+    
+        // Track current health before recalculation
+        const currentHealth = this.system.secondaryAbilities?.health?.value || 0;
+        const currentMaxHealth = this.system.secondaryAbilities?.health?.max || 0;
+        
         // Calculate derived values
-        this._calculateHealth();
+        this._calculateMaxHealth(); // Changed method name
         this._calculateKarma();
         this._updateResourceRank();
+        
+        // Restore current health if it was modified (damage was taken)
+        if (currentMaxHealth > 0 && currentHealth < currentMaxHealth) {
+            // If we had valid health values and damage was taken, preserve the current health
+            this.system.secondaryAbilities.health.value = Math.min(
+                currentHealth, 
+                this.system.secondaryAbilities.health.max
+            );
+        }
     }
 
     /** Initialize the base template structure */
@@ -64,7 +77,7 @@ export class MarvelActor extends Actor {
             };
         }
         // Calculate derived values
-        this._calculateHealth();
+        this._calculateMaxHealth();
         this._calculateKarma();
         this._updateResourceRank();
 
@@ -183,16 +196,20 @@ export class MarvelActor extends Actor {
      * Calculate Health from primary abilities
      * @private
      */
-    _calculateHealth() {
+    _calculateMaxHealth() {
         if (!this.system.primaryAbilities) return;
         const health = Number(this.system.primaryAbilities.fighting.number || 0) +
-                      Number(this.system.primaryAbilities.agility.number || 0) +
-                      Number(this.system.primaryAbilities.strength.number || 0) +
-                      Number(this.system.primaryAbilities.endurance.number || 0);
-       
-        // Always update both max and current health
+                    Number(this.system.primaryAbilities.agility.number || 0) +
+                    Number(this.system.primaryAbilities.strength.number || 0) +
+                    Number(this.system.primaryAbilities.endurance.number || 0);
+    
+        // Only update max health, not current health
         this.system.secondaryAbilities.health.max = health;
-        this.system.secondaryAbilities.health.value = health;
+        
+        // Only set current health to max for new characters
+        if (this.system.secondaryAbilities.health.value === 0) {
+            this.system.secondaryAbilities.health.value = health;
+        }
     }
     
     /**
@@ -1305,16 +1322,24 @@ async clearResourceLockout() {
     async applyDamage(damage, options = {}) {
         console.log(`Applying ${damage} damage to ${this.name}`);
         
+        // Verify the path to health value
         const currentHealth = this.system.secondaryAbilities.health.value;
         console.log(`Current health: ${currentHealth}`);
         
+        // Calculate new health
         const newHealth = Math.max(0, currentHealth - damage);
-        console.log(`New health will be: ${newHealth}`);
-
-        // Update health value using the correct data path
-        await this.update({
-            "system.secondaryAbilities.health.value": newHealth
-        });
+        console.log(`New health will be: ${newHealth}, path: system.secondaryAbilities.health.value`);
+    
+        try {
+            // Update health with the correct document API
+            await this.update({
+                "system.secondaryAbilities.health.value": newHealth
+            });
+            console.log("Health update successful, new health:", this.system.secondaryAbilities.health.value);
+        } catch (error) {
+            console.error("Error updating health:", error);
+            throw error; // Re-throw to allow for handling upstream
+        }
 
         // Create chat message for damage
         const messageContent = `

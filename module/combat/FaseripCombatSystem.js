@@ -109,110 +109,106 @@ export class FaseripCombatSystem {
         );
     }
 
-    _processAttack(html, attacker, target) {
-        const form = html.find('form')[0];
-        const formData = new FormData(form);
-        
-        const options = {
-            attackType: formData.get('attackType'),
-            columnShift: parseInt(formData.get('columnShift')) || 0,
-            karmaPoints: parseInt(formData.get('karmaPoints')) || 0
-        };
-
-        // Get ability for attack type
-        const ability = CONFIG.marvel.actionResults[options.attackType]?.ability.toLowerCase();
-        if (!ability) {
-            ui.notifications.error("Invalid attack type");
-            return;
-        }
-
-        try {
-            // Calculate base damage
-            let baseDamage;
-            switch(options.attackType) {
-                case "BA":
-                case "TB":
-                    baseDamage = attacker.system.primaryAbilities.strength.number;
-                    break;
-                case "EA":
-                case "TE":
-                    baseDamage = Math.max(
-                        attacker.system.primaryAbilities.strength.number,
-                        options.weaponDamage || 0
-                    );
-                    break;
-                case "Sh":
-                case "En":
-                case "Fo":
-                    baseDamage = options.weaponDamage || 10;
-                    break;
-                default:
-                    baseDamage = 0;
-            }
-
-            // Perform attack roll
-            attacker.rollAttack(ability, options.attackType, options).then(attackResult => {
-                if (!attackResult) return;
-
-                console.log("Attack result:", attackResult);
-
-                // Handle damage based on result
-                if (attackResult.color !== "white") {
-                    // Get resistance
-                    const resistance = this._getApplicableResistance(target, options.attackType);
-                    
-                    // Calculate final damage
-                    const finalDamage = Math.max(0, baseDamage - resistance);
-
-                    if (finalDamage > 0) {
-                        // Get current health
-                        const currentHealth = target.system.secondaryAbilities.health.value;
-                        const newHealth = Math.max(0, currentHealth - finalDamage);
-                        
-                        // Update target's health
-                        target.update({
-                            "system.secondaryAbilities.health.value": newHealth
-                        }).then(() => {
-                            // Create damage message
-                            ChatMessage.create({
-                                content: `
-                                    <div class="marvel-damage">
-                                        <h3>${target.name} takes damage!</h3>
-                                        <div class="damage-details">
-                                            <div>Attack Type: ${options.attackType}</div>
-                                            <div>Base Damage: ${baseDamage}</div>
-                                            ${resistance ? `<div>Resistance: ${resistance}</div>` : ''}
-                                            <div>Final Damage: ${finalDamage}</div>
-                                            <div>Health: ${currentHealth} → ${newHealth}</div>
-                                            <div>Result: ${attackResult.color.toUpperCase()}</div>
-                                        </div>
-                                    </div>`,
-                                speaker: ChatMessage.getSpeaker({actor: attacker})
-                            });
-                        });
-                    } else {
-                        // Damage fully absorbed message
-                        ChatMessage.create({
-                            content: `
-                                <div class="marvel-damage">
-                                    <h3>${target.name}'s resistance absorbs the damage!</h3>
-                                    <div class="damage-details">
-                                        <div>Attack Damage: ${baseDamage}</div>
-                                        <div>Resistance: ${resistance}</div>
-                                        <div>No damage taken!</div>
-                                    </div>
-                                </div>`,
-                            speaker: ChatMessage.getSpeaker({actor: attacker})
-                        });
-                    }
-                }
-            });
-
-        } catch (error) {
-            console.error("Error in combat:", error);
-            ui.notifications.error("Error processing combat");
-        }
+async _processAttack(html, attacker, target) {
+    // error checking early in the method
+    if (!target || !target.system || !target.system.secondaryAbilities || !target.system.secondaryAbilities.health) {
+        console.error("Invalid target structure:", target);
+        ui.notifications.error("Target has invalid data structure");
+        return;
     }
+
+    const form = html.find('form')[0];
+    const formData = new FormData(form);
+    
+    const options = {
+        attackType: formData.get('attackType'),
+        columnShift: parseInt(formData.get('columnShift')) || 0,
+        karmaPoints: parseInt(formData.get('karmaPoints')) || 0
+    };
+
+    // Get ability for attack type
+    const ability = CONFIG.marvel.actionResults[options.attackType]?.ability.toLowerCase();
+    if (!ability) {
+        ui.notifications.error("Invalid attack type");
+        return;
+    }
+
+    try {
+        // Calculate base damage
+        let baseDamage;
+        switch(options.attackType) {
+            case "BA":
+            case "TB":
+                baseDamage = attacker.system.primaryAbilities.strength.number;
+                console.log("Base damage from strength:", baseDamage);
+                break;
+            case "EA":
+            case "TE":
+                baseDamage = Math.max(
+                    attacker.system.primaryAbilities.strength.number,
+                    options.weaponDamage || 0
+                );
+                break;
+            case "Sh":
+            case "En":
+            case "Fo":
+                baseDamage = options.weaponDamage || 10;
+                break;
+            default:
+                baseDamage = 0;
+        }
+
+        // Perform attack roll (use async/await pattern)
+        const attackResult = await attacker.rollAttack(ability, options.attackType, options);
+        if (!attackResult) return;
+
+        console.log("Attack result:", attackResult);
+
+        // Handle damage based on result
+        if (attackResult.color !== "white") {
+            // Get resistance
+            const resistance = this._getApplicableResistance(target, options.attackType);
+            console.log("Applied resistance:", resistance, "to base damage:", baseDamage);
+            
+            // Calculate final damage
+            const finalDamage = Math.max(0, baseDamage - resistance);
+            console.log("Final damage after resistance:", finalDamage);
+
+            if (finalDamage > 0) {
+                // Instead of directly updating health, use applyDamage method
+                try {
+                    await target.applyDamage(finalDamage, {
+                        type: options.attackType,
+                        source: attacker
+                    });
+                    
+                    // Damage message is created by applyDamage, so we don't need to create one here
+                } catch (error) {
+                    console.error("Error applying damage:", error);
+                    ui.notifications.error("Error applying damage to target");
+                }
+            } else {
+                // Damage fully absorbed message
+                await ChatMessage.create({
+                    content: `
+                        <div class="marvel-damage">
+                            <h3>${target.name}'s resistance absorbs the damage!</h3>
+                            <div class="damage-details">
+                                <div>Attack Damage: ${baseDamage}</div>
+                                <div>Physical Resistance: ${resistance}</div>
+                                <div>No damage taken!</div>
+                            </div>
+                        </div>`,
+                    speaker: ChatMessage.getSpeaker({actor: attacker})
+                });
+            }
+        }
+
+    } catch (error) {
+        console.error("Error in combat:", error);
+        ui.notifications.error("Error processing combat");
+    }
+}
 
     async _processDamage(result, attacker, target, options) {
         let damage = 0;
@@ -303,126 +299,6 @@ export class FaseripCombatSystem {
         return resistanceValue;
     }
 
-    async _resolveAttack(html, attacker, target) {
-        const form = html.find('form')[0];
-        const formData = new FormData(form);
-        
-        const options = {
-            attackType: formData.get('attackType'),
-            columnShift: parseInt(formData.get('columnShift')) || 0,
-            karmaPoints: parseInt(formData.get('karmaPoints')) || 0
-        };
-
-        // Get ability for attack type
-        let ability;
-        switch(options.attackType) {
-            case "BA":
-            case "EA":
-                ability = "fighting";
-                break;
-            case "Sh":
-            case "TE":
-            case "TB":
-                ability = "agility";
-                break;
-            case "En":
-            case "Fo":
-                ability = "reason";
-                break;
-            default:
-                ability = "fighting";
-        }
-
-        // Calculate base damage
-        let baseDamage;
-        switch(options.attackType) {
-            case "BA":
-            case "TB":
-                baseDamage = attacker.system.primaryAbilities.strength.number;
-                break;
-            case "EA":
-            case "TE":
-                baseDamage = Math.max(
-                    attacker.system.primaryAbilities.strength.number,
-                    options.weaponDamage || 0
-                );
-                break;
-            case "Sh":
-            case "En":
-            case "Fo":
-                baseDamage = options.weaponDamage || 10; // Default or weapon damage
-                break;
-            default:
-                baseDamage = 0;
-        }
-
-        // Perform attack roll
-        const attackResult = await attacker.rollAttack(ability, options.attackType, options);
-
-        // If hit, apply damage
-        if (attackResult.color !== "white") {
-            let damage = baseDamage;
-            
-            // Modify damage based on color
-            if (attackResult.color === "red") damage *= 2;
-            if (attackResult.color === "yellow") damage *= 1.5;
-
-            // Get target's applicable resistance
-            const resistance = this._getApplicableResistance(target, options.attackType);
-            
-            // Calculate final damage after resistance
-            const finalDamage = Math.max(0, Math.floor(damage - resistance));
-
-            // Update target's health only if damage gets through
-            if (finalDamage > 0) {
-                const currentHealth = target.system.secondaryAbilities.health.value;
-                const newHealth = Math.max(0, currentHealth - finalDamage);
-                
-                await target.update({
-                    "system.secondaryAbilities.health.value": newHealth
-                });
-
-                // Show detailed damage message
-                ChatMessage.create({
-                    content: `
-                        <div class="marvel-damage">
-                            <h3>${target.name} takes damage!</h3>
-                            <div class="damage-details">
-                                <div>Base Damage: ${damage}</div>
-                                ${resistance ? `<div>Resistance (${this._getAttackResistanceType(options.attackType)}): ${resistance}</div>` : ''}
-                                <div>Final Damage: ${finalDamage}</div>
-                                <div>Health: ${currentHealth} → ${newHealth}</div>
-                            </div>
-                        </div>`,
-                    speaker: ChatMessage.getSpeaker({actor: attacker})
-                });
-
-                // Check for unconsciousness
-                if (newHealth <= 0) {
-                    ChatMessage.create({
-                        content: `${target.name} has been reduced to 0 Health and must make an Endurance FEAT!`,
-                        speaker: ChatMessage.getSpeaker({actor: target})
-                    });
-                }
-            } else {
-                // Damage fully absorbed message
-                ChatMessage.create({
-                    content: `
-                        <div class="marvel-damage">
-                            <h3>${target.name}'s resistance absorbs the damage!</h3>
-                            <div class="damage-details">
-                                <div>Attack Damage: ${damage}</div>
-                                <div>Resistance (${this._getAttackResistanceType(options.attackType)}): ${resistance}</div>
-                                <div>No damage taken!</div>
-                            </div>
-                        </div>`,
-                    speaker: ChatMessage.getSpeaker({actor: attacker})
-                });
-            }
-        }
-    }
-    // Add to FaseripCombatSystem.js
-
     async _handleCombatEffect(attackType, color, attacker, target, baseDamage) {
         // First calculate base damage before any special effects
         let damage = baseDamage;
@@ -494,114 +370,6 @@ export class FaseripCombatSystem {
         }
 
         return { damage: 0, effect: "Miss" }; // Default fallback
-    }
-
-    _processAttack(html, attacker, target) {
-        const form = html.find('form')[0];
-        const formData = new FormData(form);
-        
-        const options = {
-            attackType: formData.get('attackType'),
-            columnShift: parseInt(formData.get('columnShift')) || 0,
-            karmaPoints: parseInt(formData.get('karmaPoints')) || 0
-        };
-
-        // Get ability for attack type
-        const ability = CONFIG.marvel.actionResults[options.attackType]?.ability.toLowerCase();
-        if (!ability) {
-            ui.notifications.error("Invalid attack type");
-            return;
-        }
-
-        try {
-            // Calculate base damage
-            let baseDamage;
-            switch(options.attackType) {
-                case "BA":
-                case "TB":
-                    baseDamage = attacker.system.primaryAbilities.strength.number;
-                    console.log("Base damage from strength:", baseDamage);
-                    break;
-                case "EA":
-                case "TE":
-                    baseDamage = Math.max(
-                        attacker.system.primaryAbilities.strength.number,
-                        options.weaponDamage || 0
-                    );
-                    break;
-                case "Sh":
-                case "En":
-                case "Fo":
-                    baseDamage = options.weaponDamage || 10;
-                    break;
-                default:
-                    baseDamage = 0;
-            }
-
-            // Perform attack roll
-            attacker.rollAttack(ability, options.attackType, options).then(attackResult => {
-                if (!attackResult) return;
-
-                console.log("Attack result:", attackResult);
-
-                // Handle damage based on result
-                if (attackResult.color !== "white") {
-                    // Get resistance
-                    const resistance = this._getApplicableResistance(target, options.attackType);
-                    console.log("Applied resistance:", resistance, "to base damage:", baseDamage);
-                    
-                    // Calculate final damage
-                    const finalDamage = Math.max(0, baseDamage - resistance);
-                    console.log("Final damage after resistance:", finalDamage);
-
-                    if (finalDamage > 0) {
-                        // Get current health
-                        const currentHealth = target.system.secondaryAbilities.health.value;
-                        const newHealth = Math.max(0, currentHealth - finalDamage);
-                        
-                        // Update target's health
-                        target.update({
-                            "system.secondaryAbilities.health.value": newHealth
-                        }).then(() => {
-                            // Create damage message
-                            ChatMessage.create({
-                                content: `
-                                    <div class="marvel-damage">
-                                        <h3>${target.name} takes damage!</h3>
-                                        <div class="damage-details">
-                                            <div>Attack Type: ${options.attackType}</div>
-                                            <div>Base Damage: ${baseDamage}</div>
-                                            ${resistance ? `<div>Physical Resistance: ${resistance}</div>` : ''}
-                                            <div>Final Damage: ${finalDamage}</div>
-                                            <div>Health: ${currentHealth} → ${newHealth}</div>
-                                            <div>Result: ${attackResult.color.toUpperCase()}</div>
-                                        </div>
-                                    </div>`,
-                                speaker: ChatMessage.getSpeaker({actor: attacker})
-                            });
-                        });
-                    } else {
-                        // Damage fully absorbed message
-                        ChatMessage.create({
-                            content: `
-                                <div class="marvel-damage">
-                                    <h3>${target.name}'s resistance absorbs the damage!</h3>
-                                    <div class="damage-details">
-                                        <div>Attack Damage: ${baseDamage}</div>
-                                        <div>Physical Resistance: ${resistance}</div>
-                                        <div>No damage taken!</div>
-                                    </div>
-                                </div>`,
-                            speaker: ChatMessage.getSpeaker({actor: attacker})
-                        });
-                    }
-                }
-            });
-
-        } catch (error) {
-            console.error("Error in combat:", error);
-            ui.notifications.error("Error processing combat");
-        }
     }
 
     async _handleSpecialEffect(effect, target, attacker, damage) {
