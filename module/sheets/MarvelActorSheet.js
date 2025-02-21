@@ -639,7 +639,15 @@ export class MarvelActorSheet extends ActorSheet {
     
         if (this.isEditable) {
             console.log("Setting up listeners");
+            //html.find('.initial-roll-input').change(this._onInitialRollChange.bind(this));
+             // Basic input change handlers
             html.find('.initial-roll-input').change(this._onInitialRollChange.bind(this));
+            html.find('.initial-rank-input').change(this._onRankChange.bind(this));
+            html.find('.rank-select').change(this._onRankChange.bind(this));
+            html.find('.ability-number').change(this._onNumberChange.bind(this));
+
+            // Add keyboard navigation
+            html.find('.ability-row input, .ability-row select').on('keydown', this._onAbilityKeyDown.bind(this));
             
             // Add drag events for macros
             let handler = ev => this._onDragStart(ev);
@@ -802,6 +810,23 @@ export class MarvelActorSheet extends ActorSheet {
             [`system.primaryAbilities.${cleanPath}.initialRoll`]: newRoll
         });
     }
+    
+        _onAbilityKeyDown(event) {
+            if (event.key === 'Tab') {
+                // Let the default tab behavior work
+                return true;
+            }
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const inputs = $(this.element).find('.ability-row input, .ability-row select');
+                const currentIndex = inputs.index(event.currentTarget);
+                const nextInput = inputs.eq(currentIndex + 1);
+                if (nextInput.length) {
+                    nextInput.focus();
+                }
+                return false;
+            }
+        }
 
     async _onAttackRoll(event) {
         event.preventDefault();
@@ -2060,7 +2085,7 @@ async _onNumberChange(event) {
     this.render(false);
 }
 
-/* async _onRankChange(event) {
+async _onRankChange(event) {
     event.preventDefault();
     const element = event.currentTarget;
     const abilityPath = element.dataset.ability;
@@ -2082,28 +2107,7 @@ async _onNumberChange(event) {
             [`system.primaryAbilities.${cleanPath}.number`]: rankNumber
         });
     }
-} */
-    async _onRankChange(event) {
-        event.preventDefault();
-        const element = event.currentTarget;
-        const abilityPath = element.dataset.ability;
-        const newRank = element.value;
-        const cleanPath = abilityPath.replace('primaryAbilities.', '');
-        
-        console.log(`Updating rank for ${cleanPath} to ${newRank}`);
-        
-        if (element.classList.contains('initial-rank-input')) {
-            await this.actor.update({
-                [`system.primaryAbilities.${cleanPath}.initialRank`]: newRank
-            });
-        } else {
-            const rankNumber = CONFIG.marvel.ranks[newRank]?.standard || 0;
-            await this.actor.update({
-                [`system.primaryAbilities.${cleanPath}.rank`]: newRank,
-                [`system.primaryAbilities.${cleanPath}.number`]: rankNumber
-            });
-        }
-    }
+}
 
     async _onPopularityRoll(event) {
         event.preventDefault();
