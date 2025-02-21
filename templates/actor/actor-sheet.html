@@ -189,17 +189,27 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>F + A + S + E = {{actor.system.secondaryAbilities.health.value}}</td>
-                            <td>R + I + P = {{actor.system.secondaryAbilities.karma.value}}</td>
+                            <!-- <td>F + A + S + E = {{actor.system.secondaryAbilities.health.value}}</td>
+                            <td>R + I + P = {{actor.system.secondaryAbilities.karma.value}}</td> -->
+                            <td>F + A + S + E</td>
+                            <td>R + I + P</td>
                             <td>{{actor.system.secondaryAbilities.resources.rank}}</td>
                             <td>{{actor.system.secondaryAbilities.popularity.rank}}</td>
                         </tr>
                         <tr>
                             <td>
-                                <input type="number" name="system.secondaryAbilities.health.value" value="{{actor.system.secondaryAbilities.health.value}}"/>
+                                <div class="value-max-container">
+                                    <input type="number" name="system.secondaryAbilities.health.value" value="{{actor.system.secondaryAbilities.health.value}}" style="width: 45%"/>
+                                    <span class="value-max-divider">/</span>
+                                    <input type="number" value="{{actor.system.secondaryAbilities.health.max}}" disabled style="width: 45%"/>
+                                </div>
                             </td>
                             <td>
-                                <input type="number" name="system.secondaryAbilities.karma.value" value="{{actor.system.secondaryAbilities.karma.value}}"/>
+                                <div class="value-max-container">
+                                    <input type="number" name="system.secondaryAbilities.karma.value" value="{{actor.system.secondaryAbilities.karma.value}}" style="width: 45%"/>
+                                    <span class="value-max-divider">/</span>
+                                    <input type="number" value="{{actor.system.secondaryAbilities.karma.max}}" disabled style="width: 45%"/>
+                                </div>
                             </td>
                             <td>
                                 <input type="number" name="system.secondaryAbilities.resources.number" value="{{actor.system.secondaryAbilities.resources.number}}"/>

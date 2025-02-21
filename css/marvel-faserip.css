@@ -279,10 +279,10 @@
   }
   
   /* Input and Select Styling for abilities */
-  .primary-abilities input[type="text"],
-  .primary-abilities input[type="number"],
-  .primary-abilities select,
-  .secondary-abilities input {
+.primary-abilities input[type="text"],
+.primary-abilities input[type="number"],
+.primary-abilities select,
+.secondary-abilities input {
     border: none;
     background: transparent;
     text-align: center;
@@ -290,7 +290,29 @@
     height: 18px;
     font-size: 12px;
     width: 100%;
-  }
+}
+
+/* Add these new rules to handle the disabled max value inputs */
+.secondary-abilities input[type="number"]:disabled {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #666;
+    cursor: not-allowed;
+}
+
+/* Style for the value/max container */
+.secondary-abilities .value-max-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+/* Style for the divider */
+.secondary-abilities .value-max-divider {
+    font-size: 12px;
+    line-height: 18px;
+    color: #666;
+}
   
   /* Column Widths for ability inputs */
   .initial-roll-input {
