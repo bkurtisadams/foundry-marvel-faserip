@@ -1,3 +1,4 @@
+<!-- combat-hud.html -->
 <div class="hud-header">
     <h3>FASERIP Combat</h3>
     <div class="header-controls">
@@ -6,32 +7,160 @@
     </div>
 </div>
 
-<div class="combat-hud">
-    <div class="window-header">
-        <h4>Combat Actions</h4>
-    </div>
-    <div class="window-content">
-        {{#each actions}}
-        <div class="combat-action" data-action-type="{{this.type}}">
-            {{this.name}}
-        </div>
-        {{/each}}
-    </div>
+<div class="hud-content">
+    <table class="combat-table">
+        <!-- Top section with abilities -->
+        <tr>
+            <th>Blunt<br>Attacks</th>
+            <th>Edged<br>Attacks</th>
+            <th>Shooting<br>Attacks</th>
+            <th>Throwing<br>Edged</th>
+            <th>Throwing<br>Blunt</th>
+            <th>Energy</th>
+            <th>Force</th>
+            <th>Grap-<br>pling</th>
+            <th>Grab-<br>bing</th>
+            <th>Escap-<br>ing</th>
+            <th>Charg-<br>ing</th>
+            <th>Dodging</th>
+            <th>Evad-<br>ing</th>
+            <th>Blocking</th>
+            <th>Catching</th>
+            <th>Stun?</th>
+            <th>Slam?</th>
+            <th>Kill?</th>
+        </tr>
+        <!-- Action codes -->
+        <tr>
+            <td>BA</td>
+            <td>EA</td>
+            <td>Sh</td>
+            <td>TE</td>
+            <td>TB</td>
+            <td>En</td>
+            <td>Fo</td>
+            <td>Gp</td>
+            <td>Gb</td>
+            <td>Es</td>
+            <td>Ch</td>
+            <td>Do</td>
+            <td>Ev</td>
+            <td>Bl</td>
+            <td>Ca</td>
+            <td>St</td>
+            <td>Sl</td>
+            <td>Ki</td>
+        </tr>
+        <!-- Abilities -->
+        <tr>
+            <td>Fighting</td>
+            <td>Fighting</td>
+            <td>Agility</td>
+            <td>Agility</td>
+            <td>Agility</td>
+            <td>Agility</td>
+            <td>Agility</td>
+            <td>Strength</td>
+            <td>Strength</td>
+            <td>Strength</td>
+            <td>Endur-<br>ance</td>
+            <td>Agility</td>
+            <td>Fighting</td>
+            <td>Strength</td>
+            <td>Agility</td>
+            <td>Endur-<br>ance</td>
+            <td>Endur-<br>ance</td>
+            <td>Endur-<br>ance</td>
+        </tr>
+        <!-- White results -->
+        <tr class="result-white">
+            <td>Miss</td>
+            <td>Miss</td>
+            <td>Miss</td>
+            <td>Miss</td>
+            <td>Miss</td>
+            <td>Miss</td>
+            <td>Miss</td>
+            <td>Miss</td>
+            <td>Miss</td>
+            <td>Miss</td>
+            <td>Miss</td>
+            <td>None</td>
+            <td>Autohit</td>
+            <td>-6 CS</td>
+            <td>Autohit</td>
+            <td>1-10</td>
+            <td>Gr. Slam</td>
+            <td>En. Loss</td>
+        </tr>
+        <!-- Green results -->
+        <tr class="result-green">
+            <td>Hit</td>
+            <td>Hit</td>
+            <td>Hit</td>
+            <td>Hit</td>
+            <td>Hit</td>
+            <td>Hit</td>
+            <td>Hit</td>
+            <td>Miss</td>
+            <td>Take</td>
+            <td>Miss</td>
+            <td>Hit</td>
+            <td>-2 CS</td>
+            <td>Evasion</td>
+            <td>-4 CS</td>
+            <td>Miss</td>
+            <td>1</td>
+            <td>1 area</td>
+            <td>E/S</td>
+        </tr>
+        <!-- Yellow results -->
+        <tr class="result-yellow">
+            <td>Slam</td>
+            <td>Stun</td>
+            <td>Bullseye</td>
+            <td>Stun</td>
+            <td>Hit</td>
+            <td>Bullseye</td>
+            <td>Bullseye</td>
+            <td>Partial</td>
+            <td>Grab</td>
+            <td>Escape</td>
+            <td>Slam</td>
+            <td>-4 CS</td>
+            <td>+1 CS</td>
+            <td>-2 CS</td>
+            <td>Damage</td>
+            <td>No</td>
+            <td>Stagger</td>
+            <td>No</td>
+        </tr>
+        <!-- Red results -->
+        <tr class="result-red">
+            <td>Stun</td>
+            <td>Kill</td>
+            <td>Kill</td>
+            <td>Kill</td>
+            <td>Stun</td>
+            <td>Kill</td>
+            <td>Stun</td>
+            <td>Hold</td>
+            <td>Break</td>
+            <td>Reverse</td>
+            <td>Stun</td>
+            <td>-6 CS</td>
+            <td>+2 CS</td>
+            <td>+4 CS</td>
+            <td>Catch</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+        </tr>
+    </table>
 </div>
 
-<div class="hud-content">
-    <!-- Character Selection -->
-    <div class="character-section">
-        <select class="character-selector">
-            {{#each characters as |character id|}}
-            <option value="{{character.id}}" {{#if character.isActive}}selected{{/if}}>{{character.name}}</option>
-            {{/each}}
-        </select>
-    </div>
-    
     <!-- Universal Table Section -->
     <div class="universal-table-section">
-        <h4>Universal Table</h4>
         <table class="universal-table">
             <thead>
                 <tr>
@@ -54,105 +183,5 @@
                 {{/each}}
             </tbody>
         </table>
-    </div>
-    
-    <!-- Offensive Actions -->
-    <div class="actions-section">
-        <h4>Offensive Actions</h4>
-        <div class="action-groups">
-            <!-- Fighting Actions -->
-            <div class="action-group">
-                <h5>Fighting</h5>
-                <div class="action-buttons">
-                    {{#each attackTypes as |attack code|}}
-                    {{#if (eq attack.ability "Fighting")}}
-                    <button class="attack-button" data-type="{{code}}">{{attack.name}}</button>
-                    {{/if}}
-                    {{/each}}
-                </div>
-            </div>
-            
-            <!-- Agility Actions -->
-            <div class="action-group">
-                <h5>Agility</h5>
-                <div class="action-buttons">
-                    {{#each attackTypes as |attack code|}}
-                    {{#if (eq attack.ability "Agility")}}
-                    <button class="attack-button" data-type="{{code}}">{{attack.name}}</button>
-                    {{/if}}
-                    {{/each}}
-                </div>
-            </div>
-            
-            <!-- Strength Actions -->
-            <div class="action-group">
-                <h5>Strength</h5>
-                <div class="action-buttons">
-                    {{#each attackTypes as |attack code|}}
-                    {{#if (eq attack.ability "Strength")}}
-                    <button class="attack-button" data-type="{{code}}">{{attack.name}}</button>
-                    {{/if}}
-                    {{/each}}
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Defensive Actions -->
-    <div class="defensive-actions-section">
-        <h4>Defensive Actions</h4>
-        <div class="action-buttons">
-            <button class="defensive-action" data-action="dodge">Dodge</button>
-            <button class="defensive-action" data-action="evade">Evade</button>
-            <button class="defensive-action" data-action="block">Block</button>
-            <button class="defensive-action" data-action="catch">Catch</button>
-        </div>
-    </div>
-    
-    <!-- Attack Options -->
-    <div class="attack-options-section">
-        <h4>Attack Options</h4>
-        <div class="option-row">
-            <label>Weapon:</label>
-            <select class="weapons-dropdown">
-                <option value="">-- Select Weapon --</option>
-                {{#if character}}
-                {{#each character.weapons as |weapon id|}}
-                <option value="{{weapon.id}}" data-type="{{weapon.system.attackType}}" data-damage="{{weapon.system.damage}}">
-                    {{weapon.name}} ({{weapon.system.attackType}})
-                </option>
-                {{/each}}
-                {{/if}}
-            </select>
-        </div>
-        <div class="option-row">
-            <label>Power:</label>
-            <select class="powers-dropdown">
-                <option value="">-- Select Power --</option>
-                {{#if character}}
-                {{#each character.powers as |power id|}}
-                <option value="{{power.id}}" data-type="{{power.system.attackType}}" data-damage="{{power.system.damage}}">
-                    {{power.name}} ({{power.system.attackType}})
-                </option>
-                {{/each}}
-                {{/if}}
-            </select>
-        </div>
-        <div class="option-row">
-            <label>Column Shift:</label>
-            <select class="column-shift">
-                <option value="-3">-3 CS</option>
-                <option value="-2">-2 CS</option>
-                <option value="-1">-1 CS</option>
-                <option value="0" selected>+0 CS</option>
-                <option value="1">+1 CS</option>
-                <option value="2">+2 CS</option>
-                <option value="3">+3 CS</option>
-            </select>
-        </div>
-        <div class="option-row">
-            <label>Karma:</label>
-            <input type="number" class="karma-input" value="0" min="0" max="{{#if character}}{{character.system.secondaryAbilities.karma.value}}{{else}}100{{/if}}">
-        </div>
     </div>
 </div>
