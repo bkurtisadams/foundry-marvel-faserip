@@ -1330,6 +1330,8 @@ async clearResourceLockout() {
      */
     async applyDamage(damage, options = {}) {
         console.log(`Applying ${damage} damage to ${this.name}`);
+
+        await this.setFlag("marvel-faserip", "lastDamage", { timestamp: game.time.worldTime });
         
         // Get current health values
         const currentHealth = this.system.secondaryAbilities.health.value;
@@ -1372,6 +1374,30 @@ async clearResourceLockout() {
         }
         
         return newHealth;
+    }
+
+    async canRecoverHealth() {
+        const lastDamage = this.getFlag("marvel-faserip", "lastDamage")?.timestamp;
+        const lastRecovery = this.getFlag("marvel-faserip", "lastRecoveryTime");
+        const currentTime = game.time.worldTime;
+        
+        // No recovery if unconscious
+        if (this.effects.find(e => e.statuses.has("unconscious"))) {
+            return { allowed: false, reason: "Character is unconscious" };
+        }
+        
+        // Must wait 10 turns (60 seconds) after damage
+        if (lastDamage && (currentTime - lastDamage) < 60) {
+            const turnsRemaining = Math.ceil((60 - (currentTime - lastDamage.timestamp)) / 6);
+            return { allowed: false, reason: `Must wait ${turnsRemaining} more turns after damage` };
+        }
+        
+        // Only one recovery per day (86400 seconds)
+        if (lastRecovery && (currentTime - lastRecovery) < 86400) {
+            return { allowed: false, reason: "Only one recovery allowed per day" };
+        }
+        
+        return { allowed: true };
     }
 
     /**
@@ -1509,49 +1535,13 @@ async clearResourceLockout() {
         }
     }
 
-    /**
-     * Handle healing
-     * @param {number} amount - Amount of healing to apply
-     * @returns {Promise} Promise that resolves when healing is applied
-     */
-
-    /* async applyHealing(amount) {
-        const currentHealth = this.system.secondaryAbilities.health.value;
-        const maxHealth = this.system.secondaryAbilities.health.max;
-        const newHealth = Math.min(maxHealth, currentHealth + amount);
-
-        // Update health value
-        await this.update({
-            "system.secondaryAbilities.health.value": newHealth
-        });
-
-        // Create chat message for healing
-        const messageContent = `
-            <div class="marvel-healing">
-                <h3>${this.name} heals ${amount} health</h3>
-                <div class="health-track">
-                    Health: ${currentHealth} → ${newHealth}
-                </div>
-            </div>`;
-
-        await ChatMessage.create({
-            speaker: ChatMessage.getSpeaker({ actor: this }),
-            content: messageContent
-        });
-
-        return newHealth;
-    } */
-
-    /**
+ /**
  * Handle unconsciousness and potential death when Health reaches 0
  * @private
  */
-async _handleUnconscious() {
-    // Apply unconscious status effect 
-    const unconsciousId = "marvel-faserip.unconscious";
-    
-    // First remove any existing unconscious effect to avoid duplicates
-    /* const existingEffect = this.effects.find(e => e.flags?.core?.statusId === unconsciousId); */
+ async _handleUnconscious() {
+    // First apply unconscious status effect 
+    // Remove any existing unconscious effect to avoid duplicates
     const existingEffect = this.effects.find(e => e.statuses.has("unconscious"));
     if (existingEffect) await existingEffect.delete();
     
@@ -1583,7 +1573,7 @@ async _handleUnconscious() {
         message = `${this.name} begins losing Endurance ranks and requires immediate aid!`;
         
         // Start endurance loss process
-        this._startEnduranceLoss();
+        await this._startEnduranceLoss();
     } else {
         // No effect - character is stunned but stable
         effect = "Stunned";
@@ -1591,23 +1581,21 @@ async _handleUnconscious() {
         
         // Set a timer to check for consciousness
         const stunRounds = Math.floor(Math.random() * 10) + 1;
-        this.setFlag("marvel-faserip", "unconsciousRounds", stunRounds);
+        await this.setFlag("marvel-faserip", "unconsciousRounds", stunRounds);
     }
     
     // Create chat message about the unconsciousness
-    const messageContent = `
-        <div class="marvel-health-check">
-            <h3>${this.name} - Health Check</h3>
-            <div class="roll-details">
-                <div>Endurance FEAT: ${enduranceRoll.total} (${color.toUpperCase()})</div>
-                <div>Result: ${effect}</div>
-                <div>${message}</div>
-            </div>
-        </div>`;
-    
     await ChatMessage.create({
         speaker: ChatMessage.getSpeaker({ actor: this }),
-        content: messageContent,
+        content: `
+            <div class="marvel-health-check">
+                <h3>${this.name} - Health Check</h3>
+                <div class="roll-details">
+                    <div>Endurance FEAT: ${enduranceRoll.total} (${color.toUpperCase()})</div>
+                    <div>Result: ${effect}</div>
+                    <div>${message}</div>
+                </div>
+            </div>`,
         rolls: [enduranceRoll],
         sound: CONFIG.sounds.dice
     });
@@ -1624,16 +1612,61 @@ async _startEnduranceLoss() {
     // Store the original endurance rank for recovery
     await this.setFlag("marvel-faserip", "originalEnduranceRank", this.system.primaryAbilities.endurance.rank);
     
-    // Create an effect for Dying status
+    // Create a dying effect with a duration of 1 round (6 seconds)
     await this.createEmbeddedDocuments("ActiveEffect", [{
         label: "Dying",
         icon: "icons/svg/skull.svg",
-        /* flags: { core: { statusId: "marvel-faserip.dying" } } */
-        statuses: new Set(["dying"])
+        duration: {
+            rounds: 1,
+            seconds: 6,
+            startTime: game.time.worldTime
+        },
+        flags: {
+            marvel: {
+                isDying: true,
+                lastUpdate: game.time.worldTime
+            }
+        }
     }]);
-    
-    // Set up the first endurance loss after 1 round (6 seconds)
-    setTimeout(() => this._loseEnduranceRank(), 6000);
+
+    // Register for time updates
+    this._registerDyingEffect();
+}
+
+_registerDyingEffect() {
+    // Remove any existing hooks first
+    const hookId = this.getFlag("marvel-faserip", "dyingHookId");
+    if (hookId) {
+        Hooks.off("updateWorldTime", hookId);
+    }
+
+    // Create new hook for time updates
+    const newHookId = Hooks.on("updateWorldTime", (worldTime) => {
+        if (!game.paused) {
+            this._checkDyingStatus(worldTime);
+        }
+    });
+
+    // Store the hook ID for later cleanup
+    this.setFlag("marvel-faserip", "dyingHookId", newHookId);
+}
+
+async _checkDyingStatus(worldTime) {
+    const dyingEffect = this.effects.find(e => e.getFlag("marvel", "isDying"));
+    if (!dyingEffect) return;
+
+    const lastUpdate = dyingEffect.getFlag("marvel", "lastUpdate");
+    const timePassed = worldTime - lastUpdate;
+
+    // Check if 6 seconds (1 round) has passed
+    if (timePassed >= 6) {
+        await this._loseEnduranceRank();
+        
+        // Update the last check time
+        await dyingEffect.update({
+            "flags.marvel.lastUpdate": worldTime
+        });
+    }
 }
 
 /**
@@ -1641,7 +1674,7 @@ async _startEnduranceLoss() {
  * @private
  */
 async _loseEnduranceRank() {
-    // Check if still dying (flag may have been removed by healing)
+    // Check if still dying
     if (!this.getFlag("marvel-faserip", "dying")) return;
     
     const currentRank = this.system.primaryAbilities.endurance.rank;
@@ -1676,9 +1709,6 @@ async _loseEnduranceRank() {
                 </div>
             </div>`
     });
-    
-    // Schedule next rank loss in 1 round (6 seconds)
-    setTimeout(() => this._loseEnduranceRank(), 6000);
 }
 
 /**
@@ -1690,14 +1720,17 @@ async _characterDeath() {
     await this.unsetFlag("marvel-faserip", "dying");
     
     // Remove dying effect
-    const dyingEffect = this.effects.find(e => e.flags?.core?.statusId === "marvel-faserip.dying");
+    const dyingEffect = this.effects.find(e => e.statuses.has("dying"));
     if (dyingEffect) await dyingEffect.delete();
     
-    // Add dead effect
+    // Remove unconscious effect if present
+    const unconsciousEffect = this.effects.find(e => e.statuses.has("unconscious"));
+    if (unconsciousEffect) await unconsciousEffect.delete();
+    
+    // Add dead effect - THIS IS THE ONLY PLACE DEAD STATUS SHOULD BE APPLIED
     await this.createEmbeddedDocuments("ActiveEffect", [{
         label: "Dead",
         icon: "icons/svg/skull.svg",
-        /* flags: { core: { statusId: "marvel-faserip.dead" } } */
         statuses: new Set(["dead"])
     }]);
     
@@ -1733,8 +1766,15 @@ async provideAid(aidType = "firstAid", options = {}) {
     await this.unsetFlag("marvel-faserip", "dying");
     
     // Remove dying effect
-    const dyingEffect = this.effects.find(e => e.flags?.core?.statusId === "marvel-faserip.dying");
+    const dyingEffect = this.effects.find(e => e.getFlag("marvel", "isDying"));
     if (dyingEffect) await dyingEffect.delete();
+    
+    // Remove the time update hook
+    const hookId = this.getFlag("marvel-faserip", "dyingHookId");
+    if (hookId) {
+        Hooks.off("updateWorldTime", hookId);
+        await this.unsetFlag("marvel-faserip", "dyingHookId");
+    }
     
     // Character remains unconscious for 1-10 hours
     const hoursUnconscious = Math.floor(Math.random() * 10) + 1;
@@ -1841,6 +1881,13 @@ async applyHealing(healType = "normal") {
     // Determine healing amount based on type
     let healAmount = 0;
     let description = "";
+
+    const recoveryCheck = await this.canRecoverHealth();
+    if (!recoveryCheck.allowed) {
+        ui.notifications.warn(recoveryCheck.reason);
+        return 0;
+    }
+    await this.setFlag("marvel-faserip", "lastRecoveryTime", game.time.worldTime);
     
     switch (healType) {
         case "recovery":

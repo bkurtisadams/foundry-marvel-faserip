@@ -1,6 +1,12 @@
 // At the top of config.js, before any other CONFIG settings
 CONFIG.marvel = CONFIG.marvel || {};
 // Your existing MARVEL_RANKS and other config settings...
+CONFIG.statusEffects.push({
+    id: "dying",
+    label: "Dying",
+    icon: "icons/svg/skull.svg"
+});
+
 export const MARVEL_RANKS = {
     'Shift 0': { range: [0, 0], standard: 0 },
     'Feeble': { range: [1, 2], standard: 2 },
