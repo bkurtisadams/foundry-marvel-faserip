@@ -104,9 +104,9 @@
 .faserip-combat-hud .character-selector {
     width: 100%;
     padding: 5px;
-    background: #333;
-    color: #eee;
-    border: 1px solid #555;
+    background: #F0F0F0;  /* Light grey background */
+    color: #000;          /* Black text */
+    border: 1px solid #999;
     border-radius: 3px;
 }
 
@@ -154,8 +154,10 @@
 .faserip-combat-hud .universal-table .rank-name {
     font-weight: bold;
     text-align: left;
-    background: #333;
+    background: #F0F0F0;  /* Light grey background */
+    color: #000;          /* Black text */
 }
+
 
 /* Actions Sections */
 .faserip-combat-hud .action-groups {
@@ -175,7 +177,7 @@
     flex: 1;
     min-width: 60px;
     padding: 2px 4px;
-    background: #fff;
+    background: #F0F0F0;  /* Light grey background */
     color: #000;
     border: 1px solid #999;
     border-radius: 2px;
@@ -188,7 +190,7 @@
 
 .faserip-combat-hud .attack-button:hover,
 .faserip-combat-hud .defensive-action:hover {
-    background: #555;
+    background: #E0E0E0;  /* Slightly darker on hover */
     border-color: #782e22;
 }
 
