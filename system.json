@@ -17,12 +17,14 @@
   "esmodules": [
     "module/marvel-faserip.js",
     "module/weapons/weapon-system.js",
-    "module/combat/FaseripCombatSystem.js"
+    "module/combat/FaseripCombatSystem.js",
+    "module/combat/FaseripCombatHUD.js"
   ],
   "styles": [
     "css/marvel-faserip.css",
     "css/weapon-sheet.css",
-    "css/combat.css"
+    "css/combat.css",
+    "css/combat-hud.css"
   ],
   "languages": [
     {

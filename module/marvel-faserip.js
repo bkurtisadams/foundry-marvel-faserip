@@ -1,6 +1,6 @@
+// Import required classes and configurations
 console.log("Marvel FASERIP System: marvel-faserip.js has been loaded into Foundry VTT");
 
-// Import required classes and configurations
 import { MARVEL_RANKS, UNIVERSAL_TABLE_RANGES, ACTION_RESULTS, COMBAT_TYPES, COMBAT_EFFECTS } from "./config.js";
 import { MarvelActor } from "./documents/MarvelActor.js";
 import { MarvelActorSheet } from "./sheets/MarvelActorSheet.js";
@@ -13,21 +13,90 @@ import { FaseripCombatSystem } from "./combat/FaseripCombatSystem.js";
 import { FaseripCombatHUD } from "./combat/FaseripCombatHUD.js";
 import { DefensiveActions } from "./combat/defensive-actions.js";
 
+// Initialize system
 Hooks.once('init', async function() {
     console.log('marvel-faserip | Initializing Marvel FASERIP System');
-    
-    // Initialize the game.marvel namespace
+
+    // Initialize the game.marvel and game.faserip namespaces
     game.marvel = {
         WeaponSystem: new WeaponSystem(),
         combatSystem: new FaseripCombatSystem(),
-        combatHUD: null  // Will be initialized after ready
+        MarvelActor,
+        rollItemMacro
     };
     
     // Make weapon system available globally for debugging
     globalThis.marvelWeapons = game.marvel.WeaponSystem;
     globalThis.marvelCombat = game.marvel.combatSystem;
+
+    // Set up CONFIG.marvel first
+    CONFIG.marvel = {
+        ranks: MARVEL_RANKS,
+        universalTableRanges: UNIVERSAL_TABLE_RANGES,
+        actionResults: ACTION_RESULTS,
+        combatTypes: COMBAT_TYPES,
+        combatEffects: COMBAT_EFFECTS,
+        selectableRanks: {
+            'Shift 0': "Shift 0",
+            'Feeble': "Feeble",
+            'Poor': "Poor",
+            'Typical': "Typical",
+            'Good': "Good",
+            'Excellent': "Excellent",
+            'Remarkable': "Remarkable",
+            'Incredible': "Incredible",
+            'Amazing': "Amazing",
+            'Monstrous': "Monstrous",
+            'Unearthly': "Unearthly",
+            'Shift X': "Shift X",
+            'Shift Y': "Shift Y",
+            'Shift Z': "Shift Z",
+            'Class 1000': "Class 1000",
+            'Class 3000': "Class 3000",
+            'Class 5000': "Class 5000",
+            'Beyond': "Beyond"
+        },
+        resistanceTypes: {
+            physical: "Physical",
+            energy: "Energy", 
+            force: "Force",
+            heat: "Heat",
+            cold: "Cold",
+            electricity: "Electricity",
+            radiation: "Radiation",
+            toxins: "Toxins",
+            psychic: "Psychic",
+            magic: "Magic"
+        }
+    };
+
+    CONFIG.Combat.initiative = {
+        formula: "1d10",
+        decimals: 0
+    };
+
+    // Register system settings
+    game.settings.register("marvel-faserip", "karmaPools", {
+        name: "Karma Pools",
+        scope: "world",
+        config: false,
+        type: Object,
+        default: {}
+    });
     
-    // Register sheets first
+    game.settings.register("marvel-faserip", "combatPhase", {
+        name: "Combat Phase",
+        scope: "world",
+        config: false,
+        type: String,
+        default: "preAction"
+    });
+
+    // Register document classes
+    CONFIG.Actor.documentClass = MarvelActor;
+    CONFIG.Item.documentClass = MarvelAttackItem;
+
+    // Register sheets
     Actors.unregisterSheet("core", ActorSheet);
     Items.unregisterSheet("core", ItemSheet);
     
@@ -50,23 +119,34 @@ Hooks.once('init', async function() {
 
     // Load templates
     await loadTemplates([
-        // Existing templates...
-        "systems/marvel-faserip/module/combat/templates/combat-hud.html" 
+        "systems/marvel-faserip/templates/dialogs/ability-roll.html",
+        "systems/marvel-faserip/templates/dialogs/popularity-roll.html",
+        "systems/marvel-faserip/templates/items/attack-item.html",
+        "systems/marvel-faserip/templates/dialogs/add-attack.html",
+        "systems/marvel-faserip/templates/dialogs/edit-equipment.html",
+        "systems/marvel-faserip/module/combat/templates/combat-hud.html"
     ]);
+});
 
-    // Initialize configs
-    CONFIG.marvel = {
-        ranks: MARVEL_RANKS,
-        universalTableRanges: UNIVERSAL_TABLE_RANGES,
-        actionResults: ACTION_RESULTS,
-        combatTypes: COMBAT_TYPES,
-        combatEffects: COMBAT_EFFECTS
-    };
+// Consolidate ready hooks
+Hooks.once('ready', () => {
+    // Initialize Combat HUD and defensive actions
+    //game.marvel.combatHUD = new FaseripCombatHUD();
+    game.marvel.defensiveActions = new DefensiveActions();
+    
+    // Show HUD when combat starts
+    //Hooks.on('combatStart', () => {
+    //    game.marvel.combatHUD.render(true);
+    //});
+    
+    // Hide HUD when combat ends
+    //Hooks.on('combatEnd', () => {
+    //    game.marvel.combatHUD.close();
+    //});
 
-    // Wait for ready before initializing HUD
-    Hooks.once('ready', () => {
-        game.marvel.combatHUD = new FaseripCombatHUD();
-        game.marvel.defensiveActions = new DefensiveActions();
+    // Add the control token hook here
+    Hooks.on('controlToken', (token, selected) => {
+        FaseripCombatHUD.activateCombatHud(token, selected);
     });
 });
 
@@ -170,113 +250,6 @@ async function rollSideInitiative(combat, side, sideName) {
     }
 }
   
-// Initialize system
-Hooks.once('init', async function() {
-    console.log('marvel-faserip | Initializing Marvel FASERIP System');
-
-    // Set up game.faserip
-    game.faserip = {
-        MarvelActor,
-        rollItemMacro
-    };
-
-    // Add selectable ranks for dropdown menus
-    CONFIG.marvel.selectableRanks = {
-        'Shift 0': "Shift 0",
-        'Feeble': "Feeble",
-        'Poor': "Poor",
-        'Typical': "Typical",
-        'Good': "Good",
-        'Excellent': "Excellent",
-        'Remarkable': "Remarkable",
-        'Incredible': "Incredible",
-        'Amazing': "Amazing",
-        'Monstrous': "Monstrous",
-        'Unearthly': "Unearthly",
-        'Shift X': "Shift X",
-        'Shift Y': "Shift Y",
-        'Shift Z': "Shift Z",
-        'Class 1000': "Class 1000",
-        'Class 3000': "Class 3000",
-        'Class 5000': "Class 5000",
-        'Beyond': "Beyond"
-    };
-
-    // Initialize CONFIG.marvel before setting specific properties
-    CONFIG.marvel = {
-        ranks: MARVEL_RANKS,
-        universalTableRanges: UNIVERSAL_TABLE_RANGES,
-        actionResults: ACTION_RESULTS,
-        combatTypes: COMBAT_TYPES,
-        combatEffects: COMBAT_EFFECTS
-    };
-    
-    // Add resistance types configuration
-    CONFIG.marvel.resistanceTypes = {
-        physical: "Physical",
-        energy: "Energy", 
-        force: "Force",
-        heat: "Heat",
-        cold: "Cold",
-        electricity: "Electricity",
-        radiation: "Radiation",
-        toxins: "Toxins",
-        psychic: "Psychic",
-        magic: "Magic"
-    };
-
-    CONFIG.Combat.initiative = {
-        formula: "1d10",
-        decimals: 0
-    };
-
-    // Register system settings
-    // Around line 48 in init hook
-    game.settings.register("marvel-faserip", "karmaPools", {
-        name: "Karma Pools",
-        scope: "world",
-        config: false,
-        type: Object,
-        default: {}
-    });
-    
-    game.settings.register("marvel-faserip", "combatPhase", {
-        name: "Combat Phase",
-        scope: "world",
-        config: false,
-        type: String,
-        default: "preAction"
-    });
-
-    // Register document classes
-    CONFIG.Actor.documentClass = MarvelActor;
-    CONFIG.Item.documentClass = MarvelAttackItem;
-
-    // Register sheets
-    Actors.unregisterSheet("core", ActorSheet);
-    Items.unregisterSheet("core", ItemSheet);
-    
-    Items.registerSheet("marvel-faserip", MarvelAttackItemSheet, { 
-        types: ["attack"],
-        makeDefault: true,
-        label: "MARVEL.SheetAttack"
-    });
-
-    Actors.registerSheet("marvel-faserip", MarvelActorSheet, { 
-        makeDefault: true,
-        label: "MARVEL.SheetCharacter"
-    });
-
-    // Load templates
-    await loadTemplates([
-        "systems/marvel-faserip/templates/dialogs/ability-roll.html",
-        "systems/marvel-faserip/templates/dialogs/popularity-roll.html",
-        "systems/marvel-faserip/templates/items/attack-item.html",
-        "systems/marvel-faserip/templates/dialogs/add-attack.html",
-        "systems/marvel-faserip/templates/dialogs/edit-equipment.html"
-    ]);
-});
-
 // Override Combat class's rollInitiative method
 Combat.prototype.rollInitiative = async function(ids, {formula=null, updateTurn=true, messageOptions={}}={}) {
     const heroes = [];

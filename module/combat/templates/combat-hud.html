@@ -6,6 +6,19 @@
     </div>
 </div>
 
+<div class="combat-hud">
+    <div class="window-header">
+        <h4>Combat Actions</h4>
+    </div>
+    <div class="window-content">
+        {{#each actions}}
+        <div class="combat-action" data-action-type="{{this.type}}">
+            {{this.name}}
+        </div>
+        {{/each}}
+    </div>
+</div>
+
 <div class="hud-content">
     <!-- Character Selection -->
     <div class="character-section">
