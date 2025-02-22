@@ -1628,12 +1628,47 @@ async _startEnduranceLoss() {
     await this.createEmbeddedDocuments("ActiveEffect", [{
         label: "Dying",
         icon: "icons/svg/skull.svg",
-        /* flags: { core: { statusId: "marvel-faserip.dying" } } */
         statuses: new Set(["dying"])
     }]);
     
-    // Set up the first endurance loss after 1 round (6 seconds)
-    setTimeout(() => this._loseEnduranceRank(), 6000);
+    // Register a hook for combat rounds
+    this._registerCombatRoundHook();
+}
+
+/**
+ * Register a hook to monitor combat rounds for endurance loss
+ * @private
+ */
+_registerCombatRoundHook() {
+    // Create a unique ID for this hook
+    const hookId = `marvel-faserip.dyingProcess.${this.id}`;
+    
+    // Remove any existing hook with this ID
+    Hooks.off("updateCombat", hookId);
+    
+    // Add the new hook
+    Hooks.on("updateCombat", hookId, (combat, change) => {
+        // Check if round or turn changed
+        if (!change.round && !change.turn) return;
+        
+        // Check if this actor is still dying
+        if (!this.getFlag("marvel-faserip", "dying")) {
+            // If not dying anymore, remove the hook
+            Hooks.off("updateCombat", hookId);
+            return;
+        }
+        
+        // If round changed or it's this token's turn, lose an endurance rank
+        const thisCombatant = combat.combatants.find(c => c.actorId === this.id);
+        if (change.round || (thisCombatant && combat.current.combatantId === thisCombatant.id)) {
+            this._loseEnduranceRank();
+        }
+    });
+    
+    // If no active combat, create a simple timer for the GM
+    if (!game.combat || !game.combat.active) {
+        ui.notifications.warn(`${this.name} is dying! The GM should start a combat or manually track rounds for endurance loss.`);
+    }
 }
 
 /**
@@ -1689,15 +1724,18 @@ async _characterDeath() {
     // Remove dying flag
     await this.unsetFlag("marvel-faserip", "dying");
     
+    // Remove the combat round hook
+    const hookId = `marvel-faserip.dyingProcess.${this.id}`;
+    Hooks.off("updateCombat", hookId);
+    
     // Remove dying effect
-    const dyingEffect = this.effects.find(e => e.flags?.core?.statusId === "marvel-faserip.dying");
+    const dyingEffect = this.effects.find(e => e.statuses.has("dying"));
     if (dyingEffect) await dyingEffect.delete();
     
     // Add dead effect
     await this.createEmbeddedDocuments("ActiveEffect", [{
         label: "Dead",
         icon: "icons/svg/skull.svg",
-        /* flags: { core: { statusId: "marvel-faserip.dead" } } */
         statuses: new Set(["dead"])
     }]);
     
@@ -1732,9 +1770,9 @@ async provideAid(aidType = "firstAid", options = {}) {
     // Stop the dying process
     await this.unsetFlag("marvel-faserip", "dying");
     
-    // Remove dying effect
-    const dyingEffect = this.effects.find(e => e.flags?.core?.statusId === "marvel-faserip.dying");
-    if (dyingEffect) await dyingEffect.delete();
+    // Remove the combat round hook
+    const hookId = `marvel-faserip.dyingProcess.${this.id}`;
+    Hooks.off("updateCombat", hookId);
     
     // Character remains unconscious for 1-10 hours
     const hoursUnconscious = Math.floor(Math.random() * 10) + 1;
