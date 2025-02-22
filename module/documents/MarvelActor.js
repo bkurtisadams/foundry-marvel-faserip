@@ -22,23 +22,22 @@ export class MarvelActor extends Actor {
                 break;
         }
     
-        // Track current health before recalculation
+        // Store current health value
         const currentHealth = this.system.secondaryAbilities?.health?.value || 0;
-        const currentMaxHealth = this.system.secondaryAbilities?.health?.max || 0;
         
-        // Calculate derived values
-        this._calculateMaxHealth(); // Changed method name
+        // Calculate max health
+        this._calculateMaxHealth();
+        
+        // Preserve current health value (don't reset to max)
+        if (currentHealth > 0) {
+            // Make sure health doesn't exceed max 
+            const maxHealth = this.system.secondaryAbilities.health.max;
+            this.system.secondaryAbilities.health.value = Math.min(currentHealth, maxHealth);
+        }
+        
+        // Calculate other derived values
         this._calculateKarma();
         this._updateResourceRank();
-        
-        // Restore current health if it was modified (damage was taken)
-        if (currentMaxHealth > 0 && currentHealth < currentMaxHealth) {
-            // If we had valid health values and damage was taken, preserve the current health
-            this.system.secondaryAbilities.health.value = Math.min(
-                currentHealth, 
-                this.system.secondaryAbilities.health.max
-            );
-        }
     }
 
     /** Initialize the base template structure */
@@ -193,22 +192,29 @@ export class MarvelActor extends Actor {
     }
 
     /**
-     * Calculate Health from primary abilities
-     * @private
-     */
+ * Calculate Max Health from primary abilities
+ * @private
+ */
     _calculateMaxHealth() {
         if (!this.system.primaryAbilities) return;
+        
+        // Save the current value before recalculating
+        const currentValue = this.system.secondaryAbilities?.health?.value || 0;
+        
+        // Calculate max health
         const health = Number(this.system.primaryAbilities.fighting.number || 0) +
-                    Number(this.system.primaryAbilities.agility.number || 0) +
-                    Number(this.system.primaryAbilities.strength.number || 0) +
-                    Number(this.system.primaryAbilities.endurance.number || 0);
-    
+                      Number(this.system.primaryAbilities.agility.number || 0) +
+                      Number(this.system.primaryAbilities.strength.number || 0) +
+                      Number(this.system.primaryAbilities.endurance.number || 0);
+       
         // Only update max health, not current health
         this.system.secondaryAbilities.health.max = health;
         
-        // Only set current health to max for new characters
-        if (this.system.secondaryAbilities.health.value === 0) {
+        // IMPORTANT: Only initialize current health for new characters
+        // Otherwise, preserve the current value
+        if (currentValue === 0 && !this._isInitialized) {
             this.system.secondaryAbilities.health.value = health;
+            this._isInitialized = true;
         }
     }
     
@@ -1326,21 +1332,22 @@ async clearResourceLockout() {
         const currentHealth = this.system.secondaryAbilities.health.value;
         console.log(`Current health: ${currentHealth}`);
         
-        // Calculate new health
+        // Calculate new health (ensure it can go to 0 but not negative)
         const newHealth = Math.max(0, currentHealth - damage);
-        console.log(`New health will be: ${newHealth}, path: system.secondaryAbilities.health.value`);
+        console.log(`New health will be: ${newHealth}`);
     
         try {
             // Update health with the correct document API
             await this.update({
                 "system.secondaryAbilities.health.value": newHealth
             });
+            
             console.log("Health update successful, new health:", this.system.secondaryAbilities.health.value);
         } catch (error) {
             console.error("Error updating health:", error);
             throw error; // Re-throw to allow for handling upstream
         }
-
+    
         // Create chat message for damage
         const messageContent = `
             <div class="marvel-damage">
@@ -1349,17 +1356,17 @@ async clearResourceLockout() {
                     Health: ${currentHealth} → ${newHealth}
                 </div>
             </div>`;
-
+    
         await ChatMessage.create({
             speaker: ChatMessage.getSpeaker({ actor: this }),
             content: messageContent
         });
-
+    
         // Check for endurance FEAT if health drops to 0
         if (newHealth === 0) {
             await this.rollEnduranceFeat({ type: "death" });
         }
-
+    
         return newHealth;
     }
 

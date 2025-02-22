@@ -188,9 +188,8 @@ export class FaseripCombatSystem {
                     
                     // Update target's health
                     try {
-                        await target.update({
-                            "system.secondaryAbilities.health.value": newHealth
-                        });
+                        // Use applyDamage instead of direct update
+                        await target.applyDamage(finalDamage);
                         
                         // Create comprehensive damage message
                         await ChatMessage.create({
@@ -210,21 +209,17 @@ export class FaseripCombatSystem {
                                         <div class="detail-row"><span class="detail-label">Base Damage:</span> ${baseDamage}</div>
                                         ${resistance ? `<div class="detail-row"><span class="detail-label">Target Resistance:</span> ${resistance} (${this._getAttackResistanceType(options.attackType)})</div>` : ''}
                                         <div class="detail-row"><span class="detail-label">Final Damage:</span> ${finalDamage}</div>
-                                        <div class="detail-row"><span class="detail-label">Target Health:</span> ${currentHealth} → ${newHealth}</div>
+                                        <div class="detail-row"><span class="detail-label">Target Health:</span> ${currentHealth} → ${Math.max(0, currentHealth - finalDamage)}</div>
                                     </div>
-                                    ${newHealth <= 0 ? `<div class="unconscious-warning">⚠️ ${target.name} has been reduced to 0 Health and must make an Endurance FEAT!</div>` : ''}
+                                    ${currentHealth - finalDamage <= 0 ? `<div class="unconscious-warning">⚠️ ${target.name} has been reduced to 0 Health and must make an Endurance FEAT!</div>` : ''}
                                 </div>
                             `,
                             speaker: ChatMessage.getSpeaker({actor: attacker})
                         });
                         
-                        // Check for unconsciousness
-                        if (newHealth <= 0) {
-                            await target.rollAbility("endurance", { 
-                                featType: "endurance", 
-                                actionType: "death" 
-                            });
-                        }
+                        // Note: The endurance FEAT check for unconsciousness is now handled 
+                        // inside applyDamage, so we don't need to duplicate it here
+                        
                     } catch (error) {
                         console.error("Error updating health:", error);
                         ui.notifications.error("Error applying damage to target");
