@@ -1631,8 +1631,84 @@ async _startEnduranceLoss() {
         statuses: new Set(["dying"])
     }]);
     
-    // Register a hook for combat rounds
-    this._registerCombatRoundHook();
+    // Create a warning message
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        content: `
+            <div class="marvel-death-warning">
+                <h3>${this.name} is Dying!</h3>
+                <div class="roll-details">
+                    <div>Character will lose one Endurance rank each round</div>
+                    <div>Must receive aid or will die at Shift 0 Endurance</div>
+                </div>
+            </div>`
+    });
+    
+    // Register our custom combat round hook for our custom combat system
+    this._registerCustomCombatHook();
+}
+
+/**
+ * Register a hook for our custom combat system
+ * @private
+ */
+_registerCustomCombatHook() {
+    // Create a unique ID for this hook
+    const hookId = `marvel-faserip.dyingProcess.${this.id}`;
+    
+    // Remove any existing hook with this ID
+    Hooks.off("updateCombat", hookId);
+    
+    // Add a hook for our custom combat rounds
+    Hooks.on("updateCombat", hookId, async (combat, change) => {
+        // Only process if round changes (new round)
+        if (!change.round) return;
+        
+        // Check if character is still dying
+        if (!this.getFlag("marvel-faserip", "dying")) {
+            // If not dying anymore, remove the hook
+            Hooks.off("updateCombat", hookId);
+            return;
+        }
+        
+        // When a new round starts, lose an endurance rank
+        if (change.round > 0) {
+            await this._loseEnduranceRank();
+        }
+    });
+    
+    // Add a hook for our phase system too
+    const phaseHookId = `marvel-faserip.dyingPhase.${this.id}`;
+    Hooks.off("updateCombat", phaseHookId);
+    
+    Hooks.on("updateCombat", phaseHookId, async (combat, change, options, userId) => {
+        // Check if phase has changed to RESOLUTION (phase 2)
+        if (combat.getFlag("marvel-faserip", "currentPhase") === 2 && 
+            !combat.getFlag("marvel-faserip", "processedEnduranceLoss")) {
+            
+            // Check if character is still dying
+            if (!this.getFlag("marvel-faserip", "dying")) {
+                Hooks.off("updateCombat", phaseHookId);
+                return;
+            }
+            
+            // Process endurance loss during resolution phase if it hasn't been processed this round
+            await this._loseEnduranceRank();
+            
+            // Mark as processed for this round
+            await combat.setFlag("marvel-faserip", "processedEnduranceLoss", true);
+        }
+        
+        // Reset processed flag when moving to a new round
+        if (change.round && combat.getFlag("marvel-faserip", "processedEnduranceLoss")) {
+            await combat.unsetFlag("marvel-faserip", "processedEnduranceLoss");
+        }
+    });
+    
+    // If no active combat, create a simple timer for the GM
+    if (!game.combat || !game.combat.active) {
+        ui.notifications.warn(`${this.name} is dying! The GM should start a combat or manually apply aid.`);
+    }
 }
 
 /**
@@ -1727,6 +1803,8 @@ async _characterDeath() {
     // Remove the combat round hook
     const hookId = `marvel-faserip.dyingProcess.${this.id}`;
     Hooks.off("updateCombat", hookId);
+    const phaseHookId = `marvel-faserip.dyingPhase.${this.id}`;
+    Hooks.off("updateCombat", phaseHookId);
     
     // Remove dying effect
     const dyingEffect = this.effects.find(e => e.statuses.has("dying"));
@@ -1773,6 +1851,8 @@ async provideAid(aidType = "firstAid", options = {}) {
     // Remove the combat round hook
     const hookId = `marvel-faserip.dyingProcess.${this.id}`;
     Hooks.off("updateCombat", hookId);
+    const phaseHookId = `marvel-faserip.dyingPhase.${this.id}`;
+    Hooks.off("updateCombat", phaseHookId);
     
     // Character remains unconscious for 1-10 hours
     const hoursUnconscious = Math.floor(Math.random() * 10) + 1;
