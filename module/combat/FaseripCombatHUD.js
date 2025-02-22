@@ -6,12 +6,23 @@ export class FaseripCombatHUD extends Application {
         this.token = token;
         this.actor = token.actor;
         
-        this.options.id = `faserip-combat-hud-${this.token.id}`;
-        
-        if (token.combatHud) {
-            token.combatHud.close();
+        /* this.options.id = `faserip-combat-hud-${this.token.id}`; */
+        const hudId = `faserip-combat-hud-${this.token?.id || Date.now()}`;
+
+        // Close any existing HUD for this token
+        if (ui.windows[hudId]) {
+            ui.windows[hudId].close();
         }
-        token.combatHud = this;
+        
+        this.options.id = hudId;
+
+        // Store reference on token
+        if (token) {
+            if (token.combatHud) {
+                token.combatHud.close();
+            }
+            token.combatHud = this;
+        }
         
         if (!game.user.combatHuds) game.user.combatHuds = [];
         game.user.combatHuds.push(this);
@@ -21,18 +32,14 @@ export class FaseripCombatHUD extends Application {
         return foundry.utils.mergeObject(super.defaultOptions, {
             classes: ['faserip', 'faserip-combat-hud'],
             template: 'systems/marvel-faserip/module/combat/templates/combat-hud.html',
-            width: 300,
+            width: 900,
             height: 'auto',
             minimizable: true,
-            resizable: true,
+            resizable: false,
             popOut: true,
-            id: 'faserip-combat-hud',
-            // Update drag handle to match your template
-            draggable: true,
-            dragHandle: '.hud-header',
-            // Add these for better window management
-            tabs: [],
-            dragDrop: []
+            title: "FASERIP Combat",
+            dragDrop: [],
+            tabs: []
         });
     }
 
@@ -65,7 +72,7 @@ export class FaseripCombatHUD extends Application {
         return super.setPosition(options);
     }
 
-    async close(options={}) {
+    /* async close(options={}) {
         // Remove from game.user.combatHuds
         const index = game.user.combatHuds.indexOf(this);
         if (index !== -1) {
@@ -78,9 +85,21 @@ export class FaseripCombatHUD extends Application {
         }
 
         return super.close(options);
+    } */
+
+    async close(options={}) {
+        // Remove token reference
+        if (this.token?.combatHud === this) {
+            delete this.token.combatHud;
+        }
+        
+        // Remove from UI windows
+        delete ui.windows[this.id];
+        
+        return super.close(options);
     }
 
-    static async activateCombatHud(token, selected) {
+    /* static async activateCombatHud(token, selected) {
         if (!token?.actor || (!token.actor.isOwner && !game.user.isGM)) return;
 
         if (selected) {
@@ -93,10 +112,31 @@ export class FaseripCombatHUD extends Application {
         } else if (token.combatHud) {
             await token.combatHud.close();
         }
-    }
+    } */
+        static async activateCombatHud(token, selected) {
+            if (!token?.actor || (!token.actor.isOwner && !game.user.isGM)) return;
+        
+            if (selected) {
+                const hudId = `faserip-combat-hud-${token.id}`;
+                let hud = ui.windows[hudId];
+                
+                if (!hud) {
+                    hud = new FaseripCombatHUD(token);
+                    await hud.render(true);
+                } else {
+                    await hud.render(true);
+                    hud.bringToTop();
+                }
+            } else if (token.combatHud) {
+                await token.combatHud.close();
+            }
+        }
 
     activateListeners(html) {
         super.activateListeners(html);
+
+        // Action header clicks
+        html.find('.combat-table tr:first-child th').click(this._onActionClick.bind(this));
 
         html.find('.collapse-button').click(this._onToggleCollapse.bind(this));
         html.find('.character-selector').change(this._onCharacterChange.bind(this));
@@ -209,14 +249,26 @@ export class FaseripCombatHUD extends Application {
         }
     }
 
-    _onActionClick(event) {
+    /* _onActionClick(event) {
         event.preventDefault();
         const actionElement = event.currentTarget;
         const actionType = actionElement.dataset.actionType;
         
         // Handle the action click
         this._handleAction(actionType);
-    }
+    } */
+
+    _onActionClick(event) {
+        const actionHeader = event.currentTarget;
+        const columnIndex = actionHeader.cellIndex;
+        
+        // Get action code from second row of same column
+        const actionCode = this.element.find('.combat-table tr:nth-child(2) td').eq(columnIndex).text();
+        const ability = this.element.find('.combat-table tr:nth-child(3) td').eq(columnIndex).text();
+        
+        // Handle the action
+        this._handleAction(actionCode, ability);
+    }        
 
     _handleAction(actionType) {
         // Implement your action handling logic

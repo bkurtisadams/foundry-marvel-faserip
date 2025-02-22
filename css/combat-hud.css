@@ -1,20 +1,20 @@
 /* FASERIP Combat HUD Styling */
+/* Remove legacy combat actions bar */
+#combat-actions-bar {
+    display: none !important;
+}
+
+/* Ensure proper z-index for new HUD */
 .faserip-combat-hud {
-    position: absolute;
-    width: 900px; /* Increased to fit all action buttons */
-    min-width: 900px; /* Ensure minimum width */
-    background: #fff;
-    color: #000;
-    border: 1px solid #782e22;
-    border-radius: 3px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-    font-family: 'Roboto', sans-serif;
     z-index: 100;
-    max-height: 400px;
-    min-height: 50px;
-    overflow-y: auto;
-    transition: none;
-    position: fixed;
+    position: absolute;
+    width: 900px !important;
+    background: #fff;
+    border: 1px solid #782e22;
+}
+.faserip-combat-hud .window-content {
+    overflow-x: hidden;
+    padding: 0;
 }
 
 .faserip-combat-hud.dragging {
@@ -126,7 +126,7 @@
 }
 
 /* Combat Table Styles */
-.combat-table {
+combat-table {
     width: 100%;
     border-collapse: collapse;
     border: 1px solid #000;
@@ -134,14 +134,48 @@
     table-layout: fixed;
 }
 
-.combat-table th,
+/* Action header row (clickable) */
+.combat-table tr:first-child th {
+    padding: 6px;
+    text-align: center;
+    font-size: 12px;
+    height: 36px; /* Taller for action names */
+    vertical-align: middle;
+    cursor: pointer;
+    font-weight: bold;
+    white-space: normal;
+    line-height: 1.2;
+}
+
+.combat-table tr:first-child th:hover {
+    outline: 2px solid #782e22;
+}
+
+/* .combat-table th,
 .combat-table td {
     border: 1px solid #000;
-    padding: 4px 6px; /* Increased padding */
+    padding: 4px 6px;
     text-align: center;
-    font-size: 12px; /* Slightly larger font */
-    height: 32px; /* Taller cells */
+    font-size: 12px; 
+    height: 32px; 
     vertical-align: middle;
+} */
+
+.combat-table td {
+    border: 1px solid #000;
+    padding: 2px 4px;
+    text-align: center;
+    font-size: 11px;
+    height: 20px; /* Reduced height */
+    vertical-align: middle;
+}
+
+.combat-table td {
+    cursor: pointer;
+}
+
+.combat-table td:hover {
+    outline: 2px solid #782e22;
 }
 
 /* Remove the fixed width percentage since it's too narrow */
@@ -161,16 +195,15 @@
     font-style: italic;
 }
 
-/* Action code row specific styling */
+/* Action code row */
 .combat-table tr:nth-child(2) td {
     font-weight: bold;
-    font-size: 14px; /* Larger font for action codes */
+    font-size: 12px;
 }
 
-/* Ability row specific styling */
+/* Ability row */
 .combat-table tr:nth-child(3) td {
     font-style: italic;
-    font-size: 11px; /* Slightly smaller for ability names */
 }
 
 /* Result row colors with better padding */
@@ -200,14 +233,6 @@
 }
 
 /* Make cells clickable with better visual feedback */
-.combat-table td {
-    cursor: pointer;
-}
-
-.combat-table td:hover {
-    outline: 2px solid #782e22;
-}
-
 /* Make rows clickable */
 .combat-table tbody tr {
     cursor: pointer;

@@ -13,9 +13,22 @@ import { FaseripCombatSystem } from "./combat/FaseripCombatSystem.js";
 import { FaseripCombatHUD } from "./combat/FaseripCombatHUD.js";
 import { DefensiveActions } from "./combat/defensive-actions.js";
 
+// Define cleanup function first
+function cleanupLegacyHUDs() {
+    // Clean up any old combat HUDs
+    if (game.marvel?.combatHUD) {
+        delete game.marvel.combatHUD;
+    }
+    
+    // Remove any legacy UI elements with these classes
+    const legacyElements = document.querySelectorAll('.combat-actions, .faserip-combat-hud');
+    legacyElements.forEach(element => element.remove());
+}
+
 // Initialize system
 Hooks.once('init', async function() {
     console.log('marvel-faserip | Initializing Marvel FASERIP System');
+    cleanupLegacyHUDs();
 
     // Initialize the game.marvel and game.faserip namespaces
     game.marvel = {
@@ -24,6 +37,9 @@ Hooks.once('init', async function() {
         MarvelActor,
         rollItemMacro
     };
+
+    // Now it's safe to cleanup after initialization
+    cleanupLegacyHUDs();
     
     // Make weapon system available globally for debugging
     globalThis.marvelWeapons = game.marvel.WeaponSystem;
@@ -133,16 +149,6 @@ Hooks.once('ready', () => {
     // Initialize Combat HUD and defensive actions
     //game.marvel.combatHUD = new FaseripCombatHUD();
     game.marvel.defensiveActions = new DefensiveActions();
-    
-    // Show HUD when combat starts
-    //Hooks.on('combatStart', () => {
-    //    game.marvel.combatHUD.render(true);
-    //});
-    
-    // Hide HUD when combat ends
-    //Hooks.on('combatEnd', () => {
-    //    game.marvel.combatHUD.close();
-    //});
 
     // Add the control token hook here
     Hooks.on('controlToken', (token, selected) => {
