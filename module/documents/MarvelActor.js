@@ -807,7 +807,10 @@ async rollAttack(ability, attackType, options = {}) {
 
     async handleCombatEffect(effectType) {
         // Roll endurance FEAT for effect
-        const enduranceRoll = new Roll("1d100").evaluateSync();
+        /* const enduranceRoll = new Roll("1d100").evaluateSync(); */
+        const enduranceRoll = new Roll("1d100");
+        await enduranceRoll.evaluate({async: true});
+
         const enduranceRank = this.system.primaryAbilities.endurance.rank;
         
         // Get color result from universal table
@@ -1328,25 +1331,13 @@ async clearResourceLockout() {
     async applyDamage(damage, options = {}) {
         console.log(`Applying ${damage} damage to ${this.name}`);
         
-        // Verify the path to health value
+        // Get current health values
         const currentHealth = this.system.secondaryAbilities.health.value;
         console.log(`Current health: ${currentHealth}`);
         
         // Calculate new health (ensure it can go to 0 but not negative)
         const newHealth = Math.max(0, currentHealth - damage);
         console.log(`New health will be: ${newHealth}`);
-    
-        try {
-            // Update health with the correct document API
-            await this.update({
-                "system.secondaryAbilities.health.value": newHealth
-            });
-            
-            console.log("Health update successful, new health:", this.system.secondaryAbilities.health.value);
-        } catch (error) {
-            console.error("Error updating health:", error);
-            throw error; // Re-throw to allow for handling upstream
-        }
     
         // Create chat message for damage
         const messageContent = `
@@ -1361,12 +1352,25 @@ async clearResourceLockout() {
             speaker: ChatMessage.getSpeaker({ actor: this }),
             content: messageContent
         });
-    
-        // Check for endurance FEAT if health drops to 0
-        if (newHealth === 0) {
-            await this.rollEnduranceFeat({ type: "death" });
+        
+        try {
+            // Update health with the correct document API
+            await this.update({
+                "system.secondaryAbilities.health.value": newHealth
+            });
+            
+            console.log("Health update successful, new health:", this.system.secondaryAbilities.health.value);
+            
+            // Check if character has reached 0 Health
+            if (newHealth === 0) {
+                console.log(`${this.name} has fallen unconscious at 0 Health!`);
+                await this._handleUnconscious();
+            }
+        } catch (error) {
+            console.error("Error updating health:", error);
+            throw error;
         }
-    
+        
         return newHealth;
     }
 
@@ -1477,7 +1481,8 @@ async clearResourceLockout() {
                 await this.createEmbeddedDocuments("ActiveEffect", [{
                     label: "Dead",
                     icon: "icons/svg/skull.svg",
-                    flags: { core: { statusId: deadId } }
+                    /* flags: { core: { statusId: deadId } } */
+                    statuses: new Set(["deadId"])
                 }]);
             } else {
                 // Add unconscious effect if not already present
@@ -1486,7 +1491,8 @@ async clearResourceLockout() {
                     await this.createEmbeddedDocuments("ActiveEffect", [{
                         label: "Unconscious",
                         icon: "icons/svg/unconscious.svg",
-                        flags: { core: { statusId: unconsciousId } }
+                        /* flags: { core: { statusId: unconsciousId } } */
+                        statuses: new Set(["unconscious"])
                     }]);
                 }
             }
@@ -1496,7 +1502,8 @@ async clearResourceLockout() {
                 await this.createEmbeddedDocuments("ActiveEffect", [{
                     label: "Unconscious",
                     icon: "icons/svg/unconscious.svg",
-                    flags: { core: { statusId: unconsciousId } }
+                    /* flags: { core: { statusId: unconsciousId } } */
+                    statuses: new Set(["unconscious"])
                 }]);
             }
         }
@@ -1507,7 +1514,8 @@ async clearResourceLockout() {
      * @param {number} amount - Amount of healing to apply
      * @returns {Promise} Promise that resolves when healing is applied
      */
-    async applyHealing(amount) {
+
+    /* async applyHealing(amount) {
         const currentHealth = this.system.secondaryAbilities.health.value;
         const maxHealth = this.system.secondaryAbilities.health.max;
         const newHealth = Math.min(maxHealth, currentHealth + amount);
@@ -1532,7 +1540,354 @@ async clearResourceLockout() {
         });
 
         return newHealth;
+    } */
+
+    /**
+ * Handle unconsciousness and potential death when Health reaches 0
+ * @private
+ */
+async _handleUnconscious() {
+    // Apply unconscious status effect 
+    const unconsciousId = "marvel-faserip.unconscious";
+    
+    // First remove any existing unconscious effect to avoid duplicates
+    /* const existingEffect = this.effects.find(e => e.flags?.core?.statusId === unconsciousId); */
+    const existingEffect = this.effects.find(e => e.statuses.has("unconscious"));
+    if (existingEffect) await existingEffect.delete();
+    
+    // Add unconscious effect
+    await this.createEmbeddedDocuments("ActiveEffect", [{
+        label: "Unconscious",
+        icon: "icons/svg/unconscious.svg",
+        statuses: new Set(["unconscious"])
+    }]);
+
+    // Roll Endurance FEAT to check for Endurance Loss
+    const enduranceRoll = new Roll("1d100");
+    await enduranceRoll.evaluate({async: true});
+    
+    // Get character's endurance rank
+    const enduranceRank = this.system.primaryAbilities.endurance.rank;
+    
+    // Get result based on Kill column of Effects Table
+    const color = this.getColorResult(enduranceRoll.total, enduranceRank);
+    
+    // Determine outcome based on result
+    let effect = "";
+    let message = "";
+    
+    // Check Endurance FEAT result
+    if (color === "white" || color === "green") {
+        // Endurance Loss - character begins dying
+        effect = "Endurance Loss";
+        message = `${this.name} begins losing Endurance ranks and requires immediate aid!`;
+        
+        // Start endurance loss process
+        this._startEnduranceLoss();
+    } else {
+        // No effect - character is stunned but stable
+        effect = "Stunned";
+        message = `${this.name} is unconscious but stable for 1-10 rounds.`;
+        
+        // Set a timer to check for consciousness
+        const stunRounds = Math.floor(Math.random() * 10) + 1;
+        this.setFlag("marvel-faserip", "unconsciousRounds", stunRounds);
     }
+    
+    // Create chat message about the unconsciousness
+    const messageContent = `
+        <div class="marvel-health-check">
+            <h3>${this.name} - Health Check</h3>
+            <div class="roll-details">
+                <div>Endurance FEAT: ${enduranceRoll.total} (${color.toUpperCase()})</div>
+                <div>Result: ${effect}</div>
+                <div>${message}</div>
+            </div>
+        </div>`;
+    
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        content: messageContent,
+        rolls: [enduranceRoll],
+        sound: CONFIG.sounds.dice
+    });
+}
+
+/**
+ * Start the process of endurance loss for a dying character
+ * @private
+ */
+async _startEnduranceLoss() {
+    // Flag the character as dying
+    await this.setFlag("marvel-faserip", "dying", true);
+    
+    // Store the original endurance rank for recovery
+    await this.setFlag("marvel-faserip", "originalEnduranceRank", this.system.primaryAbilities.endurance.rank);
+    
+    // Create an effect for Dying status
+    await this.createEmbeddedDocuments("ActiveEffect", [{
+        label: "Dying",
+        icon: "icons/svg/skull.svg",
+        /* flags: { core: { statusId: "marvel-faserip.dying" } } */
+        statuses: new Set(["dying"])
+    }]);
+    
+    // Set up the first endurance loss after 1 round (6 seconds)
+    setTimeout(() => this._loseEnduranceRank(), 6000);
+}
+
+/**
+ * Lose one endurance rank as part of dying process
+ * @private
+ */
+async _loseEnduranceRank() {
+    // Check if still dying (flag may have been removed by healing)
+    if (!this.getFlag("marvel-faserip", "dying")) return;
+    
+    const currentRank = this.system.primaryAbilities.endurance.rank;
+    
+    // Get available ranks
+    const ranks = Object.keys(CONFIG.marvel.ranks);
+    const currentIndex = ranks.indexOf(currentRank);
+    
+    // If already at Shift 0 or can't find current rank, character dies
+    if (currentIndex <= 0 || currentRank === "Shift 0") {
+        return this._characterDeath();
+    }
+    
+    // Otherwise reduce one rank
+    const newRank = ranks[currentIndex - 1];
+    
+    // Update endurance rank
+    await this.update({
+        "system.primaryAbilities.endurance.rank": newRank,
+        "system.primaryAbilities.endurance.number": CONFIG.marvel.ranks[newRank]?.standard || 0
+    });
+    
+    // Notify about rank loss
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        content: `
+            <div class="marvel-health-check">
+                <h3>${this.name} - Endurance Loss</h3>
+                <div class="roll-details">
+                    <div>Endurance reduced from ${currentRank} to ${newRank}</div>
+                    <div>Character will die if not stabilized!</div>
+                </div>
+            </div>`
+    });
+    
+    // Schedule next rank loss in 1 round (6 seconds)
+    setTimeout(() => this._loseEnduranceRank(), 6000);
+}
+
+/**
+ * Handle character death
+ * @private
+ */
+async _characterDeath() {
+    // Remove dying flag
+    await this.unsetFlag("marvel-faserip", "dying");
+    
+    // Remove dying effect
+    const dyingEffect = this.effects.find(e => e.flags?.core?.statusId === "marvel-faserip.dying");
+    if (dyingEffect) await dyingEffect.delete();
+    
+    // Add dead effect
+    await this.createEmbeddedDocuments("ActiveEffect", [{
+        label: "Dead",
+        icon: "icons/svg/skull.svg",
+        /* flags: { core: { statusId: "marvel-faserip.dead" } } */
+        statuses: new Set(["dead"])
+    }]);
+    
+    // Create death message
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        content: `
+            <div class="marvel-death">
+                <h3>${this.name} has died</h3>
+                <div class="roll-details">
+                    <div>Endurance reached Shift 0</div>
+                    <div>Character is now deceased.</div>
+                </div>
+            </div>`,
+        sound: CONFIG.sounds.death
+    });
+}
+
+/**
+ * Provide aid to a dying character
+ * @param {string} aidType - Type of aid being provided
+ * @param {Object} options - Options for the aid
+ * @returns {Promise<boolean>} Success of the aid attempt
+ */
+async provideAid(aidType = "firstAid", options = {}) {
+    // Check if character is dying
+    if (!this.getFlag("marvel-faserip", "dying")) {
+        ui.notifications.warn(`${this.name} is not in need of life-saving aid.`);
+        return false;
+    }
+    
+    // Stop the dying process
+    await this.unsetFlag("marvel-faserip", "dying");
+    
+    // Remove dying effect
+    const dyingEffect = this.effects.find(e => e.flags?.core?.statusId === "marvel-faserip.dying");
+    if (dyingEffect) await dyingEffect.delete();
+    
+    // Character remains unconscious for 1-10 hours
+    const hoursUnconscious = Math.floor(Math.random() * 10) + 1;
+    
+    // Create message based on aid type
+    let aidMessage = "";
+    switch (aidType) {
+        case "firstAid":
+            aidMessage = `${options.aider || 'Someone'} has provided first aid to ${this.name}.`;
+            break;
+        case "medical":
+            aidMessage = `${options.aider || 'A medical professional'} has provided medical treatment to ${this.name}.`;
+            break;
+        case "power":
+            aidMessage = `${options.aider || 'Someone'} has used healing powers on ${this.name}.`;
+            break;
+        default:
+            aidMessage = `${options.aider || 'Someone'} has stabilized ${this.name}.`;
+    }
+    
+    // Create aid message
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        content: `
+            <div class="marvel-aid">
+                <h3>${this.name} Stabilized</h3>
+                <div class="roll-details">
+                    <div>${aidMessage}</div>
+                    <div>Character is unconscious but stable for ${hoursUnconscious} hours.</div>
+                </div>
+            </div>`
+    });
+    
+    return true;
+}
+
+/**
+ * Attempt to regain consciousness
+ * @returns {Promise<boolean>} Success of consciousness recovery
+ */
+async attemptRegainConsciousness() {
+    // Check if character is unconscious
+    const unconsciousEffect = this.effects.find(e => e.flags?.core?.statusId === "marvel-faserip.unconscious");
+    if (!unconsciousEffect) return false;
+    
+    // Roll Endurance FEAT
+    const enduranceRoll = new Roll("1d100");
+    await enduranceRoll.evaluate({async: true});
+    
+    const enduranceRank = this.system.primaryAbilities.endurance.rank;
+    const color = this.getColorResult(enduranceRoll.total, enduranceRank);
+    
+    // Green or better result means success
+    const success = ["green", "yellow", "red"].includes(color);
+    
+    if (success) {
+        // Remove unconscious effect
+        await unconsciousEffect.delete();
+        
+        // Restore health to endurance rank
+        const enduranceValue = this.system.primaryAbilities.endurance.number;
+        await this.update({
+            "system.secondaryAbilities.health.value": enduranceValue
+        });
+        
+        // Create success message
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this }),
+            content: `
+                <div class="marvel-consciousness">
+                    <h3>${this.name} Regains Consciousness</h3>
+                    <div class="roll-details">
+                        <div>Endurance FEAT: ${enduranceRoll.total} (${color.toUpperCase()})</div>
+                        <div>Character has regained consciousness with ${enduranceValue} Health.</div>
+                    </div>
+                </div>`,
+            rolls: [enduranceRoll]
+        });
+    } else {
+        // Create failure message
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this }),
+            content: `
+                <div class="marvel-consciousness">
+                    <h3>${this.name} Remains Unconscious</h3>
+                    <div class="roll-details">
+                        <div>Endurance FEAT: ${enduranceRoll.total} (${color.toUpperCase()})</div>
+                        <div>Character remains unconscious. Check again in 1-10 rounds.</div>
+                    </div>
+                </div>`,
+            rolls: [enduranceRoll]
+        });
+    }
+    
+    return success;
+}
+
+/**
+ * Apply natural healing to character
+ * @param {string} healType - Type of healing (normal, recovery, medical)
+ * @returns {Promise<number>} Amount of health recovered
+ */
+async applyHealing(healType = "normal") {
+    // Determine healing amount based on type
+    let healAmount = 0;
+    let description = "";
+    
+    switch (healType) {
+        case "recovery":
+            // Recovery occurs 10 turns after damage if not further damaged
+            healAmount = this.system.primaryAbilities.endurance.number;
+            description = "Recovery phase (10 turns after damage)";
+            break;
+            
+        case "medical":
+            // Double healing rate under medical care
+            healAmount = this.system.primaryAbilities.endurance.number * 2;
+            description = "Medical treatment (doctor or hospital)";
+            break;
+            
+        default:
+            // Normal healing - endurance rank per hour
+            healAmount = this.system.primaryAbilities.endurance.number;
+            description = "Natural healing (per hour)";
+    }
+    
+    // Cap healing at max health
+    const currentHealth = this.system.secondaryAbilities.health.value;
+    const maxHealth = this.system.secondaryAbilities.health.max;
+    const newHealth = Math.min(maxHealth, currentHealth + healAmount);
+    const actualHeal = newHealth - currentHealth;
+    
+    // Update health
+    await this.update({
+        "system.secondaryAbilities.health.value": newHealth
+    });
+    
+    // Create healing message
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        content: `
+            <div class="marvel-healing">
+                <h3>${this.name} Heals</h3>
+                <div class="roll-details">
+                    <div>Healing Type: ${description}</div>
+                    <div>Health recovered: ${actualHeal}</div>
+                    <div>Health: ${currentHealth} → ${newHealth}</div>
+                </div>
+            </div>`
+    });
+    
+    return actualHeal;
+}
 
     /**
      * Roll for a power stunt attempt

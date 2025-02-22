@@ -109,6 +109,9 @@ export class FaseripCombatSystem {
         );
     }
 
+    /**
+    * Enhanced _processAttack method for FaseripCombatSystem.js
+    */
     async _processAttack(html, attacker, target) {
         // Add thorough error checking early in the method
         if (!target || !target.system || !target.system.secondaryAbilities || !target.system.secondaryAbilities.health) {
@@ -116,7 +119,7 @@ export class FaseripCombatSystem {
             ui.notifications.error("Target has invalid data structure");
             return;
         }
-    
+        
         const form = html.find('form')[0];
         const formData = new FormData(form);
         
@@ -127,45 +130,45 @@ export class FaseripCombatSystem {
             weaponDamage: parseInt(formData.get('weaponDamage')) || 0,
             range: parseInt(formData.get('range')) || 0
         };
-    
+        
         // Get ability for attack type
         const ability = CONFIG.marvel.actionResults[options.attackType]?.ability.toLowerCase();
         if (!ability) {
             ui.notifications.error("Invalid attack type");
             return;
         }
-    
+        
         try {
             // Calculate base damage
             let baseDamage;
             switch(options.attackType) {
-                case "BA":
-                case "TB":
+                case "BA": // Blunt Attack
+                case "TB": // Throwing Blunt
                     baseDamage = attacker.system.primaryAbilities.strength.number;
                     console.log("Base damage from strength:", baseDamage);
                     break;
-                case "EA":
-                case "TE":
+                case "EA": // Edged Attack
+                case "TE": // Throwing Edged
                     baseDamage = Math.max(
                         attacker.system.primaryAbilities.strength.number,
                         options.weaponDamage || 0
                     );
                     break;
-                case "Sh":
-                case "En":
-                case "Fo":
+                case "Sh": // Shooting
+                case "En": // Energy
+                case "Fo": // Force
                     baseDamage = options.weaponDamage || 10;
                     break;
                 default:
                     baseDamage = 0;
             }
-    
+            
             // Perform attack roll
             const attackResult = await attacker.rollAttack(ability, options.attackType, options);
             if (!attackResult) return;
-    
+            
             console.log("Attack result:", attackResult);
-    
+            
             // Handle damage based on result
             if (attackResult.color !== "white") {
                 // Get resistance
@@ -175,13 +178,12 @@ export class FaseripCombatSystem {
                 // Calculate final damage
                 const finalDamage = Math.max(0, baseDamage - resistance);
                 console.log("Final damage after resistance:", finalDamage);
-    
+                
                 if (finalDamage > 0) {
                     // Get current health values for the chat card
                     const currentHealth = target.system.secondaryAbilities.health.value;
-                    const newHealth = Math.max(0, currentHealth - finalDamage);
                     
-                    // Create a comprehensive chat card with all relevant attack data
+                    // Create a comprehensive chat card for the attack
                     const attackTypeFullName = CONFIG.marvel.actionResults[options.attackType]?.name || options.attackType;
                     const attackerAbility = ability.charAt(0).toUpperCase() + ability.slice(1);
                     const abilityValue = attacker.system.primaryAbilities[ability]?.number || 0;
@@ -191,37 +193,16 @@ export class FaseripCombatSystem {
                         // Use applyDamage instead of direct update
                         await target.applyDamage(finalDamage);
                         
-                        // Create comprehensive damage message
-                        await ChatMessage.create({
-                            content: `
-                                <div class="marvel-damage">
-                                    <h3>${attacker.name} hits ${target.name}!</h3>
-                                    <div class="attack-details">
-                                        <div class="detail-row"><span class="detail-label">Attack Type:</span> ${attackTypeFullName}</div>
-                                        <div class="detail-row"><span class="detail-label">Using:</span> ${attackerAbility} (${abilityValue})</div>
-                                        ${options.columnShift ? `<div class="detail-row"><span class="detail-label">Column Shift:</span> ${options.columnShift}</div>` : ''}
-                                        ${options.karmaPoints ? `<div class="detail-row"><span class="detail-label">Karma Spent:</span> ${options.karmaPoints}</div>` : ''}
-                                        ${options.weaponDamage ? `<div class="detail-row"><span class="detail-label">Weapon Damage:</span> ${options.weaponDamage}</div>` : ''}
-                                        ${options.range ? `<div class="detail-row"><span class="detail-label">Range:</span> ${options.range}</div>` : ''}
-                                        <div class="detail-row"><span class="detail-label">Roll Result:</span> <span class="result-${attackResult.color}">${attackResult.color.toUpperCase()}</span></div>
-                                    </div>
-                                    <div class="damage-details">
-                                        <div class="detail-row"><span class="detail-label">Base Damage:</span> ${baseDamage}</div>
-                                        ${resistance ? `<div class="detail-row"><span class="detail-label">Target Resistance:</span> ${resistance} (${this._getAttackResistanceType(options.attackType)})</div>` : ''}
-                                        <div class="detail-row"><span class="detail-label">Final Damage:</span> ${finalDamage}</div>
-                                        <div class="detail-row"><span class="detail-label">Target Health:</span> ${currentHealth} → ${Math.max(0, currentHealth - finalDamage)}</div>
-                                    </div>
-                                    ${currentHealth - finalDamage <= 0 ? `<div class="unconscious-warning">⚠️ ${target.name} has been reduced to 0 Health and must make an Endurance FEAT!</div>` : ''}
-                                </div>
-                            `,
-                            speaker: ChatMessage.getSpeaker({actor: attacker})
-                        });
-                        
-                        // Note: The endurance FEAT check for unconsciousness is now handled 
-                        // inside applyDamage, so we don't need to duplicate it here
+                        // Apply special effects like Stun, Slam, Kill based on result
+                        if (attackResult.color === "yellow" || attackResult.color === "red") {
+                            const effectResult = this._getAttackEffect(options.attackType, attackResult.color);
+                            if (effectResult) {
+                                await this._applySpecialEffect(effectResult, target, attacker, finalDamage);
+                            }
+                        }
                         
                     } catch (error) {
-                        console.error("Error updating health:", error);
+                        console.error("Error applying damage:", error);
                         ui.notifications.error("Error applying damage to target");
                     }
                 } else {
@@ -266,7 +247,7 @@ export class FaseripCombatSystem {
             ui.notifications.error("Error processing combat");
         }
     }
-
+    
     async _processDamage(result, attacker, target, options) {
         let damage = 0;
         
@@ -297,6 +278,106 @@ export class FaseripCombatSystem {
         // Handle stun, slam, and kill effects
         if (["stun", "slam", "kill"].includes(result.effect)) {
             await target.handleCombatEffect(result.effect);
+        }
+    }
+
+    /**
+    * Get attack effect based on attack type and color result
+    * @param {string} attackType - Type of attack (BA, EA, etc)
+    * @param {string} color - Color result (white, green, yellow, red)
+    * @returns {string|null} Effect name or null if no special effect
+    */
+    _getAttackEffect(attackType, color) {
+        if (color === "white") return null; // Misses have no effect
+        
+        // Map attack types to their effects based on color result
+        const effectMap = {
+            "BA": { // Blunt Attack
+                green: null,
+                yellow: "Slam",
+                red: "Stun"
+            },
+            "EA": { // Edged Attack
+                green: null,
+                yellow: "Stun",
+                red: "Kill"
+            },
+            "Sh": { // Shooting
+                green: null,
+                yellow: "Bullseye",
+                red: "Kill"
+            },
+            "TE": { // Throwing Edged
+                green: null,
+                yellow: "Stun",
+                red: "Kill"
+            },
+            "TB": { // Throwing Blunt
+                green: null,
+                yellow: null,
+                red: "Stun"
+            },
+            "En": { // Energy
+                green: null,
+                yellow: "Bullseye",
+                red: "Kill"
+            },
+            "Fo": { // Force
+                green: null,
+                yellow: "Bullseye",
+                red: "Stun"
+            }
+        };
+        
+        return effectMap[attackType]?.[color] || null;
+    }
+
+    /**
+     * Apply special effects (Stun, Slam, Kill) based on attack result
+     * @param {string} effect - Type of effect (Stun, Slam, Kill)
+     * @param {Actor} target - Target actor
+     * @param {Actor} attacker - Attacker actor
+     * @param {number} damage - Damage inflicted
+     */
+    
+    async _applySpecialEffect(effect, target, attacker, damage) {
+        // Special effects only apply if damage was dealt
+        if (damage <= 0) return;
+        
+        // Create message about special effect
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({actor: attacker}),
+            content: `
+                <div class="marvel-effect">
+                    <h3>${attacker.name} scores a ${effect} on ${target.name}!</h3>
+                    <div class="effect-details">
+                        <div>${this._getEffectDescription(effect)}</div>
+                        <div>${target.name} must make an Endurance FEAT to resist.</div>
+                    </div>
+                </div>`
+        });
+        
+        // Have target roll to resist the effect
+        await target.handleCombatEffect(effect);
+    }
+
+    /**
+     * Get description of special effect
+     * @param {string} effect - Type of effect
+     * @returns {string} Description of the effect
+     */
+    _getEffectDescription(effect) {
+        switch(effect) {
+            case "Stun":
+                return "Target may be stunned for 1-10 rounds.";
+            case "Slam":
+                return "Target may be knocked back.";
+            case "Kill":
+                return "Target may be mortally wounded.";
+            case "Bullseye":
+                return "A precise hit at a vulnerable spot.";
+            default:
+                return "";
         }
     }
 
@@ -362,6 +443,40 @@ export class FaseripCombatSystem {
         let effectResult = null;
 
         switch(attackType) {
+            case "Gp": // Grappling
+                switch(color) {
+                    case "white": return { damage: 0, effect: "Miss" };
+                    case "green": return { damage: 0, effect: "Miss" };
+                    case "yellow": return { damage: 0, effect: "Partial" };
+                    case "red": 
+                        const holdOptions = await this._handleHoldOptions(attacker, target);
+                        return { 
+                            damage: holdOptions.holdDamage,
+                            effect: "Hold",
+                            holdAction: holdOptions.holdAction,
+                            maintained: true
+                        };
+                }
+                break;
+
+        case "Gb": // Grabbing
+            switch(color) {
+                case "white": return { damage: 0, effect: "Miss" };
+                case "green": return { damage: 0, effect: "Take" };
+                case "yellow": return { damage: 0, effect: "Grab" };
+                case "red": return { damage: 0, effect: "Break" };
+            }
+            break;
+
+        case "Es": // Escaping
+            switch(color) {
+                case "white": return { damage: 0, effect: "Miss" };
+                case "green": return { damage: 0, effect: "Miss" };
+                case "yellow": return { damage: 0, effect: "Escape" };
+                case "red": return { damage: 0, effect: "Reverse" };
+            }
+            break;
+
             case "BA": // Blunt Attack
                 switch(color) {
                     case "white": return { damage: 0, effect: "Miss" };
@@ -451,4 +566,191 @@ export class FaseripCombatSystem {
                 break;
         }
     }
+
+    // In FaseripCombatSystem.js
+async _handleHoldOptions(attacker, target) {
+    const maxDamage = attacker.system.primaryAbilities.strength.number;
+    
+    const content = `
+        <form>
+            <div class="form-group">
+                <label>Hold Options:</label>
+                <div class="form-fields">
+                    <input type="number" name="holdDamage" min="0" max="${maxDamage}" value="0">
+                    <p class="notes">Enter damage (0-${maxDamage})</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Additional Action:</label>
+                <select name="holdAction">
+                    <option value="none">None - Just maintain hold</option>
+                    <option value="damage">Apply selected damage</option>
+                    <option value="other">Perform another action at -2CS</option>
+                </select>
+            </div>
+        </form>
+    `;
+
+    return new Promise((resolve) => {
+        new Dialog({
+            title: "Hold Actions",
+            content: content,
+            buttons: {
+                apply: {
+                    label: "Apply",
+                    callback: (html) => {
+                        const holdDamage = Number(html.find('[name="holdDamage"]').val());
+                        const holdAction = html.find('[name="holdAction"]').val();
+                        resolve({ holdDamage, holdAction });
+                    }
+                },
+                cancel: {
+                    label: "Cancel",
+                    callback: () => resolve({ holdDamage: 0, holdAction: "none" })
+                }
+            },
+            default: "apply"
+        }).render(true);
+    });
+}
+async _handleWrestlingResult(attacker, target, attackType, color) {
+    let result;
+    switch(attackType) {
+        case "Gp":
+            result = await this._handleGrapplingResult(attacker, target, color);
+            break;
+        case "Gb":
+            result = await this._handleGrabbingResult(attacker, target, color);
+            break;
+        case "Es":
+            result = await this._handleEscapeResult(attacker, target, color);
+            break;
+    }
+
+    // Create chat message
+    await ChatMessage.create({
+        content: `
+            <div class="marvel-combat">
+                <h3>${attacker.name}'s Wrestling Attack</h3>
+                <div class="wrestling-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Effect:</span> ${result.effect}
+                    </div>
+                    ${result.description ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Result:</span> ${result.description}
+                        </div>
+                    ` : ''}
+                    ${result.damage ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Damage:</span> ${result.damage}
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `,
+        speaker: ChatMessage.getSpeaker({actor: attacker})
+    });
+
+    // Apply effects if needed
+    if (result.effect === "Hold" || result.effect === "Partial") {
+        await this._applyWrestlingEffect(target, result);
+    }
+}
+
+async _handleGrapplingResult(attacker, target, color) {
+    switch(color) {
+        case "green":
+            return {
+                effect: "Miss",
+                description: "The grappling attempt fails"
+            };
+        case "yellow":
+            return {
+                effect: "Partial",
+                description: "Target is partially held and suffers -2CS to actions"
+            };
+        case "red":
+            const holdOptions = await this._handleHoldOptions(attacker, target);
+            return {
+                effect: "Hold",
+                damage: holdOptions.holdDamage,
+                description: "Target is fully held",
+                holdAction: holdOptions.holdAction
+            };
+    }
+}
+
+async _handleGrabbingResult(attacker, target, color) {
+    switch(color) {
+        case "green":
+            return {
+                effect: "Take",
+                description: "Attempt to take item if Strength sufficient"
+            };
+        case "yellow":
+            return {
+                effect: "Grab",
+                description: "Successfully grab item regardless of Strength"
+            };
+        case "red":
+            return {
+                effect: "Break",
+                description: "Can break/activate item or move away"
+            };
+    }
+}
+
+async _handleEscapeResult(attacker, target, color) {
+    switch(color) {
+        case "green":
+            return {
+                effect: "Miss",
+                description: "Failed to escape"
+            };
+        case "yellow":
+            return {
+                effect: "Escape",
+                description: "Break free and can move half speed"
+            };
+        case "red":
+            return {
+                effect: "Reverse",
+                description: "Break free and can counter-attack or move"
+            };
+    }
+}
+
+async _applyWrestlingEffect(target, result) {
+    // Remove any existing wrestling effects
+    await target.effects.forEach(e => {
+        if (e.flags?.marvel?.wrestlingEffect) {
+            e.delete();
+        }
+    });
+
+    // Apply new effect
+    const effectData = {
+        label: result.effect === "Hold" ? "Held" : "Partially Held",
+        icon: "icons/svg/net.svg",
+        duration: { rounds: 1 },
+        flags: { marvel: { wrestlingEffect: true }}
+    };
+
+    if (result.effect === "Partial") {
+        effectData.changes = [{
+            key: "system.columnShift",
+            mode: 2,
+            value: -2
+        }];
+    } else if (result.effect === "Hold") {
+        effectData.changes = [{
+            key: "system.held",
+            mode: 5,
+            value: true
+        }];
+    }
+
+    await target.createEmbeddedDocuments("ActiveEffect", [effectData]);
+}
 }
