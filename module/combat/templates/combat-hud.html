@@ -1,0 +1,145 @@
+<div class="hud-header">
+    <h3>FASERIP Combat</h3>
+    <div class="header-controls">
+        <a class="collapse-button"><i class="fas fa-minus"></i></a>
+        <a class="close-button"><i class="fas fa-times"></i></a>
+    </div>
+</div>
+
+<div class="hud-content">
+    <!-- Character Selection -->
+    <div class="character-section">
+        <select class="character-selector">
+            {{#each characters as |character id|}}
+            <option value="{{character.id}}" {{#if character.isActive}}selected{{/if}}>{{character.name}}</option>
+            {{/each}}
+        </select>
+    </div>
+    
+    <!-- Universal Table Section -->
+    <div class="universal-table-section">
+        <h4>Universal Table</h4>
+        <table class="universal-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th class="white-header">White</th>
+                    <th class="green-header">Green</th>
+                    <th class="yellow-header">Yellow</th>
+                    <th class="red-header">Red</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each universalTable as |ranges rank|}}
+                <tr>
+                    <td class="rank-name">{{rank}}</td>
+                    <td class="white-range">{{ranges.white.[0]}}-{{ranges.white.[1]}}</td>
+                    <td class="green-range">{{ranges.green.[0]}}-{{ranges.green.[1]}}</td>
+                    <td class="yellow-range">{{ranges.yellow.[0]}}-{{ranges.yellow.[1]}}</td>
+                    <td class="red-range">{{ranges.red.[0]}}-{{ranges.red.[1]}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Offensive Actions -->
+    <div class="actions-section">
+        <h4>Offensive Actions</h4>
+        <div class="action-groups">
+            <!-- Fighting Actions -->
+            <div class="action-group">
+                <h5>Fighting</h5>
+                <div class="action-buttons">
+                    {{#each attackTypes as |attack code|}}
+                    {{#if (eq attack.ability "Fighting")}}
+                    <button class="attack-button" data-type="{{code}}">{{attack.name}}</button>
+                    {{/if}}
+                    {{/each}}
+                </div>
+            </div>
+            
+            <!-- Agility Actions -->
+            <div class="action-group">
+                <h5>Agility</h5>
+                <div class="action-buttons">
+                    {{#each attackTypes as |attack code|}}
+                    {{#if (eq attack.ability "Agility")}}
+                    <button class="attack-button" data-type="{{code}}">{{attack.name}}</button>
+                    {{/if}}
+                    {{/each}}
+                </div>
+            </div>
+            
+            <!-- Strength Actions -->
+            <div class="action-group">
+                <h5>Strength</h5>
+                <div class="action-buttons">
+                    {{#each attackTypes as |attack code|}}
+                    {{#if (eq attack.ability "Strength")}}
+                    <button class="attack-button" data-type="{{code}}">{{attack.name}}</button>
+                    {{/if}}
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Defensive Actions -->
+    <div class="defensive-actions-section">
+        <h4>Defensive Actions</h4>
+        <div class="action-buttons">
+            <button class="defensive-action" data-action="dodge">Dodge</button>
+            <button class="defensive-action" data-action="evade">Evade</button>
+            <button class="defensive-action" data-action="block">Block</button>
+            <button class="defensive-action" data-action="catch">Catch</button>
+        </div>
+    </div>
+    
+    <!-- Attack Options -->
+    <div class="attack-options-section">
+        <h4>Attack Options</h4>
+        <div class="option-row">
+            <label>Weapon:</label>
+            <select class="weapons-dropdown">
+                <option value="">-- Select Weapon --</option>
+                {{#if character}}
+                {{#each character.weapons as |weapon id|}}
+                <option value="{{weapon.id}}" data-type="{{weapon.system.attackType}}" data-damage="{{weapon.system.damage}}">
+                    {{weapon.name}} ({{weapon.system.attackType}})
+                </option>
+                {{/each}}
+                {{/if}}
+            </select>
+        </div>
+        <div class="option-row">
+            <label>Power:</label>
+            <select class="powers-dropdown">
+                <option value="">-- Select Power --</option>
+                {{#if character}}
+                {{#each character.powers as |power id|}}
+                <option value="{{power.id}}" data-type="{{power.system.attackType}}" data-damage="{{power.system.damage}}">
+                    {{power.name}} ({{power.system.attackType}})
+                </option>
+                {{/each}}
+                {{/if}}
+            </select>
+        </div>
+        <div class="option-row">
+            <label>Column Shift:</label>
+            <select class="column-shift">
+                <option value="-3">-3 CS</option>
+                <option value="-2">-2 CS</option>
+                <option value="-1">-1 CS</option>
+                <option value="0" selected>+0 CS</option>
+                <option value="1">+1 CS</option>
+                <option value="2">+2 CS</option>
+                <option value="3">+3 CS</option>
+            </select>
+        </div>
+        <div class="option-row">
+            <label>Karma:</label>
+            <input type="number" class="karma-input" value="0" min="0" max="{{#if character}}{{character.system.secondaryAbilities.karma.value}}{{else}}100{{/if}}">
+        </div>
+    </div>
+</div>

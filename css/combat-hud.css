@@ -1,0 +1,195 @@
+/* FASERIP Combat HUD Styling */
+.faserip-combat-hud {
+    position: absolute;
+    width: 300px;
+    background: rgba(30, 30, 30, 0.9);
+    color: #eee;
+    border: 2px solid #782e22;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    font-family: 'Roboto', sans-serif;
+    z-index: 100;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* Header */
+.faserip-combat-hud .hud-header {
+    background: #782e22;
+    color: white;
+    padding: 5px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+    user-select: none;
+}
+
+.faserip-combat-hud .hud-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.faserip-combat-hud .header-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.faserip-combat-hud .header-controls a {
+    color: white;
+    cursor: pointer;
+}
+
+.faserip-combat-hud .header-controls a:hover {
+    color: #ddd;
+}
+
+/* HUD Content */
+.faserip-combat-hud .hud-content {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Section Headers */
+.faserip-combat-hud h4 {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    color: #ddd;
+    border-bottom: 1px solid #555;
+    padding-bottom: 3px;
+}
+
+.faserip-combat-hud h5 {
+    margin: 0 0 5px 0;
+    font-size: 13px;
+    color: #bbb;
+}
+
+/* Character Section */
+.faserip-combat-hud .character-section {
+    margin-bottom: 5px;
+}
+
+.faserip-combat-hud .character-selector {
+    width: 100%;
+    padding: 5px;
+    background: #333;
+    color: #eee;
+    border: 1px solid #555;
+    border-radius: 3px;
+}
+
+/* Universal Table */
+.faserip-combat-hud .universal-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.faserip-combat-hud .universal-table th,
+.faserip-combat-hud .universal-table td {
+    padding: 2px 4px;
+    text-align: center;
+    border: 1px solid #555;
+}
+
+.faserip-combat-hud .universal-table th {
+    background: #444;
+}
+
+.faserip-combat-hud .universal-table .white-header {
+    background: #666;
+    color: #fff;
+}
+
+.faserip-combat-hud .universal-table .green-header {
+    background: #2e7d32;
+    color: #fff;
+}
+
+.faserip-combat-hud .universal-table .yellow-header {
+    background: #ffc107;
+    color: #000;
+}
+
+.faserip-combat-hud .universal-table .red-header {
+    background: #c62828;
+    color: #fff;
+}
+
+.faserip-combat-hud .universal-table .rank-name {
+    font-weight: bold;
+    text-align: left;
+    background: #333;
+}
+
+/* Actions Sections */
+.faserip-combat-hud .action-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.faserip-combat-hud .action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.faserip-combat-hud .attack-button,
+.faserip-combat-hud .defensive-action {
+    flex: 1;
+    min-width: 80px;
+    padding: 3px 5px;
+    background: #444;
+    color: #eee;
+    border: 1px solid #555;
+    border-radius: 3px;
+    font-size: 12px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.faserip-combat-hud .attack-button:hover,
+.faserip-combat-hud .defensive-action:hover {
+    background: #555;
+    border-color: #782e22;
+}
+
+.faserip-combat-hud .defensive-action {
+    background: #354a3b;
+}
+
+.faserip-combat-hud .defensive-action:hover {
+    background: #446b4e;
+}
+
+/* Attack Options */
+.faserip-combat-hud .option-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.faserip-combat-hud .option-row label {
+    flex: 0 0 80px;
+    font-size: 12px;
+}
+
+.faserip-combat-hud .option-row select,
+.faserip-combat-hud .option-row input {
+    flex: 1;
+    padding: 3px;
+    background: #333;
+    color: #eee;
+    border: 1px solid #555;
+    border-radius: 3px;
+}
+
+/* Collapsed State */
+.faserip-combat-hud.collapsed {
+    width: auto;
+}

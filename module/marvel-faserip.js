@@ -10,6 +10,8 @@ import { MarvelFaseripItem } from "./item/item.js";
 import WeaponSystem from "./weapons/weapon-system.js";
 import { MarvelHeadquartersSheet } from "./sheets/items/MarvelHeadquartersSheet.js";
 import { FaseripCombatSystem } from "./combat/FaseripCombatSystem.js";
+import { FaseripCombatHUD } from "./combat/FaseripCombatHUD.js";
+import { DefensiveActions } from "./combat/defensive-actions.js";
 
 Hooks.once('init', async function() {
     console.log('marvel-faserip | Initializing Marvel FASERIP System');
@@ -17,17 +19,15 @@ Hooks.once('init', async function() {
     // Initialize the game.marvel namespace
     game.marvel = {
         WeaponSystem: new WeaponSystem(),
-        combatSystem: new FaseripCombatSystem()
+        combatSystem: new FaseripCombatSystem(),
+        combatHUD: null  // Will be initialized after ready
     };
     
     // Make weapon system available globally for debugging
     globalThis.marvelWeapons = game.marvel.WeaponSystem;
     globalThis.marvelCombat = game.marvel.combatSystem;
     
-    // Configure document classes
-    CONFIG.Item.documentClass = MarvelFaseripItem;
-    
-    // Register sheets
+    // Register sheets first
     Actors.unregisterSheet("core", ActorSheet);
     Items.unregisterSheet("core", ItemSheet);
     
@@ -47,8 +47,27 @@ Hooks.once('init', async function() {
         types: ["headquarters"],
         makeDefault: true
     });
-    
-    // ... rest of your initialization
+
+    // Load templates
+    await loadTemplates([
+        // Existing templates...
+        "systems/marvel-faserip/module/combat/templates/combat-hud.html" 
+    ]);
+
+    // Initialize configs
+    CONFIG.marvel = {
+        ranks: MARVEL_RANKS,
+        universalTableRanges: UNIVERSAL_TABLE_RANGES,
+        actionResults: ACTION_RESULTS,
+        combatTypes: COMBAT_TYPES,
+        combatEffects: COMBAT_EFFECTS
+    };
+
+    // Wait for ready before initializing HUD
+    Hooks.once('ready', () => {
+        game.marvel.combatHUD = new FaseripCombatHUD();
+        game.marvel.defensiveActions = new DefensiveActions();
+    });
 });
 
 // Define Combat Phases

@@ -4,6 +4,7 @@ import { MARVEL_RANKS } from "../config.js";
 export class FaseripCombatSystem {
     constructor() {
         this.initializeListeners();
+        this.initializeCombatHUD();
     }
 
     initializeListeners() {
@@ -17,6 +18,38 @@ export class FaseripCombatSystem {
             
             button.click(this._onAttackButton.bind(this, app.object));
             html.find('.col.left').append(button);
+        });
+    }
+
+    initializeCombatHUD() {
+        // Create HUD container
+        const hudContainer = $(`
+            <div id="faserip-combat-hud" class="faserip-combat-hud">
+                <div class="hud-header">
+                    <h3>Combat Actions</h3>
+                    <a class="collapse-button"><i class="fas fa-minus"></i></a>
+                </div>
+                <div class="hud-content">
+                    <!-- Universal table content here -->
+                </div>
+            </div>
+        `);
+        
+        // Add to UI
+        $('body').append(hudContainer);
+        
+        // Toggle functionality
+        hudContainer.find('.collapse-button').click(() => {
+            hudContainer.find('.hud-content').toggle();
+        });
+        
+        // Show only during combat
+        Hooks.on('combatStart', () => {
+            hudContainer.show();
+        });
+        
+        Hooks.on('combatEnd', () => {
+            hudContainer.hide();
         });
     }
 
@@ -339,7 +372,7 @@ export class FaseripCombatSystem {
      * @param {Actor} attacker - Attacker actor
      * @param {number} damage - Damage inflicted
      */
-    
+
     async _applySpecialEffect(effect, target, attacker, damage) {
         // Special effects only apply if damage was dealt
         if (damage <= 0) return;
