@@ -1622,11 +1622,12 @@ async _startEnduranceLoss() {
             startTime: game.time.worldTime
         },
         flags: {
-            marvel: {
+            "marvel-faserip": {
                 isDying: true,
                 lastUpdate: game.time.worldTime
             }
-        }
+        },
+        statuses: new Set(["dying"])
     }]);
 
     // Register for time updates
@@ -1652,10 +1653,10 @@ _registerDyingEffect() {
 }
 
 async _checkDyingStatus(worldTime) {
-    const dyingEffect = this.effects.find(e => e.getFlag("marvel", "isDying"));
+    const dyingEffect = this.effects.find(e => e.getFlag("marvel-faserip", "isDying"));
     if (!dyingEffect) return;
 
-    const lastUpdate = dyingEffect.getFlag("marvel", "lastUpdate");
+    const lastUpdate = dyingEffect.getFlag("marvel-faserip", "lastUpdate");
     const timePassed = worldTime - lastUpdate;
 
     // Check if 6 seconds (1 round) has passed
@@ -1664,15 +1665,11 @@ async _checkDyingStatus(worldTime) {
         
         // Update the last check time
         await dyingEffect.update({
-            "flags.marvel.lastUpdate": worldTime
+            "flags.marvel-faserip.lastUpdate": worldTime
         });
     }
 }
 
-/**
- * Lose one endurance rank as part of dying process
- * @private
- */
 async _loseEnduranceRank() {
     // Check if still dying
     if (!this.getFlag("marvel-faserip", "dying")) return;
@@ -1710,6 +1707,7 @@ async _loseEnduranceRank() {
             </div>`
     });
 }
+
 
 /**
  * Handle character death
@@ -1756,59 +1754,92 @@ async _characterDeath() {
  * @returns {Promise<boolean>} Success of the aid attempt
  */
 async provideAid(aidType = "firstAid", options = {}) {
-    // Check if character is dying
-    if (!this.getFlag("marvel-faserip", "dying")) {
-        ui.notifications.warn(`${this.name} is not in need of life-saving aid.`);
+    try {
+        // Check if character is dying or at 0 health
+        const isDying = this.effects.find(e => e.getFlag("marvel-faserip", "isDying"));
+        const isAtZeroHealth = this.system.secondaryAbilities.health.value <= 0;
+        
+        if (!isDying && !isAtZeroHealth) {
+            ui.notifications.warn(`${this.name} is not in need of life-saving aid.`);
+            return false;
+        }
+        
+        // Stop the dying process if applicable
+        if (isDying) {
+            await this.unsetFlag("marvel-faserip", "dying");
+            await isDying.delete();
+            
+            // Remove the time update hook
+            const hookId = this.getFlag("marvel-faserip", "dyingHookId");
+            if (hookId) {
+                Hooks.off("updateWorldTime", hookId);
+                await this.unsetFlag("marvel-faserip", "dyingHookId");
+            }
+        }
+        
+        // Character remains unconscious for 1-10 hours
+        const hoursUnconscious = Math.floor(Math.random() * 10) + 1;
+        
+        // Create message based on aid type and additional details
+        let aidMessage = "";
+        switch (aidType) {
+            case "firstAid":
+                aidMessage = `${options.aider || 'Someone'} has provided first aid to ${this.name}.`;
+                break;
+            case "medical":
+                aidMessage = `${options.aider || 'A medical professional'} has provided medical treatment to ${this.name}.`;
+                break;
+            case "power":
+                aidMessage = `${options.aider || 'Someone'} has used healing powers on ${this.name}.`;
+                break;
+            default:
+                aidMessage = `${options.aider || 'Someone'} has stabilized ${this.name}.`;
+        }
+        
+        // Add any additional details
+        if (options.details) {
+            aidMessage += ` (${options.details})`;
+        }
+        
+        // Create unconscious effect if not already present
+        const unconsciousEffect = this.effects.find(e => e.statuses.has("unconscious"));
+        if (!unconsciousEffect) {
+            await this.createEmbeddedDocuments("ActiveEffect", [{
+                label: "Unconscious",
+                icon: "icons/svg/unconscious.svg",
+                duration: {
+                    hours: hoursUnconscious
+                },
+                statuses: new Set(["unconscious"])
+            }]);
+        }
+        
+        // Create aid message
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this }),
+            content: `
+                <div class="marvel-aid">
+                    <h3>${this.name} Stabilized</h3>
+                    <div class="roll-details">
+                        <div>${aidMessage}</div>
+                        <div>Character is unconscious but stable for ${hoursUnconscious} hours.</div>
+                    </div>
+                </div>`
+        });
+        
+        // Set minimum health if at 0
+        if (this.system.secondaryAbilities.health.value <= 0) {
+            await this.update({
+                "system.secondaryAbilities.health.value": 1
+            });
+        }
+        
+        return true;
+    } catch (error) {
+        console.error("Error in provideAid:", error);
+        ui.notifications.error("Error while providing aid");
         return false;
     }
-    
-    // Stop the dying process
-    await this.unsetFlag("marvel-faserip", "dying");
-    
-    // Remove dying effect
-    const dyingEffect = this.effects.find(e => e.getFlag("marvel", "isDying"));
-    if (dyingEffect) await dyingEffect.delete();
-    
-    // Remove the time update hook
-    const hookId = this.getFlag("marvel-faserip", "dyingHookId");
-    if (hookId) {
-        Hooks.off("updateWorldTime", hookId);
-        await this.unsetFlag("marvel-faserip", "dyingHookId");
-    }
-    
-    // Character remains unconscious for 1-10 hours
-    const hoursUnconscious = Math.floor(Math.random() * 10) + 1;
-    
-    // Create message based on aid type
-    let aidMessage = "";
-    switch (aidType) {
-        case "firstAid":
-            aidMessage = `${options.aider || 'Someone'} has provided first aid to ${this.name}.`;
-            break;
-        case "medical":
-            aidMessage = `${options.aider || 'A medical professional'} has provided medical treatment to ${this.name}.`;
-            break;
-        case "power":
-            aidMessage = `${options.aider || 'Someone'} has used healing powers on ${this.name}.`;
-            break;
-        default:
-            aidMessage = `${options.aider || 'Someone'} has stabilized ${this.name}.`;
-    }
-    
-    // Create aid message
-    await ChatMessage.create({
-        speaker: ChatMessage.getSpeaker({ actor: this }),
-        content: `
-            <div class="marvel-aid">
-                <h3>${this.name} Stabilized</h3>
-                <div class="roll-details">
-                    <div>${aidMessage}</div>
-                    <div>Character is unconscious but stable for ${hoursUnconscious} hours.</div>
-                </div>
-            </div>`
-    });
-    
-    return true;
 }
 
 /**
