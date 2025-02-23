@@ -1,42 +1,28 @@
-/* Base container */
+/* Base Container */
 .universal-table {
     padding: 5px;
     background: #fff;
     font-family: "Arial Narrow", Arial, sans-serif;
-    min-width: 800px;  /* Reduced from 1200px */
-    max-width: 1200px;  /* Reduced from 1400px */
-    height: 800px;
+    min-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
-/* Ensure table scales with container */
+/* Global Table Styles */
 .universal-table table {
     border-collapse: collapse;
     width: 100%;
     margin: 0;
     padding: 0;
     table-layout: fixed;
-    transform-origin: top left;
 }
 
-/* Add scaling behavior */
-@media screen and (max-width: 1000px) {
-    .universal-table {
-        transform-origin: top left;
-    }
-    
-    .universal-table table {
-        width: 100%;
-    }
-}
-
-/* Shared cell properties */
 .universal-table td,
 .universal-table th {
     border: 1px solid #000;
     text-align: center;
     padding: 1px;
-    height: 18px;  /* Slightly reduced from 20px */
+    height: 18px;
 }
 
 /* Combat Actions Table */
@@ -45,47 +31,42 @@
 }
 
 .combat-actions-table th {
-    width: 32px;  /* Reduced from 38px */
+    width: 32px;
 }
 
 .action-header {
     vertical-align: top;
     background-color: #FFFFFF;
     padding: 1px;
-    color: #000000;
 }
 
 .action-code {
-    font-size: 15px;  /* Increased for better visibility */
-    /* font-weight: 700; */
+    font-size: 15px;
+    font-weight: bold;
     line-height: 1;
     margin: 1px 0;
-    color: #000000;
 }
 
 .action-name {
-    font-size: 7px;  /* Increased from 6px */
+    font-size: 7px;
     line-height: 1;
     margin: 1px 0;
     white-space: nowrap;
-    color: #000000;
 }
 
 .action-ability {
-    font-size: 9px;  /* Increased from 8px */
+    font-size: 9px;
     line-height: 1;
     margin: 1px 0;
-    color: #000000;
 }
 
 .combat-actions-table td {
-    font-size: 11px;  /* Increased from 10px */
-    font-weight: normal;
-    height: 22px;  /* Reduced from 24px */
+    font-size: 11px;
+    height: 22px;
     vertical-align: middle;
 }
 
-/* Row colors for combat actions */
+/* Result Row Colors */
 .white-row td { background-color: #FFFFFF; }
 .green-row td { background-color: #00B050; }
 .yellow-row td { background-color: #FFFF00; }
@@ -97,40 +78,35 @@
     border-bottom: 2px solid #000;
 }
 
-.rank-headers table {
-    border-spacing: 0;
-}
-
 .rank-cell {
     vertical-align: top;
     background-color: #FFFFFF;
-    width: 32px;  /* Reduced from 38px */
+    width: 32px;
     position: relative;
 }
 
 .rank-code {
-    font-size: 14px;  /* Slightly reduced from 16px */
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: bold;
     line-height: 1;
     margin: 1px 0;
 }
 
 .rank-name {
-    font-size: 7px;  /* Increased from 6px */
+    font-size: 7px;
     line-height: 1;
     margin: 1px 0;
 }
 
 .rank-value {
-    font-size: 9px;  /* Increased from 8px */
+    font-size: 9px;
     line-height: 1;
     margin: 1px 0;
 }
 
-/* Rank ranges row */
+/* Rank Ranges Row */
 .rank-ranges {
-    font-size: 9px;  /* Increased from 8px */
-    border-top: none;
+    font-size: 9px;
 }
 
 .rank-ranges td {
@@ -143,125 +119,72 @@
     margin-top: 2px;
 }
 
-.results-table table {
-    border-spacing: 0;
-}
-
-/* Range column styling */
 .range-cell {
-    width: 32px;  /* Reduced from 38px */
+    width: 32px;
     font-size: 11px;
-    font-weight: normal;
-    background-color: #EBEBEB;  /* Darker background */
-    color: #000000;  /* Ensure text is black */
+    background-color: #EBEBEB;
+    color: #000000;
     text-align: right;
     padding-right: 3px;
 }
 
-/* Results cells */
 .result-cell {
-    width: 32px;  /* Reduced from 38px */
+    width: 32px;
     height: 18px;
-    border: 1px solid #000;
 }
 
-/* Special borders for rank sections */
+/* Special Borders for Rank Sections */
 .rank-cell[data-rank="Z"],
 .rank-cell[data-rank="1000"],
 .rank-cell[data-rank="3000"],
 .rank-cell[data-rank="5000"],
-.results-table td[data-rank="Z"],
-.results-table td[data-rank="1000"],
-.results-table td[data-rank="3000"],
-.results-table td[data-rank="5000"] {
+.result-cell[data-rank="Z"],
+.result-cell[data-rank="1000"],
+.result-cell[data-rank="3000"],
+.result-cell[data-rank="5000"] {
     border-left: 2px solid #000;
 }
 
-/* Result colors */
+/* Results Color Classes */
 .result-cell.white { background-color: #FFFFFF; }
 .result-cell.green { background-color: #00B050; }
 .result-cell.yellow { background-color: #FFFF00; }
 .result-cell.red { background-color: #FF0000; }
 
-/* Beyond rank infinity symbol */
+/* Beyond Rank Infinity Symbol */
 .rank-cell[data-rank="B"] .rank-value {
     font-size: 14px;
     font-weight: bold;
 }
 
-/* Controls Section */
-.controls {
-    margin-bottom: 5px;
+/* Color Cell Generation */
+.results-table tr:nth-child(-n+2) .result-cell { background-color: #FFFFFF; }
+.results-table tr:nth-child(n+3):nth-child(-n+6) .result-cell { background-color: #00B050; }
+.results-table tr:nth-child(n+7):nth-child(-n+18) .result-cell { background-color: #FFFF00; }
+.results-table tr:nth-child(n+19) .result-cell { background-color: #FF0000; }
+
+/* Special Column Borders */
+.rank-cell:nth-child(14),
+.rank-cell:nth-child(15),
+.rank-cell:nth-child(16),
+.rank-cell:nth-child(17),
+.result-cell:nth-child(14),
+.result-cell:nth-child(15),
+.result-cell:nth-child(16),
+.result-cell:nth-child(17) {
+    border-left: 2px solid #000;
 }
 
-.toggle-results {
-    padding: 4px 8px;
-    background-color: #FFFFFF;
-    border: 1px solid #000;
-    cursor: pointer;
-    font-size: 11px;  /* Increased from 10px */
-    font-family: "Arial Narrow", Arial, sans-serif;
-}
-
-.toggle-results:hover {
-    background-color: #E6E6E6;
-}
-
-/* Media Query for smaller screens */
-@media screen and (max-width: 1000px) {  /* Updated breakpoint */
+/* Responsive Adjustments */
+@media screen and (max-width: 1200px) {
     .universal-table {
-        min-width: 100%;
-        overflow-x: auto;
+        transform-origin: top left;
+        transform: scale(0.85);
     }
 }
 
-/* Add to universal-table.css */
-
-.action-header {
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.action-header:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-}
-
-.marvel-roll {
-    padding: 10px;
-    border: 1px solid #000;
-    border-radius: 5px;
-    margin: 5px 0;
-}
-
-.roll-details {
-    margin-top: 8px;
-}
-
-.result {
-    margin-top: 8px;
-    padding: 5px;
-    text-align: center;
-    font-weight: bold;
-    border-radius: 3px;
-}
-
-.white-result {
-    background-color: #FFFFFF;
-    color: #000000;
-    border: 1px solid #000000;
-}
-
-.green-result {
-    background-color: #00B050;
-    color: #FFFFFF;
-}
-
-.yellow-result {
-    background-color: #FFFF00;
-    color: #000000;
-}
-
-.red-result {
-    background-color: #FF0000;
-    color: #FFFFFF;
+@media screen and (max-width: 900px) {
+    .universal-table {
+        transform: scale(0.7);
+    }
 }

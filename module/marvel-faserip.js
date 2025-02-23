@@ -10,7 +10,8 @@ import { MarvelFaseripItem } from "./item/item.js";
 import WeaponSystem from "./weapons/weapon-system.js";
 import { MarvelHeadquartersSheet } from "./sheets/items/MarvelHeadquartersSheet.js";
 import { FaseripCombatSystem } from "./combat/FaseripCombatSystem.js";
-import { FaseripUniversalTable } from "./combat/FaseripUniversalTable.js";  // Changed path
+import { FaseripUniversalTable } from "./combat/FaseripUniversalTable.js";
+import { MarvelCombatHUD } from "./combat/MarvelCombatHUD.js";
 
 Hooks.once('init', async function() {
     console.log('marvel-faserip | Initializing Marvel FASERIP System');
@@ -20,11 +21,15 @@ Hooks.once('init', async function() {
         WeaponSystem: new WeaponSystem(),
         combatSystem: new FaseripCombatSystem(),
         FaseripUniversalTable  // Changed to class reference instead of instance
+        
     };
 
     // Register sheet application classes
     globalThis.FaseripUniversalTable = FaseripUniversalTable;
     
+    // Combat HUD
+    globalThis.MarvelCombatHUD = MarvelCombatHUD;  // Make it available globally
+
     // Make weapon system available globally for debugging
     globalThis.marvelWeapons = game.marvel.WeaponSystem;
     globalThis.marvelCombat = game.marvel.combatSystem;

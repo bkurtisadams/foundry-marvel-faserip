@@ -17,8 +17,7 @@
   "esmodules": [
     "module/marvel-faserip.js",
     "module/weapons/weapon-system.js",
-    "module/combat/FaseripCombatSystem.js",
-    "module/combat/FaseripUniversalTable.js"
+    "module/combat/FaseripCombatSystem.js"
 ],
   "styles": [
     "css/marvel-faserip.css",
