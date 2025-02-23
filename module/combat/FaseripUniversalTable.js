@@ -110,8 +110,157 @@ export class FaseripUniversalTable extends Application {
     activateListeners(html) {
         super.activateListeners(html);
 
+        // Add click handler for action headers
+        html.find('.action-header').click(this._onActionClick.bind(this));
+        
+        // Keep existing listeners
         html.find('.toggle-results').click(this._onToggleResults.bind(this));
         html.find('.result-cell').click(this._onCellClick.bind(this));
+    }
+
+    async _onActionClick(event) {
+        event.preventDefault();
+        const header = event.currentTarget;
+        const actionCode = header.querySelector('.action-code').textContent;
+        const actionData = CONFIG.marvel.actionResults[actionCode];
+
+        if (!actionData) {
+            ui.notifications.error(`No data found for action ${actionCode}`);
+            return;
+        }
+
+        // Get selected token's actor
+        const token = canvas.tokens.controlled[0];
+        if (!token?.actor) {
+            ui.notifications.warn("Please select a token first");
+            return;
+        }
+
+        const actor = token.actor;
+        
+        // Create dialog content
+        const ability = actionData.ability.toLowerCase();
+        const abilityScore = actor.system.primaryAbilities[ability];
+        
+        const dialogContent = `
+            <form>
+                <div class="form-group">
+                    <label>Action: ${actionData.name}</label>
+                </div>
+                <div class="form-group">
+                    <label>Ability: ${ability} (${abilityScore.rank})</label>
+                </div>
+                <div class="form-group">
+                    <label>Column Shift:</label>
+                    <select name="columnShift">
+                        <option value="-3">-3 CS</option>
+                        <option value="-2">-2 CS</option>
+                        <option value="-1">-1 CS</option>
+                        <option value="0" selected>+0 CS</option>
+                        <option value="1">+1 CS</option>
+                        <option value="2">+2 CS</option>
+                        <option value="3">+3 CS</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Karma Points (Max: ${actor.system.secondaryAbilities.karma.value}):</label>
+                    <input type="number" name="karma" value="0" min="0" max="${actor.system.secondaryAbilities.karma.value}">
+                </div>
+            </form>`;
+
+        // Show dialog
+        new Dialog({
+            title: `${actionData.name} Action Roll`,
+            content: dialogContent,
+            buttons: {
+                roll: {
+                    label: "Roll",
+                    callback: (html) => this._processActionRoll(html, actor, actionCode, actionData)
+                },
+                cancel: {
+                    label: "Cancel"
+                }
+            }
+        }).render(true);
+    }
+
+    async _processActionRoll(html, actor, actionCode, actionData) {
+        const form = html.find('form')[0];
+        const columnShift = parseInt(form.columnShift.value) || 0;
+        const karmaPoints = parseInt(form.karma.value) || 0;
+
+        // Get base ability and rank
+        const ability = actionData.ability.toLowerCase();
+        const abilityData = actor.system.primaryAbilities[ability];
+        if (!abilityData) {
+            ui.notifications.error(`Missing ability data for ${ability}`);
+            return;
+        }
+
+        // Roll d100
+        const roll = await new Roll("1d100").evaluate({async: true});
+        const total = roll.total + karmaPoints;
+
+        // Get base rank and apply column shift
+        const baseRank = abilityData.rank;
+        const shiftedRank = this._applyColumnShift(baseRank, columnShift);
+
+        // Get color result
+        const color = this._getColorResult(total, shiftedRank);
+        
+        // Get effect based on action type and color
+        const effect = actionData.results[color.toLowerCase()];
+
+        // Create chat message
+        const messageContent = `
+            <div class="marvel-roll">
+                <h3>${actor.name} - ${actionData.name} Roll</h3>
+                <div class="roll-details">
+                    <div>${ability.charAt(0).toUpperCase() + ability.slice(1)}: ${baseRank}</div>
+                    ${columnShift !== 0 ? `<div>Column Shift: ${columnShift > 0 ? '+' : ''}${columnShift} → ${shiftedRank}</div>` : ''}
+                    <div>Roll: ${roll.total}${karmaPoints ? ` + ${karmaPoints} Karma = ${total}` : ''}</div>
+                    <div class="result ${color.toLowerCase()}-result">${effect} (${color})</div>
+                </div>
+            </div>`;
+
+        ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({actor: actor}),
+            content: messageContent,
+            rolls: [roll]
+        });
+
+        // Deduct karma if used
+        if (karmaPoints > 0) {
+            const newKarma = actor.system.secondaryAbilities.karma.value - karmaPoints;
+            await actor.update({
+                "system.secondaryAbilities.karma.value": newKarma
+            });
+        }
+    }
+
+    _applyColumnShift(rank, shift) {
+        const ranks = [
+            "Shift 0", "Feeble", "Poor", "Typical", "Good", 
+            "Excellent", "Remarkable", "Incredible", "Amazing",
+            "Monstrous", "Unearthly", "Shift X", "Shift Y", "Shift Z",
+            "Class 1000", "Class 3000", "Class 5000", "Beyond"
+        ];
+        
+        const currentIndex = ranks.indexOf(rank);
+        if (currentIndex === -1) return rank;
+        
+        const newIndex = Math.min(Math.max(currentIndex + shift, 0), ranks.length - 1);
+        return ranks[newIndex];
+    }
+
+    _getColorResult(roll, rank) {
+        const ranges = CONFIG.marvel.UNIVERSAL_TABLE_RANGES[rank];
+        if (!ranges) return "white";
+
+        if (roll <= ranges.white[1]) return "WHITE";
+        if (roll <= ranges.green[1]) return "GREEN";
+        if (roll <= ranges.yellow[1]) return "YELLOW";
+        return "RED";
     }
 
     _onToggleResults(event) {

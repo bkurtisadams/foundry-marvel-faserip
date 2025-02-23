@@ -214,3 +214,54 @@
         overflow-x: auto;
     }
 }
+
+/* Add to universal-table.css */
+
+.action-header {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.action-header:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.marvel-roll {
+    padding: 10px;
+    border: 1px solid #000;
+    border-radius: 5px;
+    margin: 5px 0;
+}
+
+.roll-details {
+    margin-top: 8px;
+}
+
+.result {
+    margin-top: 8px;
+    padding: 5px;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 3px;
+}
+
+.white-result {
+    background-color: #FFFFFF;
+    color: #000000;
+    border: 1px solid #000000;
+}
+
+.green-result {
+    background-color: #00B050;
+    color: #FFFFFF;
+}
+
+.yellow-result {
+    background-color: #FFFF00;
+    color: #000000;
+}
+
+.red-result {
+    background-color: #FF0000;
+    color: #FFFFFF;
+}
