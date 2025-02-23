@@ -3,69 +3,107 @@
     padding: 5px;
     background: #fff;
     font-family: Arial, sans-serif;
+    min-width: 1200px;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
+/* Base table styles */
 .universal-table table {
-    width: 100%;
     border-collapse: collapse;
-    margin-bottom: 0.5em;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    table-layout: fixed;
 }
 
+/* General table cell alignment */
+.universal-table td,
+.universal-table th {
+    vertical-align: middle;
+    border: 1px solid #000000;
+}
+
+/* Header styles */
 .universal-table th,
-.universal-table td {
-    border: 1px solid #000;
-    padding: 2px;
+.rank-cell,
+.range-cell,
+.action-header {
+    background-color: #FFFFFF;
+    border: 1px solid #000000;
+    padding: 2px 1px;
     text-align: center;
-    font-size: 11px;
 }
 
-/* Combat Actions Table */
+/* Combat Actions Table specific styles */
 .combat-actions-table {
     margin-bottom: 5px;
 }
 
 .action-header {
-    background-color: #666666;
-    color: white;
-    padding: 2px;
-    width: 40px;
     vertical-align: top;
-}
-
-.action-code {
-    font-weight: bold;
-    font-size: 12px;
+    width: 40px;
+    padding: 2px 1px;
 }
 
 .action-name {
-    font-size: 10px;
-    line-height: 1.1;
+    font-family: Arial, sans-serif;
+    font-size: 7px;
+    font-weight: normal;
+    margin: 0 0 2px 0;
+    line-height: 1;
+    white-space: nowrap;
+    color: #000000;
+}
+
+.action-code {
+    font-family: "Arial Black", Arial, sans-serif;
+    font-weight: 900;
+    font-size: 16px;
+    margin: 2px 0;
+    line-height: 1;
+    color: #000000;
 }
 
 .action-ability {
+    font-family: Arial, sans-serif;
     font-size: 10px;
-    font-style: italic;
+    font-weight: bold;
+    margin: 2px 0 0 0;
+    line-height: 1;
+    color: #000000;  /* Changed from #444444 to solid black */
+}
+
+/* Combat Actions Table cell styles */
+.combat-actions-table td {
+    padding: 2px 1px;
+    font-family: "Arial Black", Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 900;
+    text-align: center;
+    line-height: 1;
+    color: #000000;
 }
 
 /* Color coding for result rows */
-.white-row td { 
-    background-color: #ffffff;
-    height: 20px;
+.white-row td {
+    background-color: #FFFFFF;
+    color: #000000;
 }
 
-.green-row td { 
-    background-color: #90ee90;
-    height: 20px;
+.green-row td {
+    background-color: #00B050;
+    color: #000000;
 }
 
-.yellow-row td { 
-    background-color: #ffff00;
-    height: 20px;
+.yellow-row td {
+    background-color: #FFFF00;
+    color: #000000;
 }
 
-.red-row td { 
-    background-color: #ff6b6b;
-    height: 20px;
+.red-row td {
+    background-color: #FF0000;
+    color: #000000;
 }
 
 /* Rank Headers */
@@ -74,24 +112,36 @@
 }
 
 .rank-cell {
-    background-color: #666666;
-    color: white;
     width: 40px;
-    padding: 2px;
+    vertical-align: top;
+    padding: 2px 1px;
 }
 
 .rank-code {
-    font-weight: bold;
-    font-size: 12px;
+    font-family: "Arial Black", Arial, sans-serif;
+    font-weight: 900;
+    font-size: 16px;
+    margin: 0;
+    line-height: 1;
+    color: #000000;
 }
 
 .rank-name {
-    font-size: 10px;
+    font-family: Arial, sans-serif;
+    font-size: 8px;
+    font-weight: normal;
+    margin: 2px 0;
+    line-height: 1;
+    color: #000000;
 }
 
 .rank-value {
-    font-size: 10px;
-    font-style: italic;
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    font-weight: bold;
+    margin: 2px 0 0 0;
+    line-height: 1;
+    color: #000000;  /* Changed from #444444 to solid black */
 }
 
 /* Results Table */
@@ -100,62 +150,61 @@
 }
 
 .results-table td {
-    width: 40px;
-    height: 15px;
+    border: 1px solid #000000;
     padding: 1px;
+    text-align: center;
+    font-size: 11px;
+    color: #000000;
 }
 
 .range-cell {
-    background-color: #666666;
-    color: white;
+    width: 35px;
+    font-weight: 900;
+    font-family: "Arial Black", Arial, sans-serif;
     font-size: 11px;
-    width: 40px;
-    white-space: nowrap;
+    padding: 1px;
+    color: #000000;
 }
 
 .result-cell {
     width: 40px;
-    cursor: pointer;
+    height: 18px;
 }
 
-.result-cell.white { 
-    background-color: #ffffff; 
+/* Color coding for result cells */
+.result-cell.white {
+    background-color: #FFFFFF;
 }
 
-.result-cell.green { 
-    background-color: #90ee90; 
+.result-cell.green {
+    background-color: #00B050;
 }
 
-.result-cell.yellow { 
-    background-color: #ffff00; 
+.result-cell.yellow {
+    background-color: #FFFF00;
 }
 
-.result-cell.red { 
-    background-color: #ff6b6b; 
+.result-cell.red {
+    background-color: #FF0000;
 }
 
-/* Controls */
+/* Controls section */
 .controls {
     margin-bottom: 5px;
 }
 
 .toggle-results {
-    background: #666666;
-    color: white;
-    padding: 5px 10px;
-    border: none;
-    border-radius: 3px;
+    padding: 4px 8px;
+    background-color: #FFFFFF;
+    border: 1px solid #000000;
     cursor: pointer;
-    font-size: 12px;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #000000;
 }
 
 .toggle-results:hover {
-    background: #777777;
-}
-
-/* Remove hover effects from cells that looked distracting */
-.result-cell:hover {
-    opacity: 1;
+    background-color: #E6E6E6;
 }
 
 /* Make the whole table more compact */
