@@ -1,4 +1,59 @@
-<!-- combat-hud.html -->
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.marvel-combat-hud {
+    position: fixed;
+    display: inline-block !important;
+    padding: 0.5px;
+    background: #333;
+    border: 1px solid #000;
+    z-index: 100;
+}
+
+.action-row {
+    display: inline !important;
+    white-space: nowrap !important;
+}
+
+.action-btn, .table-toggle {
+    display: inline-block !important;
+    width: 28px !important;
+    height: 28px !important;
+    margin: 0.5px !important;
+    padding: 0 !important;
+    background: white;
+    font-size: 12px !important;
+    line-height: 28px !important;
+    text-align: center;
+    vertical-align: top;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+.action-btn:hover {
+    background: #ddf !important;  /* Light blue instead of light gray */
+    box-shadow: 0 0 5px #66f !important;  /* Blue glow effect */
+}
+
+.action-btn:hover:before {
+    content: attr(data-name) " (" attr(data-ability) ")";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    background: #333;
+    color: white;
+    font-size: 12px;
+    white-space: nowrap;
+    border-radius: 3px;
+    z-index: 1000;
+}
+</style>
+</head>
+<body>
 <div class="marvel-combat-hud">
     <span class="action-row">
         <span class="action-btn" data-action="ba" data-name="Blunt Attacks" data-ability="Fighting">BA</span>
@@ -22,3 +77,5 @@
         <span class="table-toggle">⊕</span>
     </span>
 </div>
+</body>
+</html>
