@@ -1,0 +1,87 @@
+{{!-- templates/combat/universal-table.html --}}
+<form class="{{cssClass}} universal-table" autocomplete="off">
+    <div class="controls">
+        <button type="button" class="toggle-results">
+            {{#if isCollapsed}}
+            Show Results Table
+            {{else}}
+            Hide Results Table
+            {{/if}}
+        </button>
+    </div>
+
+    {{!-- Combat Actions Table --}}
+    <div class="combat-actions-table">
+        <table>
+            <thead>
+                <tr>
+                    {{#each combatActions}}
+                    <th>
+                        <div class="action-code">{{this.code}}</div>
+                        <div class="action-ability">{{this.ability}}</div>
+                    </th>
+                    {{/each}}
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="white-row">
+                    {{#each combatActions}}
+                    <td>Miss</td>
+                    {{/each}}
+                </tr>
+                <tr class="green-row">
+                    {{#each combatActions}}
+                    <td>{{#if this.greenResult}}{{this.greenResult}}{{else}}Hit{{/if}}</td>
+                    {{/each}}
+                </tr>
+                <tr class="yellow-row">
+                    {{#each combatActions}}
+                    <td>{{#if this.yellowResult}}{{this.yellowResult}}{{else}}Hit{{/if}}</td>
+                    {{/each}}
+                </tr>
+                <tr class="red-row">
+                    {{#each combatActions}}
+                    <td>{{#if this.redResult}}{{this.redResult}}{{else}}Kill{{/if}}</td>
+                    {{/each}}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    {{!-- Rank Headers --}}
+    <div class="rank-headers">
+        <table>
+            <thead>
+                <tr>
+                    {{#each ranks}}
+                    <th>
+                        <div class="rank-code">{{this.code}}</div>
+                        <div class="rank-name">{{this.name}}</div>
+                        <div class="rank-value">{{this.value}}</div>
+                    </th>
+                    {{/each}}
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    {{!-- Results Table --}}
+    {{#unless isCollapsed}}
+    <div class="results-table">
+        <table>
+            <tbody>
+                {{#each resultsTable}}
+                <tr>
+                    <td class="range-cell">{{this.range}}</td>
+                    {{#each this.results}}
+                    <td class="result-cell {{this.color}}" data-row="{{../range}}" data-col="{{@index}}">
+                        {{this.text}}
+                    </td>
+                    {{/each}}
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+    {{/unless}}
+</form>

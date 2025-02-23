@@ -1,4 +1,6 @@
 console.log("Marvel FASERIP System: marvel-faserip.js has been loaded into Foundry VTT");
+//import { FaseripUniversalTable } from "./combat/FaseripCombatSystem.js";
+import { FaseripUniversalTable } from "./combat/FaseripUniversalTable.js";
 
 // Import required classes and configurations
 import { MARVEL_RANKS, UNIVERSAL_TABLE_RANGES, ACTION_RESULTS, COMBAT_TYPES, COMBAT_EFFECTS } from "./config.js";
@@ -17,8 +19,12 @@ Hooks.once('init', async function() {
     // Initialize the game.marvel namespace
     game.marvel = {
         WeaponSystem: new WeaponSystem(),
-        combatSystem: new FaseripCombatSystem()
+        combatSystem: new FaseripCombatSystem(),
+        universalTable: new FaseripUniversalTable()
     };
+
+    // Register sheet application classes
+    game.marvel.FaseripUniversalTable = FaseripUniversalTable;
     
     // Make weapon system available globally for debugging
     globalThis.marvelWeapons = game.marvel.WeaponSystem;
@@ -47,6 +53,9 @@ Hooks.once('init', async function() {
         types: ["headquarters"],
         makeDefault: true
     });
+
+    // Register the universal table application
+    game.marvel.FaseripUniversalTable = FaseripUniversalTable;
     
     // ... rest of your initialization
 });
@@ -434,6 +443,23 @@ async function resolveActions(combat) {
         `
     });
 }
+
+// Add a hook to create the universal table button in the scene controls
+Hooks.on('getSceneControlButtons', (controls) => {
+    controls.push({
+        name: 'universal-table',
+        title: 'Universal Table',
+        icon: 'fas fa-table',
+        layer: 'controls',
+        tools: [{
+            name: 'show-table',
+            title: 'Show Universal Table',
+            icon: 'fas fa-dice-d20',
+            button: true,
+            onClick: () => game.marvel.universalTable.render(true)
+        }]
+    });
+});
 
 // Handle Macro Creation
 Hooks.on("hotbarDrop", async (bar, rawData, slot) => {

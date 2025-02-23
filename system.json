@@ -17,12 +17,14 @@
   "esmodules": [
     "module/marvel-faserip.js",
     "module/weapons/weapon-system.js",
-    "module/combat/FaseripCombatSystem.js"
-  ],
+    "module/combat/FaseripCombatSystem.js",
+    "module/combat/FaseripUniversalTable.js"
+],
   "styles": [
     "css/marvel-faserip.css",
     "css/weapon-sheet.css",
-    "css/combat.css"
+    "css/combat.css",
+    "css/universal-table.css"
   ],
   "languages": [
     {
@@ -35,9 +37,6 @@
   "gridUnits": "areas",
   "primaryTokenAttribute": "secondaryAbilities.health",
   "secondaryTokenAttribute": "secondaryAbilities.karma",
-  "url": "",
-  "manifest": "",
-  "download": "",
   "license": "LICENSE.txt",
  
   "documentTypes": {
@@ -48,7 +47,7 @@
     "requires": []
   },
  
-  "socket": false,
+  "socket": true,
   "initiative": "1d10",
  
   "templatePaths": [
@@ -60,6 +59,7 @@
     "templates/dialogs/add-equipment.html",
     "templates/dialogs/add-weapon.html",
     "templates/dialogs/add-headquarters.html",
-    "module/combat/templates/combat-attack.html"
+    "module/combat/templates/combat-attack.html",
+    "module/combat/templates/universal-table.html"
   ]
 }

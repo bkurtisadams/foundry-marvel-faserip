@@ -4,15 +4,15 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\assets
 
 01/31/2025  06:00 AM    <DIR>          .
-02/20/2025  09:33 AM    <DIR>          ..
-02/19/2025  12:44 AM    <DIR>          icons
+02/22/2025  06:14 PM    <DIR>          ..
+02/22/2025  06:14 PM    <DIR>          icons
 01/31/2025  06:00 AM             8,629 marvel-logo-bw.png
 01/30/2025  04:51 PM            62,421 marvel-logo.png
                2 File(s)         71,050 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\assets\icons
 
-02/19/2025  12:44 AM    <DIR>          .
+02/22/2025  06:14 PM    <DIR>          .
 01/31/2025  06:00 AM    <DIR>          ..
 05/27/2023  11:00 AM            13,362 ability.webp
 05/27/2023  11:00 AM            14,022 attack.webp
@@ -29,100 +29,103 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\assets\icons\weapons
 
 02/19/2025  12:02 PM    <DIR>          .
-02/19/2025  12:44 AM    <DIR>          ..
+02/22/2025  06:14 PM    <DIR>          ..
 02/19/2025  12:58 AM            11,616 generic-weapon.webp
                1 File(s)         11,616 bytes
 
      Total Files Listed:
               12 File(s)        187,152 bytes
-               8 Dir(s)  256,294,830,080 bytes free
+               8 Dir(s)  254,372,634,624 bytes free
  Volume in drive C is Windows
  Volume Serial Number is 94F9-1583
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\css
 
-02/21/2025  10:30 AM    <DIR>          .
-02/20/2025  09:33 AM    <DIR>          ..
+02/22/2025  07:15 PM    <DIR>          .
+02/22/2025  06:14 PM    <DIR>          ..
 02/20/2025  03:06 PM               881 combat.css
 02/20/2025  09:33 AM             2,958 headquarters.css
-02/21/2025  10:56 AM            39,522 marvel-faserip.css
+02/22/2025  06:14 PM            39,522 marvel-faserip.css
+02/22/2025  07:53 PM             2,228 universal-table.css
 02/18/2025  05:34 PM             6,200 weapon-sheet.css
-               4 File(s)         49,561 bytes
+               5 File(s)         51,789 bytes
 
      Total Files Listed:
-               4 File(s)         49,561 bytes
-               2 Dir(s)  256,294,830,080 bytes free
+               5 File(s)         51,789 bytes
+               2 Dir(s)  254,372,634,624 bytes free
  Volume in drive C is Windows
  Volume Serial Number is 94F9-1583
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\lang
 
 01/30/2025  09:13 PM    <DIR>          .
-02/20/2025  09:33 AM    <DIR>          ..
+02/22/2025  06:14 PM    <DIR>          ..
 01/30/2025  09:13 PM             1,636 en.json
                1 File(s)          1,636 bytes
 
      Total Files Listed:
                1 File(s)          1,636 bytes
-               2 Dir(s)  256,294,830,080 bytes free
+               2 Dir(s)  254,372,634,624 bytes free
  Volume in drive C is Windows
  Volume Serial Number is 94F9-1583
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module
 
-02/20/2025  02:49 PM    <DIR>          .
-02/20/2025  09:33 AM    <DIR>          ..
-02/21/2025  12:17 PM    <DIR>          combat
-02/20/2025  10:45 AM            26,411 config.js
+02/22/2025  06:14 PM    <DIR>          .
+02/22/2025  06:14 PM    <DIR>          ..
+02/22/2025  07:19 PM    <DIR>          combat
+02/22/2025  02:26 AM            26,519 config.js
 02/20/2025  09:33 AM    <DIR>          dialogs
-02/17/2025  12:40 PM    <DIR>          documents
+02/22/2025  01:24 AM    <DIR>          documents
 02/20/2025  09:33 AM    <DIR>          item
-02/20/2025  03:01 PM            19,601 marvel-faserip.js
+02/22/2025  07:56 PM            20,563 marvel-faserip.js
 02/20/2025  09:33 AM    <DIR>          sheets
 02/18/2025  10:17 PM    <DIR>          weapons
-               2 File(s)         46,012 bytes
+               2 File(s)         47,082 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\combat
 
-02/21/2025  12:17 PM    <DIR>          .
-02/20/2025  02:49 PM    <DIR>          ..
-02/21/2025  12:17 PM            25,632 FaseripCombatSystem.js
-02/20/2025  02:50 PM    <DIR>          templates
-               1 File(s)         25,632 bytes
+02/22/2025  07:19 PM    <DIR>          .
+02/22/2025  06:14 PM    <DIR>          ..
+02/22/2025  06:14 PM            29,794 FaseripCombatSystem.js
+02/22/2025  07:54 PM             4,811 FaseripUniversalTable.js
+02/22/2025  06:18 PM    <DIR>          templates
+               2 File(s)         34,605 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\combat\templates
 
-02/20/2025  02:50 PM    <DIR>          .
-02/21/2025  12:17 PM    <DIR>          ..
+02/22/2025  06:18 PM    <DIR>          .
+02/22/2025  07:19 PM    <DIR>          ..
 02/20/2025  03:06 PM             1,587 combat-attack.html
-               1 File(s)          1,587 bytes
+02/22/2025  07:47 PM             2,925 universal-table.html
+               2 File(s)          4,512 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\dialogs
 
 02/20/2025  09:33 AM    <DIR>          .
-02/20/2025  02:49 PM    <DIR>          ..
+02/22/2025  06:14 PM    <DIR>          ..
 02/20/2025  09:33 AM             3,420 AddHeadquartersDialog.js
                1 File(s)          3,420 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\documents
 
-02/17/2025  12:40 PM    <DIR>          .
-02/20/2025  02:49 PM    <DIR>          ..
+02/22/2025  01:24 AM    <DIR>          .
+02/22/2025  06:14 PM    <DIR>          ..
 02/20/2025  09:33 AM    <DIR>          items
-02/20/2025  06:37 PM            79,557 MarvelActor.js
-               1 File(s)         79,557 bytes
+02/22/2025  03:33 AM            97,080 MarvelActor.js
+               1 File(s)         97,080 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\documents\items
 
 02/20/2025  09:33 AM    <DIR>          .
-02/17/2025  12:40 PM    <DIR>          ..
+02/22/2025  01:24 AM    <DIR>          ..
 02/20/2025  09:33 AM             5,550 MarvelAttackItem.js
                1 File(s)          5,550 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\item
 
 02/20/2025  09:33 AM    <DIR>          .
-02/20/2025  02:49 PM    <DIR>          ..
+02/22/2025  06:14 PM    <DIR>          ..
 02/20/2025  09:33 AM             6,133 item.js
 02/20/2025  09:26 AM             5,120 MarvelHeadquartersItem.js
 02/18/2025  04:26 PM             5,516 weapons-config.js
@@ -131,7 +134,7 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\sheets
 
 02/20/2025  09:33 AM    <DIR>          .
-02/20/2025  02:49 PM    <DIR>          ..
+02/22/2025  06:14 PM    <DIR>          ..
 02/20/2025  02:51 AM    <DIR>          items
 02/20/2025  05:59 PM           120,420 MarvelActorSheet.js
                1 File(s)        120,420 bytes
@@ -148,23 +151,23 @@
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\weapons
 
 02/18/2025  10:17 PM    <DIR>          .
-02/20/2025  02:49 PM    <DIR>          ..
+02/22/2025  06:14 PM    <DIR>          ..
 02/18/2025  11:35 PM            17,536 weapon-system.js
                1 File(s)         17,536 bytes
 
      Total Files Listed:
-              15 File(s)        328,350 bytes
-              29 Dir(s)  256,294,817,792 bytes free
+              17 File(s)        358,841 bytes
+              29 Dir(s)  254,372,622,336 bytes free
  Volume in drive C is Windows
  Volume Serial Number is 94F9-1583
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\templates
 
 02/01/2025  08:40 PM    <DIR>          .
-02/20/2025  09:33 AM    <DIR>          ..
+02/22/2025  06:14 PM    <DIR>          ..
 02/20/2025  02:02 AM    <DIR>          actor
 02/01/2025  08:25 PM    <DIR>          chat
-02/20/2025  11:49 AM    <DIR>          dialogs
+02/22/2025  06:14 PM    <DIR>          dialogs
 02/19/2025  04:53 PM    <DIR>          items
                0 File(s)              0 bytes
 
@@ -191,7 +194,7 @@
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\templates\dialogs
 
-02/20/2025  11:49 AM    <DIR>          .
+02/22/2025  06:14 PM    <DIR>          .
 02/01/2025  08:40 PM    <DIR>          ..
 02/11/2025  04:50 PM             1,654 ability-roll.html
 02/02/2025  09:02 AM             1,289 add-attack.html
@@ -222,4 +225,4 @@
 
      Total Files Listed:
               21 File(s)         87,574 bytes
-              17 Dir(s)  256,294,817,792 bytes free
+              17 Dir(s)  254,372,622,336 bytes free
