@@ -1,176 +1,195 @@
-/* css/universal-table.css */
+/* Base container */
 .universal-table {
     padding: 5px;
     background: #fff;
-    font-family: Arial, sans-serif;
-    min-width: 1200px;
-    max-width: 1400px;
+    font-family: "Arial Narrow", Arial, sans-serif;
+    min-width: 800px;  /* Reduced from 1200px */
+    max-width: 1200px;  /* Reduced from 1400px */
+    height: 800px;
     margin: 0 auto;
 }
 
-/* Force consistent table layout across all sections */
+/* Ensure table scales with container */
 .universal-table table {
     border-collapse: collapse;
     width: 100%;
     margin: 0;
     padding: 0;
     table-layout: fixed;
+    transform-origin: top left;
+}
+
+/* Add scaling behavior */
+@media screen and (max-width: 1000px) {
+    .universal-table {
+        transform-origin: top left;
+    }
+    
+    .universal-table table {
+        width: 100%;
+    }
+}
+
+/* Shared cell properties */
+.universal-table td,
+.universal-table th {
+    border: 1px solid #000;
+    text-align: center;
+    padding: 1px;
+    height: 18px;  /* Slightly reduced from 20px */
 }
 
 /* Combat Actions Table */
 .combat-actions-table {
-    margin-bottom: 1px;  /* Minimal spacing between sections */
+    margin-bottom: 2px;
 }
 
-/* Header styling for action columns */
+.combat-actions-table th {
+    width: 32px;  /* Reduced from 38px */
+}
+
 .action-header {
-    width: 45px;
     vertical-align: top;
-    padding: 1px;
     background-color: #FFFFFF;
-    border: 1px solid #000000;
-    text-align: center;
-}
-
-.action-name {
-    font-family: Arial, sans-serif;
-    font-size: 7px;  /* Smaller size for top text */
-    font-weight: normal;
-    margin: 1px 0;
-    line-height: 1;
-    white-space: nowrap;
+    padding: 1px;
     color: #000000;
 }
 
 .action-code {
-    font-family: Arial, sans-serif;
-    font-weight: bold;  /* Regular bold, not heavy */
-    font-size: 14px;
-    margin: 1px 0;
+    font-size: 15px;  /* Increased for better visibility */
+    /* font-weight: 700; */
     line-height: 1;
+    margin: 1px 0;
+    color: #000000;
+}
+
+.action-name {
+    font-size: 7px;  /* Increased from 6px */
+    line-height: 1;
+    margin: 1px 0;
+    white-space: nowrap;
     color: #000000;
 }
 
 .action-ability {
-    font-family: Arial, sans-serif;
-    font-size: 9px;  /* Medium size for bottom text */
-    font-weight: normal;
-    margin: 1px 0;
+    font-size: 9px;  /* Increased from 8px */
     line-height: 1;
+    margin: 1px 0;
     color: #000000;
 }
 
-/* Combat action results */
 .combat-actions-table td {
-    width: 45px;
-    height: 20px;
-    padding: 1px;
-    font-family: Arial, sans-serif;
-    font-size: 11px;
+    font-size: 11px;  /* Increased from 10px */
     font-weight: normal;
-    text-align: center;
-    border: 1px solid #000000;
-    color: #000000;
+    height: 22px;  /* Reduced from 24px */
+    vertical-align: middle;
 }
 
-/* Color coding for result rows */
-.white-row td { 
-    background-color: #FFFFFF; 
-}
-.green-row td { 
-    background-color: #00B050; 
-}
-.yellow-row td { 
-    background-color: #FFFF00; 
-}
-.red-row td { 
-    background-color: #FF0000; 
-}
+/* Row colors for combat actions */
+.white-row td { background-color: #FFFFFF; }
+.green-row td { background-color: #00B050; }
+.yellow-row td { background-color: #FFFF00; }
+.red-row td { background-color: #FF0000; }
 
-/* Rank Headers */
+/* Rank Headers Section */
 .rank-headers {
-    margin: 1px 0;  /* Minimal spacing */
+    margin: 2px 0;
+    border-bottom: 2px solid #000;
+}
+
+.rank-headers table {
+    border-spacing: 0;
 }
 
 .rank-cell {
-    width: 45px;
     vertical-align: top;
-    padding: 1px;
     background-color: #FFFFFF;
-    border: 1px solid #000000;
-    text-align: center;
+    width: 32px;  /* Reduced from 38px */
+    position: relative;
 }
 
 .rank-code {
-    font-family: Arial, sans-serif;
-    font-weight: bold;
-    font-size: 14px;
-    margin: 1px 0;
+    font-size: 14px;  /* Slightly reduced from 16px */
+    font-weight: 700;
     line-height: 1;
-    color: #000000;
+    margin: 1px 0;
 }
 
 .rank-name {
-    font-family: Arial, sans-serif;
-    font-size: 7px;
-    font-weight: normal;
-    margin: 1px 0;
+    font-size: 7px;  /* Increased from 6px */
     line-height: 1;
-    color: #000000;
+    margin: 1px 0;
 }
 
 .rank-value {
-    font-family: Arial, sans-serif;
-    font-size: 9px;
-    font-weight: normal;
-    margin: 1px 0;
+    font-size: 9px;  /* Increased from 8px */
     line-height: 1;
-    color: #000000;
+    margin: 1px 0;
+}
+
+/* Rank ranges row */
+.rank-ranges {
+    font-size: 9px;  /* Increased from 8px */
+    border-top: none;
+}
+
+.rank-ranges td {
+    height: 16px;
+    border-top: none;
 }
 
 /* Results Table */
 .results-table {
-    margin-top: 1px;
+    margin-top: 2px;
 }
 
 .results-table table {
-    table-layout: fixed;
+    border-spacing: 0;
 }
 
-/* Range column (first column) */
+/* Range column styling */
 .range-cell {
-    width: 35px;
-    font-weight: normal;
+    width: 32px;  /* Reduced from 38px */
     font-size: 11px;
-    padding: 1px;
-    background-color: #F5F5F5;  /* Very light gray */
-    color: #000000;
-}
-
-.results-table td:first-child {
-    width: 35px;
-    background-color: #F5F5F5;
+    font-weight: normal;
+    background-color: #EBEBEB;  /* Darker background */
+    color: #000000;  /* Ensure text is black */
+    text-align: right;
+    padding-right: 3px;
 }
 
 /* Results cells */
-.results-table td {
-    width: 45px;
-    height: 20px;
-    border: 1px solid #000000;
-    padding: 1px;
-    text-align: center;
-    font-family: Arial, sans-serif;
-    font-size: 11px;
-    color: #000000;
+.result-cell {
+    width: 32px;  /* Reduced from 38px */
+    height: 18px;
+    border: 1px solid #000;
 }
 
-/* Result cell colors */
+/* Special borders for rank sections */
+.rank-cell[data-rank="Z"],
+.rank-cell[data-rank="1000"],
+.rank-cell[data-rank="3000"],
+.rank-cell[data-rank="5000"],
+.results-table td[data-rank="Z"],
+.results-table td[data-rank="1000"],
+.results-table td[data-rank="3000"],
+.results-table td[data-rank="5000"] {
+    border-left: 2px solid #000;
+}
+
+/* Result colors */
 .result-cell.white { background-color: #FFFFFF; }
 .result-cell.green { background-color: #00B050; }
 .result-cell.yellow { background-color: #FFFF00; }
 .result-cell.red { background-color: #FF0000; }
 
-/* Controls */
+/* Beyond rank infinity symbol */
+.rank-cell[data-rank="B"] .rank-value {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Controls Section */
 .controls {
     margin-bottom: 5px;
 }
@@ -178,13 +197,20 @@
 .toggle-results {
     padding: 4px 8px;
     background-color: #FFFFFF;
-    border: 1px solid #000000;
+    border: 1px solid #000;
     cursor: pointer;
-    font-family: Arial, sans-serif;
-    font-size: 11px;
-    color: #000000;
+    font-size: 11px;  /* Increased from 10px */
+    font-family: "Arial Narrow", Arial, sans-serif;
 }
 
 .toggle-results:hover {
     background-color: #E6E6E6;
+}
+
+/* Media Query for smaller screens */
+@media screen and (max-width: 1000px) {  /* Updated breakpoint */
+    .universal-table {
+        min-width: 100%;
+        overflow-x: auto;
+    }
 }
