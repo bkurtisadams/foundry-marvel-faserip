@@ -8,7 +8,7 @@
     margin: 0 auto;
 }
 
-/* Base table styles */
+/* Force consistent table layout across all sections */
 .universal-table table {
     border-collapse: collapse;
     width: 100%;
@@ -17,120 +17,104 @@
     table-layout: fixed;
 }
 
-/* General table cell alignment */
-.universal-table td,
-.universal-table th {
-    vertical-align: middle;
-    border: 1px solid #000000;
+/* Combat Actions Table */
+.combat-actions-table {
+    margin-bottom: 1px;  /* Minimal spacing between sections */
 }
 
-/* Header styles */
-.universal-table th,
-.rank-cell,
-.range-cell,
+/* Header styling for action columns */
 .action-header {
+    width: 45px;
+    vertical-align: top;
+    padding: 1px;
     background-color: #FFFFFF;
     border: 1px solid #000000;
-    padding: 2px 1px;
     text-align: center;
-}
-
-/* Combat Actions Table specific styles */
-.combat-actions-table {
-    margin-bottom: 5px;
-}
-
-.action-header {
-    vertical-align: top;
-    width: 40px;
-    padding: 2px 1px;
 }
 
 .action-name {
     font-family: Arial, sans-serif;
-    font-size: 7px;
+    font-size: 7px;  /* Smaller size for top text */
     font-weight: normal;
-    margin: 0 0 2px 0;
+    margin: 1px 0;
     line-height: 1;
     white-space: nowrap;
     color: #000000;
 }
 
 .action-code {
-    font-family: "Arial Black", Arial, sans-serif;
-    font-weight: 900;
-    font-size: 16px;
-    margin: 2px 0;
+    font-family: Arial, sans-serif;
+    font-weight: bold;  /* Regular bold, not heavy */
+    font-size: 14px;
+    margin: 1px 0;
     line-height: 1;
     color: #000000;
 }
 
 .action-ability {
     font-family: Arial, sans-serif;
-    font-size: 10px;
-    font-weight: bold;
-    margin: 2px 0 0 0;
+    font-size: 9px;  /* Medium size for bottom text */
+    font-weight: normal;
+    margin: 1px 0;
     line-height: 1;
-    color: #000000;  /* Changed from #444444 to solid black */
+    color: #000000;
 }
 
-/* Combat Actions Table cell styles */
+/* Combat action results */
 .combat-actions-table td {
-    padding: 2px 1px;
-    font-family: "Arial Black", Arial, sans-serif;
+    width: 45px;
+    height: 20px;
+    padding: 1px;
+    font-family: Arial, sans-serif;
     font-size: 11px;
-    font-weight: 900;
+    font-weight: normal;
     text-align: center;
-    line-height: 1;
+    border: 1px solid #000000;
     color: #000000;
 }
 
 /* Color coding for result rows */
-.white-row td {
-    background-color: #FFFFFF;
-    color: #000000;
+.white-row td { 
+    background-color: #FFFFFF; 
 }
-
-.green-row td {
-    background-color: #00B050;
-    color: #000000;
+.green-row td { 
+    background-color: #00B050; 
 }
-
-.yellow-row td {
-    background-color: #FFFF00;
-    color: #000000;
+.yellow-row td { 
+    background-color: #FFFF00; 
 }
-
-.red-row td {
-    background-color: #FF0000;
-    color: #000000;
+.red-row td { 
+    background-color: #FF0000; 
 }
 
 /* Rank Headers */
 .rank-headers {
-    margin: 5px 0;
+    margin: 1px 0;  /* Minimal spacing */
 }
 
 .rank-cell {
-    width: 40px;
+    width: 45px;
     vertical-align: top;
-    padding: 2px 1px;
+    padding: 1px;
+    background-color: #FFFFFF;
+    border: 1px solid #000000;
+    text-align: center;
 }
 
 .rank-code {
-    font-family: "Arial Black", Arial, sans-serif;
-    font-weight: 900;
-    font-size: 16px;
-    margin: 0;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    font-size: 14px;
+    margin: 1px 0;
     line-height: 1;
     color: #000000;
 }
 
 .rank-name {
     font-family: Arial, sans-serif;
-    font-size: 8px;
+    font-size: 7px;
     font-weight: normal;
-    margin: 2px 0;
+    margin: 1px 0;
     line-height: 1;
     color: #000000;
 }
@@ -138,57 +122,55 @@
 .rank-value {
     font-family: Arial, sans-serif;
     font-size: 9px;
-    font-weight: bold;
-    margin: 2px 0 0 0;
+    font-weight: normal;
+    margin: 1px 0;
     line-height: 1;
-    color: #000000;  /* Changed from #444444 to solid black */
+    color: #000000;
 }
 
 /* Results Table */
 .results-table {
-    margin-top: 5px;
+    margin-top: 1px;
 }
 
+.results-table table {
+    table-layout: fixed;
+}
+
+/* Range column (first column) */
+.range-cell {
+    width: 35px;
+    font-weight: normal;
+    font-size: 11px;
+    padding: 1px;
+    background-color: #F5F5F5;  /* Very light gray */
+    color: #000000;
+}
+
+.results-table td:first-child {
+    width: 35px;
+    background-color: #F5F5F5;
+}
+
+/* Results cells */
 .results-table td {
+    width: 45px;
+    height: 20px;
     border: 1px solid #000000;
     padding: 1px;
     text-align: center;
+    font-family: Arial, sans-serif;
     font-size: 11px;
     color: #000000;
 }
 
-.range-cell {
-    width: 35px;
-    font-weight: 900;
-    font-family: "Arial Black", Arial, sans-serif;
-    font-size: 11px;
-    padding: 1px;
-    color: #000000;
-}
+/* Result cell colors */
+.result-cell.white { background-color: #FFFFFF; }
+.result-cell.green { background-color: #00B050; }
+.result-cell.yellow { background-color: #FFFF00; }
+.result-cell.red { background-color: #FF0000; }
 
-.result-cell {
-    width: 40px;
-    height: 18px;
-}
-
-/* Color coding for result cells */
-.result-cell.white {
-    background-color: #FFFFFF;
-}
-
-.result-cell.green {
-    background-color: #00B050;
-}
-
-.result-cell.yellow {
-    background-color: #FFFF00;
-}
-
-.result-cell.red {
-    background-color: #FF0000;
-}
-
-/* Controls section */
+/* Controls */
 .controls {
     margin-bottom: 5px;
 }
@@ -205,10 +187,4 @@
 
 .toggle-results:hover {
     background-color: #E6E6E6;
-}
-
-/* Make the whole table more compact */
-.universal-table {
-    max-width: 1200px;
-    margin: 0 auto;
 }
