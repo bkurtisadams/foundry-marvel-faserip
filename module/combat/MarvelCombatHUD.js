@@ -6,6 +6,7 @@ export class MarvelCombatHUD extends Application {
         super(options);
         this.engine = new FaseripCombatEngine();
     }
+
     static get defaultOptions() {
         return mergeObject(super.defaultOptions, {
             id: 'marvel-combat-hud',
@@ -29,26 +30,20 @@ export class MarvelCombatHUD extends Application {
     activateListeners(html) {
         super.activateListeners(html);
         
-        // Find the HUD element using jQuery
         const hudElement = html.find('.marvel-combat-hud');
         if (hudElement.length) {
             this._makeDraggable(hudElement[0]);
         }
     
-        // Action button handlers
         html.find('.action-btn').click(this._onActionClick.bind(this));
-        
-        // Table toggle handler
         html.find('.table-toggle').click(this._onTableToggleClick.bind(this));
     }
     
-    // Combined table toggle handler
     async _onTableToggleClick(event) {
         event.preventDefault();
         
         const imagePath = "systems/marvel-faserip/assets/universal table.webp";
         
-        // Create dialog content with embedded image
         const content = `
             <style>
                 .universal-table-container {
@@ -74,15 +69,10 @@ export class MarvelCombatHUD extends Application {
             </div>
         `;
         
-        // Create and show dialog
         new Dialog({
             title: "Universal Table",
             content: content,
-            buttons: {
-                close: {
-                    label: "Close"
-                }
-            },
+            buttons: { close: { label: "Close" } },
             default: "close",
             width: 1000,
             height: 600,
@@ -94,7 +84,6 @@ export class MarvelCombatHUD extends Application {
         }).render(true);
     }
 
-    // Rest of the dragging behavior remains the same
     _makeDraggable(element) {
         if (!element) return;
 
@@ -187,43 +176,6 @@ export class MarvelCombatHUD extends Application {
         }
     }
 
-    // In MarvelCombatHUD.js - keep existing comments
-async _createChatMessage(result, actor, actionType) {
-    // Guard against null result
-    if (!result || result.error) {
-        ui.notifications.error(`Failed to resolve ${actionType} action`);
-        return;
-    }
-
-    try {
-        // Make sure we're passing the correct data structure
-        const content = await renderTemplate(
-            "systems/marvel-faserip/templates/chat/combat-result.html",
-            {
-                actor,
-                actionType: actionType.toUpperCase(),
-                result: {
-                    ability: result.ability,
-                    abilityScore: result.abilityScore,
-                    roll: result.roll,
-                    result: result.result,
-                    damage: result.damage,
-                    effect: result.effect
-                }
-            }
-        );
-
-        await ChatMessage.create({
-            speaker: ChatMessage.getSpeaker({actor}),
-            content,
-            rolls: result.roll ? [result.roll] : []
-        });
-    } catch (error) {
-        console.error("Error creating chat message:", error);
-        ui.notifications.error("Failed to create result message");
-    }
-}
-
     async _showActionDialog(actionType, actor) {
         const template = "systems/marvel-faserip/module/combat/templates/combat-action.html";
         const dialogData = {
@@ -261,23 +213,37 @@ async _createChatMessage(result, actor, actionType) {
     }
 
     async _createChatMessage(result, actor, actionType) {
-        const content = await renderTemplate(
-            "systems/marvel-faserip/templates/chat/combat-result.html",
-            {
-                actor,
-                actionType,
-                result
-            }
-        );
+        if (!result || result.error) {
+            ui.notifications.error(`Failed to resolve ${actionType} action`);
+            return;
+        }
 
-        await ChatMessage.create({
-            speaker: ChatMessage.getSpeaker({actor}),
-            content,
-            rolls: [result.roll]
-        });
-    }
+        try {
+            // Use the formatted text from the engine
+            const content = result.formattedText || await renderTemplate(
+                "systems/marvel-faserip/templates/chat/combat-result.html",
+                {
+                    actor,
+                    actionType: actionType.toUpperCase(),
+                    result: {
+                        ability: result.ability,
+                        abilityScore: result.abilityScore,
+                        roll: result.roll,
+                        result: result.result,
+                        damage: result.damage,
+                        effect: result.effect
+                    }
+                }
+            );
 
-    _handleCombatAction(actionType, attacker, defender) {
-        console.log(`Executing ${actionType} from ${attacker.name} against ${defender.name}`);
+            await ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({actor}),
+                content,
+                rolls: result.roll ? [result.roll] : []
+            });
+        } catch (error) {
+            console.error("Error creating chat message:", error);
+            ui.notifications.error("Failed to create result message");
+        }
     }
 }
