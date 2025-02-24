@@ -211,18 +211,21 @@ export class FaseripCombatEngine {
                 </div>`;
         }
 
+        // Add a safety check for result being undefined
+        const resultDisplay = result ? result.toUpperCase() : "UNKNOWN";
+
         return `
             <div class="marvel-damage">
                 <h3>${actor.name} attacks ${target.name}</h3>
                 <div class="attack-details">
                     <div class="detail-row"><span class="detail-label">Attack Type:</span> ${actionName}</div>
-                    <div class="detail-row"><span class="detail-label">Result:</span> <span class="result-${result}">${result.toUpperCase()}</span></div>
-                    ${effect ? `<div class="detail-row"><span class="detail-label">Effect:</span> ${effect.type}</div>` : ''}
+                    <div class="detail-row"><span class="detail-label">Result:</span> <span class="result-${result || 'unknown'}">${resultDisplay}</span></div>
+                    ${effect ? `<div class="detail-row"><span class="detail-label">Effect:</span> ${effect.type || 'None'}</div>` : ''}
                 </div>
                 <div class="damage-details">
-                    <div class="detail-row"><span class="detail-label">Base Damage:</span> ${damage.base}</div>
-                    <div class="detail-row"><span class="detail-label">Resistance:</span> ${damage.resistance} (${damage.resistanceType})</div>
-                    <div class="detail-row"><span class="detail-label">Final Damage:</span> ${damage.final}</div>
+                    <div class="detail-row"><span class="detail-label">Base Damage:</span> ${damage?.base || 0}</div>
+                    <div class="detail-row"><span class="detail-label">Resistance:</span> ${damage?.resistance || 0} (${damage?.resistanceType || 'None'})</div>
+                    <div class="detail-row"><span class="detail-label">Final Damage:</span> ${damage?.final || 0}</div>
                 </div>
             </div>`;
     }

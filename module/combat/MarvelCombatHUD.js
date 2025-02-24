@@ -8,7 +8,7 @@ export class MarvelCombatHUD extends Application {
     }
 
     static get defaultOptions() {
-        return mergeObject(super.defaultOptions, {
+        return foundry.utils.mergeObject(super.defaultOptions, {
             id: 'marvel-combat-hud',
             template: "systems/marvel-faserip/module/combat/templates/combat-hud.html",
             width: 300,
@@ -217,28 +217,11 @@ export class MarvelCombatHUD extends Application {
             ui.notifications.error(`Failed to resolve ${actionType} action`);
             return;
         }
-
+    
         try {
-            // Use the formatted text from the engine
-            const content = result.formattedText || await renderTemplate(
-                "systems/marvel-faserip/templates/chat/combat-result.html",
-                {
-                    actor,
-                    actionType: actionType.toUpperCase(),
-                    result: {
-                        ability: result.ability,
-                        abilityScore: result.abilityScore,
-                        roll: result.roll,
-                        result: result.result,
-                        damage: result.damage,
-                        effect: result.effect
-                    }
-                }
-            );
-
             await ChatMessage.create({
                 speaker: ChatMessage.getSpeaker({actor}),
-                content,
+                content: result.formattedText,
                 rolls: result.roll ? [result.roll] : []
             });
         } catch (error) {
