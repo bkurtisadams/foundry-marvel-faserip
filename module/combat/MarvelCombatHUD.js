@@ -219,16 +219,21 @@ export class MarvelCombatHUD extends Application {
         }
         
         try {
-            // Use the combat-result template
-            const templatePath = "systems/marvel-faserip/templates/chat/combat-result.html";
-            
+            // Format the data correctly for the template
             const templateData = {
                 actor: actor,
                 actionType: actionType.toUpperCase(),
-                result: result
+                result: {
+                    ability: result.ability,
+                    abilityScore: result.abilityScore,
+                    roll: result.roll,
+                    result: result.result,
+                    // Format damage as a simple value rather than an object
+                    damage: result.damage?.final || 0
+                }
             };
             
-            const content = await renderTemplate(templatePath, templateData);
+            const content = await renderTemplate("systems/marvel-faserip/templates/chat/combat-result.html", templateData);
             
             await ChatMessage.create({
                 speaker: ChatMessage.getSpeaker({actor}),
