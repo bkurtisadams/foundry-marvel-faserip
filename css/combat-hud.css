@@ -5,11 +5,19 @@
     background: #333;
     border: 1px solid #000;
     z-index: 100;
+    transition: transform 0.1s ease-out; /* Smooth movement during drag */
 }
 
 .action-row {
     display: inline !important;
     white-space: nowrap !important;
+}
+
+/* Active state for buttons */
+.action-btn.active {
+    background: #4a90e2 !important;
+    color: white;
+    transform: scale(0.95);
 }
 
 .action-btn, .table-toggle {
@@ -28,11 +36,13 @@
     position: relative;
 }
 
-.action-btn:hover {
-    background: #eee;
+/* Improved hover state */
+.action-btn:hover:before {
+    opacity: 1;
 }
 
-.action-btn:hover:before {
+/* This targets both action buttons and table toggle */
+.action-btn:hover:before, .table-toggle:hover:before {
     content: attr(data-name) " (" attr(data-ability) ")";
     position: absolute;
     bottom: 100%;
@@ -47,6 +57,65 @@
     z-index: 1000;
 }
 
+/* And for the arrow */
+.action-btn:hover:after, .table-toggle:hover:after {
+    content: '';
+    position: absolute;
+    bottom: calc(100% - 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: #333;
+}
+
+/* Drag styles */
 .marvel-combat-hud.dragging {
     cursor: grabbing;
+    opacity: 0.9;
+}
+
+/* Table toggle button distinct styling */
+.table-toggle {
+    background: #444 !important;
+    color: white;
+}
+
+.table-toggle:hover {
+    background: #555 !important;
+}
+
+/* Reuse the existing tooltip behavior that's already defined for action-btn */
+.table-toggle:hover:before {
+    content: attr(data-name) " (" attr(data-ability) ")";
+}
+
+.table-toggle:hover:before {
+    content: attr(data-name);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    background: #333;
+    color: white;
+    font-size: 12px;
+    white-space: nowrap;
+    border-radius: 3px;
+    z-index: 1000;
+}
+
+/* Shared hover styles for both button types */
+.action-btn:hover:before, .table-toggle:hover:before {
+    content: attr(data-name);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    background: #333;
+    color: white;
+    font-size: 12px;
+    white-space: nowrap;
+    border-radius: 3px;
+    z-index: 1000;
 }
