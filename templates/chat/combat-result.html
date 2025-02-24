@@ -1,35 +1,92 @@
-//templates/chat/combat-result.html
-
 <div class="marvel-combat-result">
     <h3>{{actor.name}} - {{actionType}} Action</h3>
     <div class="result-details">
         <div>Using: {{result.ability}} ({{result.abilityScore.number}})</div>
+        {{#if result.columnShift}}
+        <div>Column Shift: {{result.columnShift}}</div>
+        {{/if}}
+        {{#if result.karmaPoints}}
+        <div>Karma Spent: {{result.karmaPoints}}</div>
+        {{/if}}
         <div>Roll: {{result.roll.total}}</div>
-        <div>Result: {{result.result}}</div>
+        <div>Result: <span class="result-{{result.result}}">{{result.result}}</span></div>
+        {{#if result.effect}}
+        <div>Effect: {{result.effect.type}}</div>
+        {{/if}}
         {{#if result.damage}}
-        <div>Damage: {{result.damage}}</div>
+        <div class="damage-info">
+            <div>Base: {{result.damage.base}} | Resist: {{result.damage.resistance}} | Final: {{result.damage.final}}</div>
+        </div>
         {{/if}}
     </div>
 </div>
 
 <style>
 .marvel-combat-result {
-    padding: 10px;
+    background: rgba(0,0,0,0.05);
+    border: 1px solid #888;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-bottom: 5px;
 }
 
-.marvel-combat-result .roll-details {
-    margin: 5px 0;
+.marvel-combat-result h3 {
+    border-bottom: 1px solid #AAA;
+    padding-bottom: 3px;
+    margin-bottom: 5px;
+    font-size: 1.2em;
 }
 
-.marvel-combat-result .result {
+.result-details {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3px;
+    font-size: 0.9em;
+}
+
+.result-white {
+    display: inline-block;
+    padding: 2px 5px;
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #888;
+    border-radius: 3px;
     font-weight: bold;
-    padding: 5px;
-    margin: 5px 0;
-    text-align: center;
 }
 
-.marvel-combat-result .result.white { background-color: #fff; color: #000; }
-.marvel-combat-result .result.green { background-color: #90EE90; color: #000; }
-.marvel-combat-result .result.yellow { background-color: #FFD700; color: #000; }
-.marvel-combat-result .result.red { background-color: #FF4444; color: #fff; }
+.result-green {
+    display: inline-block;
+    padding: 2px 5px;
+    background-color: #90EE90;
+    color: #000;
+    border: 1px solid #888;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.result-yellow {
+    display: inline-block;
+    padding: 2px 5px;
+    background-color: #FFD700;
+    color: #000;
+    border: 1px solid #888;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.result-red {
+    display: inline-block;
+    padding: 2px 5px;
+    background-color: #FF4444;
+    color: #fff;
+    border: 1px solid #888;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.damage-info {
+    margin-top: 3px;
+    padding-top: 3px;
+    border-top: 1px dashed #AAA;
+}
 </style>

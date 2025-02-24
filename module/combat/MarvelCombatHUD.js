@@ -222,14 +222,17 @@ export class MarvelCombatHUD extends Application {
             // Format the data correctly for the template
             const templateData = {
                 actor: actor,
-                actionType: actionType.toUpperCase(),
+                actionType: CONFIG.marvel.actionResults[actionType.toUpperCase()]?.name || actionType.toUpperCase(),
                 result: {
                     ability: result.ability,
                     abilityScore: result.abilityScore,
                     roll: result.roll,
                     result: result.result,
-                    // Format damage as a simple value rather than an object
-                    damage: result.damage?.final || 0
+                    damage: result.damage,
+                    effect: result.effect,
+                    // Add column shift and karma points from options
+                    columnShift: result.columnShift || 0,
+                    karmaPoints: result.karmaPoints || 0
                 }
             };
             

@@ -13,49 +13,83 @@ export class FaseripCombatEngine {
                 console.error("Invalid actor or target");
                 return this._createErrorResult("Invalid actor or target");
             }
-
+    
             actionType = actionType.toUpperCase();
             const actionDefinition = CONFIG.marvel.actionResults[actionType];
             if (!actionDefinition) {
                 return this._createErrorResult(`Invalid action type: ${actionType}`);
             }
-
+    
             // Get ability scores and calculate base chance
             const ability = actionDefinition.ability.toLowerCase();
             const abilityScore = actor.system.primaryAbilities[ability];
             let baseChance = abilityScore.number;
             
-            if (options.columnShift) {
-                baseChance = this._applyColumnShift(baseChance, options.columnShift);
+            // Apply column shift if specified
+            let columnShift = options.columnShift || 0;
+            if (columnShift) {
+                baseChance = this._applyColumnShift(baseChance, columnShift);
             }
-
+            
+            // Handle karma points correctly
+            const karmaPoints = options.karmaPoints || 0;
+    
             // Roll and get result
             const rankName = this._getRankFromValue(baseChance);
             const roll = await (new Roll("1d100")).evaluate();
-            const result = this._getColorResult(roll.total, rankName);
-
-            // Handle wrestling moves specially
-            if (["Gp", "Gb", "Es"].includes(actionType)) {
-                return this._handleWrestlingResult(actor, target, actionType, result);
+    
+            // Apply Karma to the roll total
+            let finalRollTotal = roll.total;
+            if (karmaPoints > 0) {
+                finalRollTotal += karmaPoints;
+                
+                // Reduce actor's karma
+                await actor.update({
+                    "system.secondaryAbilities.karma.value": Math.max(0, actor.system.secondaryAbilities.karma.value - karmaPoints)
+                });
+                
+                // Add entry to karma history
+                const currentHistory = actor.system.karmaHistory || [];
+                const newEntry = {
+                    date: game.time.worldTime,
+                    amount: -karmaPoints,
+                    reason: `Spent on ${actionType} action`,
+                    description: `Used ${karmaPoints} karma to boost attack roll`
+                };
+                
+                await actor.update({
+                    "system.karmaHistory": [...currentHistory, newEntry]
+                });
             }
-
+    
+            // Get result color based on adjusted roll
+            const resultColor = this._getColorResult(finalRollTotal, rankName);
+    
+            // Handle wrestling moves specially
+            if (["GP", "GB", "ES"].includes(actionType)) {
+                return this._handleWrestlingResult(actor, target, actionType, resultColor);
+            }
+    
             // Calculate regular combat results
-            const damage = await this._calculateDamage(actor, target, actionType, result, options);
-            const effect = await this._handleCombatEffect(actionType, result, actor, target, damage.base);
+            const damage = await this._calculateDamage(actor, target, actionType, resultColor, options);
+            const effect = await this._handleCombatEffect(actionType, resultColor, actor, target, damage.base);
             
             // Format result for display
-            const formattedText = this._formatCombatResult(actor, target, actionType, result, damage, effect);
-
+            const formattedText = this._formatCombatResult(actor, target, actionType, resultColor, damage, effect);
+    
             return {
                 roll,
-                result,
+                adjustedRoll: finalRollTotal,
+                result: resultColor,
                 effect,
                 damage,
                 ability,
                 abilityScore,
-                formattedText
+                formattedText,
+                columnShift,
+                karmaPoints
             };
-
+    
         } catch (error) {
             console.error("Error in resolveAction:", error);
             return this._createErrorResult("Combat resolution error");
