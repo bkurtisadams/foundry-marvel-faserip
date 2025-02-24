@@ -1,7 +1,7 @@
 console.log("Marvel FASERIP System: marvel-faserip.js has been loaded into Foundry VTT");
 
 // Import required classes and configurations
-import { MARVEL_RANKS, UNIVERSAL_TABLE_RANGES, ACTION_RESULTS, COMBAT_TYPES, COMBAT_EFFECTS } from "./config.js";
+/* import { MARVEL_RANKS, ACTION_RESULTS, ACTION_CATEGORIES, getAvailableActions } from "./config.js"; */
 import { MarvelActor } from "./documents/MarvelActor.js";
 import { MarvelActorSheet } from "./sheets/MarvelActorSheet.js";
 import { MarvelAttackItem } from "./documents/items/MarvelAttackItem.js";
@@ -12,23 +12,68 @@ import { MarvelHeadquartersSheet } from "./sheets/items/MarvelHeadquartersSheet.
 import { FaseripCombatSystem } from "./combat/FaseripCombatSystem.js";
 import { FaseripUniversalTable } from "./combat/FaseripUniversalTable.js";
 import { MarvelCombatHUD } from "./combat/MarvelCombatHUD.js";
+import { FaseripCombatEngine } from "./combat/FaseripCombatEngine.js";
+
+import { 
+    MARVEL_RANKS,
+    RANK_VALUES,
+    ACTION_RESULTS, 
+    ACTION_CATEGORIES, 
+    UNIVERSAL_TABLE_RANGES,
+    getAvailableActions,
+    COMBAT_EFFECTS,
+    COMBAT_TYPES,
+    ROOM_PACKAGES,
+    SECURITY_SYSTEMS,
+    KARMA_REASONS,
+    RESISTANCE_TYPES,
+    KARMA_SPEND_TYPES,
+    FEAT_TYPES,
+    STATUS_EFFECTS
+} from "./config.js";
 
 Hooks.once('init', async function() {
     console.log('marvel-faserip | Initializing Marvel FASERIP System');
+
+    // Initialize CONFIG.marvel first
+    CONFIG.marvel = {
+        combatHUD: null,  // Start with null
+        ranks: MARVEL_RANKS,
+        // Generate selectable ranks from MARVEL_RANKS
+        selectableRanks: Object.keys(MARVEL_RANKS).reduce((obj, key) => {
+            obj[key] = key;
+            return obj;
+        }, {}),
+        rankValues: RANK_VALUES,
+        universalTableRanges: UNIVERSAL_TABLE_RANGES,
+        actionCategories: ACTION_CATEGORIES,
+        actionResults: ACTION_RESULTS,
+        combatEffects: COMBAT_EFFECTS,
+        combatTypes: COMBAT_TYPES,
+        roomPackages: ROOM_PACKAGES,
+        securitySystems: SECURITY_SYSTEMS,
+        karmaReasons: KARMA_REASONS,
+        resistanceTypes: RESISTANCE_TYPES,
+        karmaSpendTypes: KARMA_SPEND_TYPES,
+        featTypes: FEAT_TYPES,
+        getAvailableActions
+    };
+
+    // Add status effects
+    CONFIG.statusEffects.push(...STATUS_EFFECTS);
     
-    // Initialize the game.marvel namespace
+    // Initialize game.marvel namespace
     game.marvel = {
+        MarvelCombatHUD,
         WeaponSystem: new WeaponSystem(),
         combatSystem: new FaseripCombatSystem(),
-        FaseripUniversalTable  // Changed to class reference instead of instance
-        
+        combatEngine: new FaseripCombatEngine(),
+        FaseripUniversalTable
     };
 
     // Register sheet application classes
     globalThis.FaseripUniversalTable = FaseripUniversalTable;
-    
-    // Combat HUD
-    globalThis.MarvelCombatHUD = MarvelCombatHUD;  // Make it available globally
+    globalThis.MarvelCombatHUD = MarvelCombatHUD;
 
     // Make weapon system available globally for debugging
     globalThis.marvelWeapons = game.marvel.WeaponSystem;
@@ -193,15 +238,6 @@ Hooks.once('init', async function() {
         'Beyond': "Beyond"
     };
 
-    // Initialize CONFIG.marvel before setting specific properties
-    CONFIG.marvel = {
-        ranks: MARVEL_RANKS,
-        universalTableRanges: UNIVERSAL_TABLE_RANGES,
-        actionResults: ACTION_RESULTS,
-        combatTypes: COMBAT_TYPES,
-        combatEffects: COMBAT_EFFECTS
-    };
-    
     // Add resistance types configuration
     CONFIG.marvel.resistanceTypes = {
         physical: "Physical",
@@ -446,7 +482,7 @@ async function resolveActions(combat) {
 }
 
 // Add a hook to create the universal table button in the scene controls
-Hooks.on('getSceneControlButtons', (controls) => {
+/* Hooks.on('getSceneControlButtons', (controls) => {
     controls.push({
         name: 'universal-table',
         title: 'Universal Table',
@@ -460,7 +496,7 @@ Hooks.on('getSceneControlButtons', (controls) => {
             onClick: () => game.marvel.universalTable.render(true)
         }]
     });
-});
+}) */;
 
 // Handle Macro Creation
 Hooks.on("hotbarDrop", async (bar, rawData, slot) => {

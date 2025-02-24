@@ -1,18 +1,29 @@
+// module/combat/MarvelCombatHUD.js
+import { FaseripCombatEngine } from "./FaseripCombatEngine.js";
+
 export class MarvelCombatHUD extends Application {
+    constructor(options = {}) {
+        super(options);
+        this.engine = new FaseripCombatEngine();
+    }
     static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
+        return mergeObject(super.defaultOptions, {
             id: 'marvel-combat-hud',
-            template: 'systems/marvel-faserip/module/combat/templates/combat-hud.html',
-            popOut: true,
-            minimizable: false,
-            resizable: false,
-            dragDrop: [],
-            width: 'auto',
+            template: "systems/marvel-faserip/module/combat/templates/combat-hud.html",
+            width: 300,
             height: 'auto',
-            classes: ['marvel-combat-hud-window'],
-            top: 100,
-            left: 200
+            minimizable: true,
+            title: 'Combat HUD'
         });
+    }
+
+    getData() {
+        return {
+            actionCategories: CONFIG.marvel.actionCategories,
+            actionResults: CONFIG.marvel.actionResults,
+            combatEffects: CONFIG.marvel.combatEffects,
+            combatTypes: CONFIG.marvel.combatTypes
+        };
     }
 
     activateListeners(html) {
@@ -137,57 +148,136 @@ export class MarvelCombatHUD extends Application {
         }
     }
 
-    _onActionClick(event) {
+    async _onActionClick(event) {
         event.preventDefault();
         const button = event.currentTarget;
-        const action = button.dataset.action;
-
-        button.classList.add('active');
-        setTimeout(() => button.classList.remove('active'), 150);
-
+        const actionType = button.dataset.action;
+    
         const token = canvas.tokens.controlled[0];
         if (!token) {
             ui.notifications.warn("Please select a token first");
             return;
         }
-
+    
         const targets = game.user.targets;
         if (targets.size === 0) {
             ui.notifications.warn("Please target a token first");
             return;
         }
-
-        if (targets.size > 1) {
-            ui.notifications.warn("Please target only one token");
-            return;
+    
+        try {
+            const dialogOptions = await this._showActionDialog(actionType, token.actor);
+            if (!dialogOptions) return;
+    
+            const result = await this.engine.resolveAction(
+                token.actor,
+                Array.from(targets)[0].actor,
+                actionType,
+                dialogOptions
+            );
+    
+            if (result && !result.error) {
+                await this._createChatMessage(result, token.actor, actionType);
+            } else {
+                ui.notifications.error(`Failed to resolve ${actionType} action`);
+            }
+        } catch (error) {
+            console.error("Error in action resolution:", error);
+            ui.notifications.error("Failed to resolve action");
         }
+    }
 
-        const target = targets.first();
-        if (target.id === token.id) {
-            ui.notifications.warn("Cannot target self!");
-            return;
-        }
+    // In MarvelCombatHUD.js - keep existing comments
+async _createChatMessage(result, actor, actionType) {
+    // Guard against null result
+    if (!result || result.error) {
+        ui.notifications.error(`Failed to resolve ${actionType} action`);
+        return;
+    }
 
-        this._handleCombatAction(action, token, target);
+    try {
+        // Make sure we're passing the correct data structure
+        const content = await renderTemplate(
+            "systems/marvel-faserip/templates/chat/combat-result.html",
+            {
+                actor,
+                actionType: actionType.toUpperCase(),
+                result: {
+                    ability: result.ability,
+                    abilityScore: result.abilityScore,
+                    roll: result.roll,
+                    result: result.result,
+                    damage: result.damage,
+                    effect: result.effect
+                }
+            }
+        );
+
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({actor}),
+            content,
+            rolls: result.roll ? [result.roll] : []
+        });
+    } catch (error) {
+        console.error("Error creating chat message:", error);
+        ui.notifications.error("Failed to create result message");
+    }
+}
+
+    async _showActionDialog(actionType, actor) {
+        const template = "systems/marvel-faserip/module/combat/templates/combat-action.html";
+        const dialogData = {
+            actor,
+            actionType,
+            config: CONFIG.marvel
+        };
+
+        const content = await renderTemplate(template, dialogData);
+
+        return new Promise((resolve) => {
+            new Dialog({
+                title: `${actionType} Action`,
+                content,
+                buttons: {
+                    roll: {
+                        label: "Roll",
+                        callback: (html) => {
+                            const form = html.find("form")[0];
+                            resolve({
+                                columnShift: parseInt(form.columnShift?.value) || 0,
+                                karmaPoints: parseInt(form.karmaPoints?.value) || 0,
+                                weaponDamage: parseInt(form.weaponDamage?.value) || 0
+                            });
+                        }
+                    },
+                    cancel: {
+                        label: "Cancel",
+                        callback: () => resolve(null)
+                    }
+                },
+                default: "roll"
+            }).render(true);
+        });
+    }
+
+    async _createChatMessage(result, actor, actionType) {
+        const content = await renderTemplate(
+            "systems/marvel-faserip/templates/chat/combat-result.html",
+            {
+                actor,
+                actionType,
+                result
+            }
+        );
+
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({actor}),
+            content,
+            rolls: [result.roll]
+        });
     }
 
     _handleCombatAction(actionType, attacker, defender) {
         console.log(`Executing ${actionType} from ${attacker.name} against ${defender.name}`);
-    }
-}
-
-// Modified ImagePopup class to use Foundry's built-in functionality
-class ImagePopup extends Application {
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            template: "templates/image.html",  // Updated to use Foundry's default image template
-            classes: ["marvel-universal-table", "image-popup"],
-            resizable: true,
-            popOut: true
-        });
-    }
-
-    getData() {
-        return this.options;
     }
 }

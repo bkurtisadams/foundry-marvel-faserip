@@ -1,0 +1,32 @@
+//templates/dialogs/combat-action.html
+
+<form class="marvel-combat-dialog">
+    <div class="form-group">
+        <label>Action Type:</label>
+        <div class="action-name">{{actionType}} ({{config.actionResults.[actionType].name}})</div>
+    </div>
+
+    <div class="form-group">
+        <label>Using Ability:</label>
+        <div class="ability-name">{{config.actionResults.[actionType].ability}}</div>
+    </div>
+
+    <div class="form-group">
+        <label>Column Shift:</label>
+        <input type="number" name="columnShift" value="0">
+    </div>
+
+    {{#if actor.system.secondaryAbilities.karma.value}}
+    <div class="form-group">
+        <label>Karma Points (Max: {{actor.system.secondaryAbilities.karma.value}}):</label>
+        <input type="number" name="karmaPoints" value="0" max="{{actor.system.secondaryAbilities.karma.value}}">
+    </div>
+    {{/if}}
+
+    {{#if (eq actionType "EA")}}
+    <div class="form-group">
+        <label>Weapon Damage:</label>
+        <input type="number" name="weaponDamage" value="0">
+    </div>
+    {{/if}}
+</form>

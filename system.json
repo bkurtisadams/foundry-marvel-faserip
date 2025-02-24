@@ -59,6 +59,7 @@
     "templates/dialogs/add-weapon.html",
     "templates/dialogs/add-headquarters.html",
     "module/combat/templates/combat-attack.html",
-    "module/combat/templates/universal-table.html"
+    "module/combat/templates/universal-table.html",
+     "module/combat/templates/combat-hud.html"
   ]
 }

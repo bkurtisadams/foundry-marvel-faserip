@@ -25,16 +25,19 @@ export class MarvelActorSheet extends ActorSheet {
         // Ensure context.actor.system exists and initialize if needed
         const system = context.actor.system || {};
         console.log("Current actor items:", this.actor.items);
-
+    
+        // Add available actions from new combat system
+        context.availableActions = getAvailableActions(this.actor);
+    
         // Add headquarters data to context
         context.headquarters = MARVEL.headquarters;
-
+    
         // Add HQ CONFIG references
         context.config = {
             ...context.config,
             headquarters: MARVEL.headquarters
         };
-
+    
         // Initialize headquarters if not set
         if (!system.headquarters) {
             system.headquarters = {
@@ -48,8 +51,8 @@ export class MarvelActorSheet extends ActorSheet {
                 material: ""
             };
         }
-
-        // equipment organization here
+    
+        // Equipment organization
         context.equipmentTypes = MarvelActorSheet.equipmentTypes;
         context.equipmentByType = {};
         for (let type in MarvelActorSheet.equipmentTypes) {
@@ -80,14 +83,14 @@ export class MarvelActorSheet extends ActorSheet {
         }
     
         // Initialize karma tracking if not set
-        if (!context.actor.system.karmaTracking) {
-            context.actor.system.karmaTracking = {
+        if (!system.karmaTracking) {
+            system.karmaTracking = {
                 karmaPool: 0,
                 advancementFund: 0,
                 lifetimeTotal: 0
             };
         }
-
+    
         // Get equipment items
         context.equipment = context.items.filter(item => 
             ["weapon", "armor", "gear"].includes(item.type)
@@ -108,13 +111,6 @@ export class MarvelActorSheet extends ActorSheet {
             materialTypes: CONFIG.marvel.materialTypes
         };
     
-        // Calculate Lifetime Total
-        /* if (context.actor.system.karmaTracking) {
-            context.actor.system.karmaTracking.lifetimeTotal = 
-                (context.actor.system.karmaTracking.advancementFund || 0) + 
-                (context.actor.system.karmaTracking.karmaPool || 0);
-        } */
-
         // Get the active tab from flags or default to 'special'
         const activeTab = this.actor.getFlag('marvel-faserip', 'activeTab') || 'special';
         context.activeTab = activeTab;
@@ -129,17 +125,8 @@ export class MarvelActorSheet extends ActorSheet {
             vehicles: activeTab === 'vehicles'
         };
         
-        // Get all powers as items and log the process
-        console.log("Sheet data context:", {
-            actor: this.actor,
-            items: context.items,
-            powers: context.powers,
-            config: context.config
-        });
+        // Get all powers and attacks
         context.powers = this.actor.items.filter(item => item.type === "power");
-        console.log("Filtered powers:", context.powers);
-    
-        // Get attacks
         context.attacks = context.items.filter(item => item.type === "attack");
     
         // Add configuration for ranks
@@ -165,12 +152,7 @@ export class MarvelActorSheet extends ActorSheet {
                 }
             };
         }
-        
-        // Get equipment
-        context.equipment = this.actor.items.filter(item => item.type === "equipment");
-        // Add logging to verify equipment is being found
-        console.log("Equipment items:", context.equipment);
-
+    
         // Initialize talents according to template.json schema
         if (!system.talents) {
             system.talents = {
@@ -187,7 +169,8 @@ export class MarvelActorSheet extends ActorSheet {
         
         // Update context with initialized system
         context.actor.system = system;
-
+    
+        // Debug logging
         console.log("Actor items:", this.actor.items);
         console.log("Filtered powers:", context.powers);
         

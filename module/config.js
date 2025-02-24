@@ -1,12 +1,4 @@
 // At the top of config.js, before any other CONFIG settings
-CONFIG.marvel = CONFIG.marvel || {};
-// Your existing MARVEL_RANKS and other config settings...
-CONFIG.statusEffects.push({
-    id: "dying",
-    label: "Dying",
-    icon: "icons/svg/skull.svg"
-});
-
 export const MARVEL_RANKS = {
     'Shift 0': { range: [0, 0], standard: 0 },
     'Feeble': { range: [1, 2], standard: 2 },
@@ -26,6 +18,467 @@ export const MARVEL_RANKS = {
     'Class 3000': { range: [3000, 3000], standard: 3000 },
     'Class 5000': { range: [5000, 5000], standard: 5000 },
     'Beyond': { range: [5001, Infinity], standard: Infinity }
+};
+
+export const UNIVERSAL_TABLE_RANGES = {
+    "Shift 0":  { white: [1, 65], green: [66, 94], yellow: [95, 99], red: [100, 100]},
+    "Feeble":   { white: [1, 60], green: [61, 90], yellow: [91, 99], red: [100, 100] },
+    "Poor":     { white: [1, 55], green: [56, 80], yellow: [81, 97], red: [98, 100] },
+    "Typical":  { white: [1, 50], green: [51, 80], yellow: [81, 97], red: [98, 100] },
+    "Good":     { white: [1, 45], green: [46, 75], yellow: [76, 97], red: [98, 100] },
+    "Excellent":{ white: [1, 40], green: [41, 70], yellow: [71, 94], red: [95, 100] },
+    "Remarkable":{ white: [1, 35], green: [36, 65], yellow: [66, 94], red: [95, 100] },
+    "Incredible":{ white: [1, 30], green: [31, 60], yellow: [61, 90], red: [91, 100] },
+    "Amazing":   { white: [1, 25], green: [26, 55], yellow: [56, 90], red: [91, 100] },
+    "Monstrous": { white: [1, 20], green: [21, 50], yellow: [51, 85], red: [86, 100] },
+    "Unearthly": { white: [1, 15], green: [16, 45], yellow: [46, 85], red: [86, 100] },
+    "Shift X":   { white: [1, 10], green: [11, 40], yellow: [41, 80], red: [81, 100] },
+    "Shift Y":   { white: [1, 6], green: [7, 35], yellow: [36, 80], red: [81, 100] },
+    "Shift Z":   { white: [1, 3], green: [4, 35], yellow: [36, 75], red: [76, 100] },
+    "Class 1000":{ white: [1, 1], green: [2, 35], yellow: [36, 75], red: [76, 100] },
+    "Class 3000":{ white: [1, 1], green: [2, 30], yellow: [31, 70], red: [71, 100] },
+    "Class 5000":{ white: [1, 1], green: [2, 25], yellow: [26, 65], red: [66, 100] },
+    "Beyond":    { white: [1, 1], green: [2, 20], yellow: [21, 60], red: [61, 100] }
+};
+
+// Action categories for organizing UI display
+export const ACTION_CATEGORIES = {
+    FIGHTING: "Fighting Actions",
+    AGILITY: "Agility Actions", 
+    STRENGTH: "Strength Actions",
+    ENDURANCE: "Endurance Actions"
+};
+
+export const ACTION_RESULTS = {
+    "BA": { 
+        name: "Blunt Attack",
+        ability: "Fighting",
+        category: "FIGHTING",
+        availableEffects: ["Miss", "Hit", "Slam", "Stun"],
+        results: { 
+            white: { effect: "Miss", damage: 0 },
+            green: { effect: "Hit", damage: "strength" },
+            yellow: { effect: "Slam", damage: "strength" },
+            red: { effect: "Stun", damage: "strength" }
+        },
+        description: "Basic hand-to-hand combat",
+        requirements: null
+    },
+    "EA": {
+        name: "Edged Attack",
+        ability: "Fighting", 
+        category: "FIGHTING",
+        availableEffects: ["Miss", "Hit", "Stun", "Kill"],
+        results: {
+            white: { effect: "Miss", damage: 0 },
+            green: { effect: "Hit", damage: "weapon" },
+            yellow: { effect: "Stun", damage: "weapon" },
+            red: { effect: "Kill", damage: "weapon" }
+        },
+        description: "Attack with a sharp or edged weapon",
+        requirements: "Edged weapon equipped"
+    },
+    "Sh": {
+        name: "Shooting",
+        ability: "Agility",
+        category: "AGILITY", 
+        availableEffects: ["Miss", "Hit", "Bullseye", "Kill"],
+        results: {
+            white: { effect: "Miss", damage: 0 },
+            green: { effect: "Hit", damage: "weapon" },
+            yellow: { effect: "Bullseye", damage: "weapon" },
+            red: { effect: "Kill", damage: "weapon" }
+        },
+        description: "Ranged attack with projectile weapon",
+        requirements: "Ranged weapon equipped"
+    },
+    "TE": {
+        name: "Throwing Edged",
+        ability: "Agility",
+        category: "AGILITY",
+        availableEffects: ["Miss", "Hit", "Stun", "Kill"],
+        results: {
+            white: { effect: "Miss", damage: 0 },
+            green: { effect: "Hit", damage: "weapon" },
+            yellow: { effect: "Stun", damage: "weapon" },
+            red: { effect: "Kill", damage: "weapon" }
+        },
+        description: "Throw an edged weapon",
+        requirements: "Throwable edged weapon"
+    },
+    "TB": {
+        name: "Throwing Blunt",
+        ability: "Agility",
+        category: "AGILITY",
+        availableEffects: ["Miss", "Hit", "Hit", "Stun"],
+        results: {
+            white: { effect: "Miss", damage: 0 },
+            green: { effect: "Hit", damage: "strength" },
+            yellow: { effect: "Hit", damage: "strength" },
+            red: { effect: "Stun", damage: "strength" }
+        },
+        description: "Throw a blunt object",
+        requirements: null
+    },
+    "En": {
+        name: "Energy",
+        ability: "Agility",
+        category: "AGILITY",
+        availableEffects: ["Miss", "Hit", "Bullseye", "Kill"],
+        results: {
+            white: { effect: "Miss", damage: 0 },
+            green: { effect: "Hit", damage: "power" },
+            yellow: { effect: "Bullseye", damage: "power" },
+            red: { effect: "Kill", damage: "power" }
+        },
+        description: "Energy-based ranged attack",
+        requirements: "Energy attack power"
+    },
+    "Fo": {
+        name: "Force",
+        ability: "Agility",
+        category: "AGILITY",
+        availableEffects: ["Miss", "Hit", "Bullseye", "Stun"],
+        results: {
+            white: { effect: "Miss", damage: 0 },
+            green: { effect: "Hit", damage: "power" },
+            yellow: { effect: "Bullseye", damage: "power" },
+            red: { effect: "Stun", damage: "power" }
+        },
+        description: "Force-based ranged attack",
+        requirements: "Force attack power"
+    },
+    "Gp": {
+        name: "Grappling",
+        ability: "Strength",
+        category: "STRENGTH",
+        availableEffects: ["Miss", "Miss", "Partial", "Hold"],
+        results: {
+            white: { effect: "Miss", damage: 0 },
+            green: { effect: "Miss", damage: 0 },
+            yellow: { effect: "Partial", damage: 0 },
+            red: { effect: "Hold", damage: 0 }
+        },
+        description: "Attempt to hold or restrain target",
+        requirements: null
+    },
+    "Gb": {
+        name: "Grabbing",
+        ability: "Strength",
+        category: "STRENGTH",
+        availableEffects: ["Miss", "Take", "Grab", "Break"],
+        results: {
+            white: { effect: "Miss", damage: 0 },
+            green: { effect: "Take", damage: 0 },
+            yellow: { effect: "Grab", damage: 0 },
+            red: { effect: "Break", damage: 0 }
+        },
+        description: "Attempt to take an item from target",
+        requirements: null
+    },
+    "Es": {
+        name: "Escaping",
+        ability: "Strength",
+        category: "STRENGTH",
+        availableEffects: ["Miss", "Miss", "Escape", "Reverse"],
+        results: {
+            white: { effect: "Miss", damage: 0 },
+            green: { effect: "Miss", damage: 0 },
+            yellow: { effect: "Escape", damage: 0 },
+            red: { effect: "Reverse", damage: 0 }
+        },
+        description: "Attempt to break free from hold",
+        requirements: "Currently held"
+    },
+    "Ch": {
+        name: "Charging",
+        ability: "Endurance",
+        category: "ENDURANCE",
+        availableEffects: ["Miss", "Hit", "Slam", "Stun"],
+        results: {
+            white: { effect: "Miss", damage: 0 },
+            green: { effect: "Hit", damage: "strength" },
+            yellow: { effect: "Slam", damage: "strength" },
+            red: { effect: "Stun", damage: "strength" }
+        },
+        description: "Rush attack using momentum",
+        requirements: "Must move at least 1 area"
+    },
+    "Do": {
+        name: "Dodging",
+        ability: "Agility",
+        category: "AGILITY",
+        availableEffects: ["None", "-2 CS", "-4 CS", "-6 CS"],
+        results: {
+            white: { effect: "None", damage: 0 },
+            green: { effect: "-2 CS", damage: 0 },
+            yellow: { effect: "-4 CS", damage: 0 },
+            red: { effect: "-6 CS", damage: 0 }
+        },
+        description: "Defensive maneuver to avoid attacks",
+        requirements: null
+    },
+    "Ev": {
+        name: "Evading",
+        ability: "Fighting",
+        category: "FIGHTING",
+        availableEffects: ["Autohit", "Evasion", "+1 CS", "+2 CS"],
+        results: {
+            white: { effect: "Autohit", damage: 0 },
+            green: { effect: "Evasion", damage: 0 },
+            yellow: { effect: "+1 CS", damage: 0 },
+            red: { effect: "+2 CS", damage: 0 }
+        },
+        description: "Defensive fighting maneuver",
+        requirements: null
+    },
+    "Bl": {
+        name: "Blocking",
+        ability: "Strength",
+        category: "STRENGTH",
+        availableEffects: ["-6 CS", "-4 CS", "-2 CS", "+1 CS"],
+        results: {
+            white: { effect: "-6 CS", damage: 0 },
+            green: { effect: "-4 CS", damage: 0 },
+            yellow: { effect: "-2 CS", damage: 0 },
+            red: { effect: "+1 CS", damage: 0 }
+        },
+        description: "Block incoming physical attacks",
+        requirements: null
+    },
+    "Ca": {
+        name: "Catching",
+        ability: "Agility",
+        category: "AGILITY",
+        availableEffects: ["Autohit", "Miss", "Damage", "Catch"],
+        results: {
+            white: { effect: "Autohit", damage: 0 },
+            green: { effect: "Miss", damage: 0 },
+            yellow: { effect: "Damage", damage: 0 },
+            red: { effect: "Catch", damage: 0 }
+        },
+        description: "Attempt to catch thrown object or falling person",
+        requirements: null
+    },
+    "St": {
+        name: "Stun?",
+        ability: "Endurance",
+        category: "ENDURANCE",
+        availableEffects: ["1-10", "1", "No", "No"],
+        results: {
+            white: { effect: "1-10", damage: 0 },
+            green: { effect: "1", damage: 0 },
+            yellow: { effect: "No", damage: 0 },
+            red: { effect: "No", damage: 0 }
+        },
+        description: "Resist being stunned",
+        requirements: null
+    },
+    "Sl": {
+        name: "Slam?",
+        ability: "Endurance",
+        category: "ENDURANCE",
+        availableEffects: ["Gr. Slam", "1 area", "Stagger", "No"],
+        results: {
+            white: { effect: "Gr. Slam", damage: 0 },
+            green: { effect: "1 area", damage: 0 },
+            yellow: { effect: "Stagger", damage: 0 },
+            red: { effect: "No", damage: 0 }
+        },
+        description: "Resist being slammed",
+        requirements: null
+    },
+    "Ki": {
+        name: "Kill?",
+        ability: "Endurance",
+        category: "ENDURANCE",
+        availableEffects: ["En. Loss", "E/S", "No", "No"],
+        results: {
+            white: { effect: "En. Loss", damage: 0 },
+            green: { effect: "E/S", damage: 0 },
+            yellow: { effect: "No", damage: 0 },
+            red: { effect: "No", damage: 0 }
+        },
+        description: "Resist lethal damage",
+        requirements: null
+    }
+};
+
+export const COMBAT_EFFECTS = {
+    SLAM: {
+        white: "No Effect",
+        green: "Stagger",
+        yellow: "1 Area",
+        red: "Grand Slam"
+    },
+    STUN: {
+        white: "1-10 Rounds",
+        green: "1 Round",
+        yellow: "No Effect",
+        red: "No Effect"
+    }
+};
+
+export const COMBAT_TYPES = {
+    FIGHTING: {
+        ability: "fighting",
+        name: "Hand-to-Hand Combat",
+        types: {
+            BA: {
+                name: "Blunt Attack",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "strength" },
+                    yellow: { effect: "Slam", damage: "strength" },
+                    red: { effect: "Stun", damage: "strength" }
+                }
+            },
+            EA: {
+                name: "Edged Attack",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "weapon" },
+                    yellow: { effect: "Stun", damage: "weapon" },
+                    red: { effect: "Kill", damage: "weapon" }
+                }
+            }
+        }
+    },
+    AGILITY: {
+        ability: "agility",
+        name: "Ranged Combat",
+        types: {
+            Sh: {
+                name: "Shooting",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "weapon" },
+                    yellow: { effect: "Bullseye", damage: "weapon" },
+                    red: { effect: "Kill", damage: "weapon" }
+                }
+            },
+            TE: {
+                name: "Throwing Edged",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "weapon" },
+                    yellow: { effect: "Stun", damage: "weapon" },
+                    red: { effect: "Kill", damage: "weapon" }
+                }
+            },
+            TB: {
+                name: "Throwing Blunt",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "strength" },
+                    yellow: { effect: "Hit", damage: "strength" },
+                    red: { effect: "Stun", damage: "strength" }
+                }
+            },
+            En: {
+                name: "Energy",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "weapon" },
+                    yellow: { effect: "Bullseye", damage: "weapon" },
+                    red: { effect: "Kill", damage: "weapon" }
+                }
+            },
+            Fo: {
+                name: "Force",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "weapon" },
+                    yellow: { effect: "Bullseye", damage: "weapon" },
+                    red: { effect: "Stun", damage: "weapon" }
+                }
+            }
+        }
+    },
+    STRENGTH: {
+        ability: "strength",
+        name: "Strength Combat",
+        types: {
+            Gp: {
+                name: "Grappling",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Miss", damage: 0 },
+                    yellow: { effect: "Partial", damage: 0 },
+                    red: { effect: "Hold", damage: 0 }
+                }
+            },
+            Gb: {
+                name: "Grabbing",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Take", damage: 0 },
+                    yellow: { effect: "Grab", damage: 0 },
+                    red: { effect: "Break", damage: 0 }
+                }
+            },
+            Es: {
+                name: "Escaping",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Miss", damage: 0 },
+                    yellow: { effect: "Escape", damage: 0 },
+                    red: { effect: "Reverse", damage: 0 }
+                }
+            },
+            Bl: {
+                name: "Blocking",
+                results: {
+                    white: { effect: "-6 CS", damage: 0 },
+                    green: { effect: "-4 CS", damage: 0 },
+                    yellow: { effect: "-2 CS", damage: 0 },
+                    red: { effect: "+1 CS", damage: 0 }
+                }
+            }
+        }
+    },
+    ENDURANCE: {
+        ability: "endurance",
+        name: "Endurance Combat",
+        types: {
+            Ch: {
+                name: "Charging",
+                results: {
+                    white: { effect: "Miss", damage: 0 },
+                    green: { effect: "Hit", damage: "strength" },
+                    yellow: { effect: "Slam", damage: "strength" },
+                    red: { effect: "Stun", damage: "strength" }
+                }
+            },
+            St: {
+                name: "Stun?",
+                results: {
+                    white: { effect: "1-10", damage: 0 },
+                    green: { effect: "1", damage: 0 },
+                    yellow: { effect: "No", damage: 0 },
+                    red: { effect: "No", damage: 0 }
+                }
+            },
+            Sl: {
+                name: "Slam?",
+                results: {
+                    white: { effect: "Gr. Slam", damage: 0 },
+                    green: { effect: "1 area", damage: 0 },
+                    yellow: { effect: "Stagger", damage: 0 },
+                    red: { effect: "No", damage: 0 }
+                }
+            },
+            Ki: {
+                name: "Kill?",
+                results: {
+                    white: { effect: "En. Loss", damage: 0 },
+                    green: { effect: "E/S", damage: 0 },
+                    yellow: { effect: "No", damage: 0 },
+                    red: { effect: "No", damage: 0 }
+                }
+            }
+        }
+    }
 };
 
 export const MARVEL = {
@@ -60,7 +513,7 @@ export const MARVEL = {
     }
   };
   
-CONFIG.marvel.ROOM_PACKAGES = {
+  export const ROOM_PACKAGES = {
     "livingRoom": {
         name: "Living Room",
         cost: "Gd",
@@ -322,7 +775,7 @@ CONFIG.marvel.ROOM_PACKAGES = {
     }
 };
 
-CONFIG.marvel.SECURITY_SYSTEMS = {
+export const SECURITY_SYSTEMS = {
     "none": {
         name: "None",
         cost: 0,
@@ -350,7 +803,7 @@ CONFIG.marvel.SECURITY_SYSTEMS = {
     }
 };
 
-CONFIG.marvel.DEFENSE_SYSTEMS = {
+export const DEFENSE_SYSTEMS = {
     "none": {
         name: "None",
         cost: 0,
@@ -374,88 +827,64 @@ CONFIG.marvel.DEFENSE_SYSTEMS = {
 };
 
 // Helper function to convert rank to numeric value for calculations
-CONFIG.marvel.RANK_VALUES = {
-    "Sh0": 0,
-    "Fe": 2,
-    "Pr": 4,
-    "Ty": 6,
-    "Gd": 10,
-    "Ex": 20,
-    "Rm": 30,
-    "In": 40,
-    "Am": 50,
-    "Mn": 75,
-    "Un": 100
+export const RANK_VALUES = {
+    "Shift 0": 0,
+    "Feeble": 2,
+    "Poor": 4,
+    "Typical": 6,
+    "Good": 10,
+    "Excellent": 20,
+    "Remarkable": 30,
+    "Incredible": 40,
+    "Amazing": 50,
+    "Monstrous": 75,
+    "Unearthly": 100,
+    "Shift X": 150,
+    "Shift Y": 200,
+    "Shift Z": 500,
+    "Class 1000": 1000,
+    "Class 3000": 3000,
+    "Class 5000": 5000,
+    "Beyond": Infinity
 };
 
-// After MARVEL_RANKS in config.js
-CONFIG.marvel.ranks = MARVEL_RANKS;
-CONFIG.marvel.selectableRanks = Object.keys(MARVEL_RANKS).reduce((obj, key) => {
+// Define ranks and selectable ranks as constants
+export const RANKS = {
+    'Shift 0': "Shift 0",
+    'Feeble': "Feeble",
+    'Poor': "Poor",
+    'Typical': "Typical",
+    'Good': "Good",
+    'Excellent': "Excellent",
+    'Remarkable': "Remarkable",
+    'Incredible': "Incredible",
+    'Amazing': "Amazing",
+    'Monstrous': "Monstrous",
+    'Unearthly': "Unearthly",
+    'Shift X': "Shift X",
+    'Shift Y': "Shift Y",
+    'Shift Z': "Shift Z",
+    'Class 1000': "Class 1000",
+    'Class 3000': "Class 3000",
+    'Class 5000': "Class 5000",
+    'Beyond': "Beyond"
+};
+
+export const SELECTABLE_RANKS = Object.keys(MARVEL_RANKS).reduce((obj, key) => {
     obj[key] = key;
     return obj;
 }, {});
 
-// Then you can add karmaReasons
-CONFIG.marvel.karmaReasons = {
+export const KARMA_REASONS = {
     stopCrime: { id: "stopCrime", label: "Stop Crime", karma: 30 },
     rescue: { id: "rescue", label: "Rescue", karma: 20 },
     defeatFoe: { id: "defeatFoe", label: "Defeat Villain", karma: 40 },
-    charity: { id: "charity", label: "Charitable Act", karma: 10 },
-    // Add more reasons...
+    charity: { id: "charity", label: "Charitable Act", karma: 10 }
 };
 
-CONFIG.marvel.ranks = {
-    'Shift 0': "Shift 0",
-    'Feeble': "Feeble",
-    'Poor': "Poor",
-    'Typical': "Typical",
-    'Good': "Good",
-    'Excellent': "Excellent",
-    'Remarkable': "Remarkable",
-    'Incredible': "Incredible",
-    'Amazing': "Amazing",
-    'Monstrous': "Monstrous",
-    'Unearthly': "Unearthly",
-    'Shift X': "Shift X",
-    'Shift Y': "Shift Y",
-    'Shift Z': "Shift Z",
-    'Class 1000': "Class 1000",
-    'Class 3000': "Class 3000",
-    'Class 5000': "Class 5000",
-    'Beyond': "Beyond"
-};
-
-/* // After MARVEL_RANKS in config.js
-CONFIG.marvel.ranks = MARVEL_RANKS;
-CONFIG.marvel.selectableRanks = Object.keys(MARVEL_RANKS).reduce((obj, key) => {
-    obj[key] = key;
-    return obj;
-}, {}); */
-
-CONFIG.marvel.selectableRanks = {
-    'Shift 0': "Shift 0",
-    'Feeble': "Feeble",
-    'Poor': "Poor",
-    'Typical': "Typical",
-    'Good': "Good",
-    'Excellent': "Excellent",
-    'Remarkable': "Remarkable",
-    'Incredible': "Incredible",
-    'Amazing': "Amazing",
-    'Monstrous': "Monstrous",
-    'Unearthly': "Unearthly",
-    'Shift X': "Shift X",
-    'Shift Y': "Shift Y",
-    'Shift Z': "Shift Z",
-    'Class 1000': "Class 1000",
-    'Class 3000': "Class 3000",
-    'Class 5000': "Class 5000",
-    'Beyond': "Beyond"
-};
-
-CONFIG.marvel.resistanceTypes = {
+export const RESISTANCE_TYPES = {
     physical: "Physical",
-    energy: "Energy", 
+    energy: "Energy",
     force: "Force",
     heat: "Heat",
     cold: "Cold",
@@ -466,126 +895,11 @@ CONFIG.marvel.resistanceTypes = {
     magic: "Magic"
 };
 
-CONFIG.marvel.karmaSpendTypes = {
+export const KARMA_SPEND_TYPES = {
     powerStunt: { id: "powerStunt", label: "Power Stunt" },
     advancement: { id: "advancement", label: "Advancement" },
     dieRoll: { id: "dieRoll", label: "Modify Die Roll" },
-    poolContribution: { id: "poolContribution", label: "Team Pool Contribution" },
-    // Add more types...
-};
-
-export const UNIVERSAL_TABLE_RANGES = {
-    "Shift 0":  { white: [1, 65], green: [66, 94], yellow: [95, 99], red: [100, 100]},
-    "Feeble":   { white: [1, 60], green: [61, 90], yellow: [91, 99], red: [100, 100] },
-    "Poor":     { white: [1, 55], green: [56, 80], yellow: [81, 97], red: [98, 100] },
-    "Typical":  { white: [1, 50], green: [51, 80], yellow: [81, 97], red: [98, 100] },
-    "Good":     { white: [1, 45], green: [46, 75], yellow: [76, 97], red: [98, 100] },
-    "Excellent":{ white: [1, 40], green: [41, 70], yellow: [71, 94], red: [95, 100] },
-    "Remarkable":{ white: [1, 35], green: [36, 65], yellow: [66, 94], red: [95, 100] },
-    "Incredible":{ white: [1, 30], green: [31, 60], yellow: [61, 90], red: [91, 100] },
-    "Amazing":   { white: [1, 25], green: [26, 55], yellow: [56, 90], red: [91, 100] },
-    "Monstrous": { white: [1, 20], green: [21, 50], yellow: [51, 85], red: [86, 100] },
-    "Unearthly": { white: [1, 15], green: [16, 45], yellow: [46, 85], red: [86, 100] },
-    "Shift X":   { white: [1, 10], green: [11, 40], yellow: [41, 80], red: [81, 100] },
-    "Shift Y":   { white: [1, 6], green: [7, 35], yellow: [36, 80], red: [81, 100] },
-    "Shift Z":   { white: [1, 3], green: [4, 35], yellow: [36, 75], red: [76, 100] },
-    "Class 1000":{ white: [1, 1], green: [2, 35], yellow: [36, 75], red: [76, 100] },
-    "Class 3000":{ white: [1, 1], green: [2, 30], yellow: [31, 70], red: [71, 100] },
-    "Class 5000":{ white: [1, 1], green: [2, 25], yellow: [26, 65], red: [66, 100] },
-    "Beyond":    { white: [1, 1], green: [2, 20], yellow: [21, 60], red: [61, 100] }
-};
-
-export const ACTION_RESULTS = {
-    "BA": { 
-        name: "Blunt Attack",
-        ability: "Fighting",
-        results: { white: "Miss", green: "Hit", yellow: "Slam", red: "Stun" }
-    },
-    "EA": {
-        name: "Edged Attack",
-        ability: "Fighting",
-        results: { white: "Miss", green: "Hit", yellow: "Stun", red: "Kill" }
-    },
-    "Sh": {
-        name: "Shooting",
-        ability: "Agility",
-        results: { white: "Miss", green: "Hit", yellow: "Bullseye", red: "Kill" }
-    },
-    "TE": {
-        name: "Throwing Edged",
-        ability: "Agility",
-        results: { white: "Miss", green: "Hit", yellow: "Stun", red: "Kill" }
-    },
-    "TB": {
-        name: "Throwing Blunt",
-        ability: "Agility",
-        results: { white: "Miss", green: "Hit", yellow: "Hit", red: "Stun" }
-    },
-    "En": {
-        name: "Energy",
-        ability: "Agility",
-        results: { white: "Miss", green: "Hit", yellow: "Bullseye", red: "Kill" }
-    },
-    "Fo": {
-        name: "Force",
-        ability: "Agility",
-        results: { white: "Miss", green: "Hit", yellow: "Bullseye", red: "Stun" }
-    },
-    "Gp": {
-        name: "Grappling",
-        ability: "Strength",
-        results: { white: "Miss", green: "Miss", yellow: "Partial", red: "Hold" }
-    },
-    "Gb": {
-        name: "Grabbing",
-        ability: "Strength",
-        results: { white: "Miss", green: "Take", yellow: "Grab", red: "Break" }
-    },
-    "Es": {
-        name: "Escaping",
-        ability: "Strength",
-        results: { white: "Miss", green: "Miss", yellow: "Escape", red: "Reverse" }
-    },
-    "Ch": {
-        name: "Charging",
-        ability: "Endurance",
-        results: { white: "Miss", green: "Hit", yellow: "Slam", red: "Stun" }
-    },
-    "Do": {
-        name: "Dodging",
-        ability: "Agility",
-        results: { white: "None", green: "-2 CS", yellow: "-4 CS", red: "-6 CS" }
-    },
-    "Ev": {
-        name: "Evading",
-        ability: "Fighting",
-        results: { white: "Autohit", green: "Evasion", yellow: "+1 CS", red: "+2 CS" }
-    },
-    "Bl": {
-        name: "Blocking",
-        ability: "Strength",
-        results: { white: "-6 CS", green: "-4 CS", yellow: "-2 CS", red: "+1 CS" }
-    },
-    "Ca": {
-        name: "Catching",
-        ability: "Agility",
-        results: { white: "Autohit", green: "Miss", yellow: "Damage", red: "Catch" }
-    },
-    "St": {
-        name: "Stun?",
-        ability: "Endurance",
-        results: { white: "1-10", green: "1", yellow: "No", red: "No" }
-    },
-    "Sl": {
-        name: "Slam?",
-        ability: "Endurance",
-        results: { white: "Gr. Slam", green: "1 area", yellow: "Stagger", red: "No" }
-    },
-    "Ki": {
-        name: "Kill?",
-        ability: "Endurance",
-        results: { white: "En. Loss", green: "E/S", yellow: "No", red: "No" }
-    }
+    poolContribution: { id: "poolContribution", label: "Team Pool Contribution" }
 };
 
 export const FEAT_TYPES = {
@@ -597,179 +911,33 @@ export const FEAT_TYPES = {
     }
 };
 
-export const COMBAT_TYPES = {
-    FIGHTING: {
-        ability: "fighting",
-        name: "Hand-to-Hand Combat",
-        types: {
-            BA: {
-                name: "Blunt Attack",
-                results: {
-                    white: { effect: "Miss", damage: 0 },
-                    green: { effect: "Hit", damage: "strength" },
-                    yellow: { effect: "Slam", damage: "strength" },
-                    red: { effect: "Stun", damage: "strength" }
-                }
-            },
-            EA: {
-                name: "Edged Attack",
-                results: {
-                    white: { effect: "Miss", damage: 0 },
-                    green: { effect: "Hit", damage: "weapon" },
-                    yellow: { effect: "Stun", damage: "weapon" },
-                    red: { effect: "Kill", damage: "weapon" }
-                }
-            }
+// Helper function to get available actions for an actor
+export function getAvailableActions(actor) {
+    const availableActions = {};
+    
+    for (const [id, action] of Object.entries(ACTION_RESULTS)) {
+        if (!meetsRequirements(actor, action.requirements)) continue;
+        
+        if (!availableActions[action.category]) {
+            availableActions[action.category] = [];
         }
-    },
-    AGILITY: {
-        ability: "agility",
-        name: "Ranged Combat",
-        types: {
-            Sh: {
-                name: "Shooting",
-                results: {
-                    white: { effect: "Miss", damage: 0 },
-                    green: { effect: "Hit", damage: "weapon" },
-                    yellow: { effect: "Bullseye", damage: "weapon" },
-                    red: { effect: "Kill", damage: "weapon" }
-                }
-            },
-            TE: {
-                name: "Throwing Edged",
-                results: {
-                    white: { effect: "Miss", damage: 0 },
-                    green: { effect: "Hit", damage: "weapon" },
-                    yellow: { effect: "Stun", damage: "weapon" },
-                    red: { effect: "Kill", damage: "weapon" }
-                }
-            },
-            TB: {
-                name: "Throwing Blunt",
-                results: {
-                    white: { effect: "Miss", damage: 0 },
-                    green: { effect: "Hit", damage: "strength" },
-                    yellow: { effect: "Hit", damage: "strength" },
-                    red: { effect: "Stun", damage: "strength" }
-                }
-            },
-            En: {
-                name: "Energy",
-                results: {
-                    white: { effect: "Miss", damage: 0 },
-                    green: { effect: "Hit", damage: "weapon" },
-                    yellow: { effect: "Bullseye", damage: "weapon" },
-                    red: { effect: "Kill", damage: "weapon" }
-                }
-            },
-            Fo: {
-                name: "Force",
-                results: {
-                    white: { effect: "Miss", damage: 0 },
-                    green: { effect: "Hit", damage: "weapon" },
-                    yellow: { effect: "Bullseye", damage: "weapon" },
-                    red: { effect: "Stun", damage: "weapon" }
-                }
-            }
-        }
-    },
-    STRENGTH: {
-        ability: "strength",
-        name: "Strength Combat",
-        types: {
-            Gp: {
-                name: "Grappling",
-                results: {
-                    white: { effect: "Miss", damage: 0 },
-                    green: { effect: "Miss", damage: 0 },
-                    yellow: { effect: "Partial", damage: 0 },
-                    red: { effect: "Hold", damage: 0 }
-                }
-            },
-            Gb: {
-                name: "Grabbing",
-                results: {
-                    white: { effect: "Miss", damage: 0 },
-                    green: { effect: "Take", damage: 0 },
-                    yellow: { effect: "Grab", damage: 0 },
-                    red: { effect: "Break", damage: 0 }
-                }
-            },
-            Es: {
-                name: "Escaping",
-                results: {
-                    white: { effect: "Miss", damage: 0 },
-                    green: { effect: "Miss", damage: 0 },
-                    yellow: { effect: "Escape", damage: 0 },
-                    red: { effect: "Reverse", damage: 0 }
-                }
-            },
-            Bl: {
-                name: "Blocking",
-                results: {
-                    white: { effect: "-6 CS", damage: 0 },
-                    green: { effect: "-4 CS", damage: 0 },
-                    yellow: { effect: "-2 CS", damage: 0 },
-                    red: { effect: "+1 CS", damage: 0 }
-                }
-            }
-        }
-    },
-    ENDURANCE: {
-        ability: "endurance",
-        name: "Endurance Combat",
-        types: {
-            Ch: {
-                name: "Charging",
-                results: {
-                    white: { effect: "Miss", damage: 0 },
-                    green: { effect: "Hit", damage: "strength" },
-                    yellow: { effect: "Slam", damage: "strength" },
-                    red: { effect: "Stun", damage: "strength" }
-                }
-            },
-            St: {
-                name: "Stun?",
-                results: {
-                    white: { effect: "1-10", damage: 0 },
-                    green: { effect: "1", damage: 0 },
-                    yellow: { effect: "No", damage: 0 },
-                    red: { effect: "No", damage: 0 }
-                }
-            },
-            Sl: {
-                name: "Slam?",
-                results: {
-                    white: { effect: "Gr. Slam", damage: 0 },
-                    green: { effect: "1 area", damage: 0 },
-                    yellow: { effect: "Stagger", damage: 0 },
-                    red: { effect: "No", damage: 0 }
-                }
-            },
-            Ki: {
-                name: "Kill?",
-                results: {
-                    white: { effect: "En. Loss", damage: 0 },
-                    green: { effect: "E/S", damage: 0 },
-                    yellow: { effect: "No", damage: 0 },
-                    red: { effect: "No", damage: 0 }
-                }
-            }
-        }
+        availableActions[action.category].push({
+            id,
+            ...action
+        });
     }
-};
+    
+    return availableActions;
+}
 
-export const COMBAT_EFFECTS = {
-    SLAM: {
-        white: "No Effect",
-        green: "Stagger",
-        yellow: "1 Area",
-        red: "Grand Slam"
-    },
-    STUN: {
-        white: "1-10 Rounds",
-        green: "1 Round",
-        yellow: "No Effect",
-        red: "No Effect"
-    }
-};
+function meetsRequirements(actor, requirements) {
+    // Implement requirement checking logic
+    return true; // Placeholder
+}
+
+// Status effects should be handled in the init hook in marvel-faserip.js
+export const STATUS_EFFECTS = [{
+    id: "dying",
+    label: "Dying",
+    icon: "icons/svg/skull.svg"
+}];
