@@ -14,9 +14,13 @@ export class FaseripCombatEngine {
                 return this._createErrorResult("Invalid actor or target");
             }
     
+            console.log(`Resolving action: ${actionType}`, {actor: actor.name, target: target.name, options});
+    
+            // Normalize action type to uppercase
             actionType = actionType.toUpperCase();
             const actionDefinition = CONFIG.marvel.actionResults[actionType];
             if (!actionDefinition) {
+                console.error(`Invalid action type: ${actionType}`);
                 return this._createErrorResult(`Invalid action type: ${actionType}`);
             }
     
@@ -26,67 +30,102 @@ export class FaseripCombatEngine {
             let baseChance = abilityScore.number;
             
             // Apply column shift if specified
-            let columnShift = options.columnShift || 0;
-            if (columnShift) {
-                baseChance = this._applyColumnShift(baseChance, columnShift);
+            if (options.columnShift) {
+                baseChance = this._applyColumnShift(baseChance, options.columnShift);
+                console.log(`Applied column shift ${options.columnShift}, new base chance: ${baseChance}`);
             }
-            
-            // Handle karma points correctly
+    
+            // Handle karma points
             const karmaPoints = options.karmaPoints || 0;
     
             // Roll and get result
             const rankName = this._getRankFromValue(baseChance);
             const roll = await (new Roll("1d100")).evaluate();
-    
+            
             // Apply Karma to the roll total
             let finalRollTotal = roll.total;
             if (karmaPoints > 0) {
+                console.log(`Adding ${karmaPoints} karma to roll ${roll.total}`);
                 finalRollTotal += karmaPoints;
                 
-                // Reduce actor's karma
-                await actor.update({
-                    "system.secondaryAbilities.karma.value": Math.max(0, actor.system.secondaryAbilities.karma.value - karmaPoints)
-                });
-                
-                // Add entry to karma history
-                const currentHistory = actor.system.karmaHistory || [];
-                const newEntry = {
-                    date: game.time.worldTime,
-                    amount: -karmaPoints,
-                    reason: `Spent on ${actionType} action`,
-                    description: `Used ${karmaPoints} karma to boost attack roll`
-                };
+                // Reduce actor's karma - critical!
+                const currentKarma = actor.system.secondaryAbilities.karma.value;
+                console.log(`Current karma: ${currentKarma}, will be reduced to: ${Math.max(0, currentKarma - karmaPoints)}`);
                 
                 await actor.update({
-                    "system.karmaHistory": [...currentHistory, newEntry]
+                    "system.secondaryAbilities.karma.value": Math.max(0, currentKarma - karmaPoints)
                 });
+                
+                // Add to karma history - make sure we have the right path
+                // Check if actor has karmaHistory directly or in karmaTracking
+                let historyPath = "system.karmaHistory";
+                let currentHistory = actor.system.karmaHistory;
+                
+                // If not found directly, check in karmaTracking structure
+                if (!currentHistory && actor.system.karmaTracking?.history) {
+                    historyPath = "system.karmaTracking.history";
+                    currentHistory = actor.system.karmaTracking.history;
+                }
+                
+                if (currentHistory) {
+                    console.log("Adding karma history entry", historyPath);
+                    
+                    const newEntry = {
+                        date: new Date().toLocaleString(),
+                        amount: -karmaPoints,
+                        description: `Used ${karmaPoints} karma on ${actionType} action`
+                    };
+                    
+                    const updateData = {};
+                    updateData[historyPath] = [...currentHistory, newEntry];
+                    await actor.update(updateData);
+                } else {
+                    console.warn("Could not find karma history path on actor");
+                }
             }
     
             // Get result color based on adjusted roll
-            const resultColor = this._getColorResult(finalRollTotal, rankName);
+            const result = this._getColorResult(finalRollTotal, rankName);
+            console.log(`Roll result: ${roll.total}, with karma: ${finalRollTotal}, color: ${result}`);
     
             // Handle wrestling moves specially
             if (["GP", "GB", "ES"].includes(actionType)) {
-                return this._handleWrestlingResult(actor, target, actionType, resultColor);
+                return this._handleWrestlingResult(actor, target, actionType, result);
             }
     
             // Calculate regular combat results
-            const damage = await this._calculateDamage(actor, target, actionType, resultColor, options);
-            const effect = await this._handleCombatEffect(actionType, resultColor, actor, target, damage.base);
+            const damage = await this._calculateDamage(actor, target, actionType, result, options);
+            console.log("Calculated damage:", damage);
+            
+            const effect = await this._handleCombatEffect(actionType, result, actor, target, damage.base);
+            console.log("Combat effect:", effect);
             
             // Format result for display
-            const formattedText = this._formatCombatResult(actor, target, actionType, resultColor, damage, effect);
+            const formattedText = this._formatCombatResult(actor, target, actionType, result, damage, effect);
+    
+            // APPLY DAMAGE TO TARGET - THIS IS CRITICAL
+            if (damage.final > 0) {
+                console.log(`Attempting to apply ${damage.final} damage to ${target.name}`);
+                try {
+                    await target.applyDamage(damage.final);
+                    console.log(`Successfully applied ${damage.final} damage to ${target.name}`);
+                } catch (error) {
+                    console.error("Error applying damage to target:", error);
+                }
+            } else {
+                console.log(`No damage to apply (final damage: ${damage.final})`);
+            }
     
             return {
                 roll,
                 adjustedRoll: finalRollTotal,
-                result: resultColor,
+                result,
                 effect,
                 damage,
                 ability,
                 abilityScore,
                 formattedText,
-                columnShift,
+                columnShift: options.columnShift || 0,
                 karmaPoints
             };
     

@@ -36,7 +36,7 @@
 
      Total Files Listed:
               13 File(s)        274,104 bytes
-               8 Dir(s)  254,406,590,464 bytes free
+               8 Dir(s)  254,268,121,088 bytes free
  Volume in drive C is Windows
  Volume Serial Number is 94F9-1583
 
@@ -54,7 +54,7 @@
 
      Total Files Listed:
                6 File(s)         56,323 bytes
-               2 Dir(s)  254,406,590,464 bytes free
+               2 Dir(s)  254,268,121,088 bytes free
  Volume in drive C is Windows
  Volume Serial Number is 94F9-1583
 
@@ -67,7 +67,7 @@
 
      Total Files Listed:
                1 File(s)          1,636 bytes
-               2 Dir(s)  254,406,590,464 bytes free
+               2 Dir(s)  254,268,112,896 bytes free
  Volume in drive C is Windows
  Volume Serial Number is 94F9-1583
 
@@ -89,12 +89,12 @@
 
 02/24/2025  04:52 AM    <DIR>          .
 02/23/2025  09:33 AM    <DIR>          ..
-02/24/2025  05:14 AM             9,589 FaseripCombatEngine.js
+02/24/2025  04:40 PM            20,610 FaseripCombatEngine.js
 02/24/2025  04:52 AM            29,794 FaseripCombatSystem.js
 02/23/2025  12:46 PM             1,292 FaseripUniversalTable.js
-02/24/2025  05:23 AM             7,957 MarvelCombatHUD.js
+02/24/2025  04:04 PM             9,183 MarvelCombatHUD.js
 02/24/2025  04:36 AM    <DIR>          templates
-               4 File(s)         48,632 bytes
+               4 File(s)         60,879 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\combat\templates
 
@@ -143,8 +143,8 @@
 02/23/2025  09:33 AM    <DIR>          .
 02/23/2025  09:33 AM    <DIR>          ..
 02/20/2025  02:51 AM    <DIR>          items
-02/23/2025  08:04 PM           119,704 MarvelActorSheet.js
-               1 File(s)        119,704 bytes
+02/24/2025  04:16 PM           119,718 MarvelActorSheet.js
+               1 File(s)        119,718 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\sheets\items
 
@@ -163,8 +163,8 @@
                1 File(s)         17,536 bytes
 
      Total Files Listed:
-              22 File(s)        395,649 bytes
-              29 Dir(s)  254,406,578,176 bytes free
+              22 File(s)        407,910 bytes
+              29 Dir(s)  254,268,108,800 bytes free
  Volume in drive C is Windows
  Volume Serial Number is 94F9-1583
 
@@ -197,8 +197,8 @@
 
 02/24/2025  04:48 AM    <DIR>          .
 02/01/2025  08:40 PM    <DIR>          ..
-02/24/2025  03:08 AM               995 combat-result.html
-               1 File(s)            995 bytes
+02/24/2025  03:52 PM             2,156 combat-result.html
+               1 File(s)          2,156 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\templates\dialogs
 
@@ -232,5 +232,5 @@
                4 File(s)         18,567 bytes
 
      Total Files Listed:
-              22 File(s)         88,569 bytes
-              17 Dir(s)  254,406,578,176 bytes free
+              22 File(s)         89,730 bytes
+              17 Dir(s)  254,268,108,800 bytes free
