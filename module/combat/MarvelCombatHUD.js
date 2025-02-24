@@ -217,16 +217,34 @@ export class MarvelCombatHUD extends Application {
             ui.notifications.error(`Failed to resolve ${actionType} action`);
             return;
         }
-    
+        
         try {
+            // Use the combat-result template
+            const templatePath = "systems/marvel-faserip/templates/chat/combat-result.html";
+            
+            const templateData = {
+                actor: actor,
+                actionType: actionType.toUpperCase(),
+                result: result
+            };
+            
+            const content = await renderTemplate(templatePath, templateData);
+            
             await ChatMessage.create({
                 speaker: ChatMessage.getSpeaker({actor}),
-                content: result.formattedText,
+                content: content,
                 rolls: result.roll ? [result.roll] : []
             });
         } catch (error) {
             console.error("Error creating chat message:", error);
             ui.notifications.error("Failed to create result message");
+            
+            // Fallback to inline HTML if template fails
+            await ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({actor}),
+                content: result.formattedText || "Attack resolved",
+                rolls: result.roll ? [result.roll] : []
+            });
         }
     }
 }

@@ -75,9 +75,50 @@ export class FaseripCombatEngine {
     }
 
     // Your existing helper methods remain the same
-    _getRankFromValue(value) { /* ... */ }
-    _applyColumnShift(baseValue, shift) { /* ... */ }
-    _getColorResult(rollTotal, targetRank) { /* ... */ }
+    _getRankFromValue(value) {
+        const rankValues = CONFIG.marvel.rankValues;
+        
+        for (const [rankName, range] of Object.entries(rankValues)) {
+            if (value >= range.min && value <= range.max) {
+                return rankName;
+            }
+        }
+        
+        // Default to Shift 0 if no match
+        return "Shift 0";
+    }
+    _applyColumnShift(baseValue, shift) {
+        if (shift === 0) return baseValue;
+        
+        // Get rank names in order
+        const ranks = Object.keys(CONFIG.marvel.selectableRanks);
+        
+        // Find current rank
+        const currentRank = this._getRankFromValue(baseValue);
+        const currentIndex = ranks.indexOf(currentRank);
+        
+        if (currentIndex === -1) return baseValue; // Shouldn't happen
+        
+        // Calculate new rank index with shift
+        const newIndex = Math.max(0, Math.min(ranks.length - 1, currentIndex + shift));
+        const newRank = ranks[newIndex];
+        
+        // Get middle value of new rank range
+        const range = CONFIG.marvel.rankValues[newRank];
+        if (!range) return baseValue;
+        
+        return Math.floor((range.min + range.max) / 2);
+    }
+    
+    _getColorResult(rollTotal, targetRank) {
+        const ranges = CONFIG.marvel.universalTableRanges[targetRank];
+        if (!ranges) return "white"; // Default to miss
+        
+        if (rollTotal <= ranges.white) return "white";
+        if (rollTotal <= ranges.green) return "green";
+        if (rollTotal <= ranges.yellow) return "yellow";
+        return "red";
+    }
 
     // Enhanced damage calculation incorporating resistance
     async _calculateDamage(actor, target, actionType, result, options) {
@@ -174,28 +215,154 @@ export class FaseripCombatEngine {
     async _handleHoldOptions(attacker, target) { /* Your existing code */ }
     async _applyWrestlingEffect(target, result) { /* Your existing code */ }
 
-    // Enhanced effect handling
+    // Enhanced effect handling for combat
     async _handleCombatEffect(attackType, color, attacker, target, baseDamage) {
-        // Your existing _handleCombatEffect code
+        // Convert attack type to uppercase for consistency
+        attackType = attackType.toUpperCase();
+        
+        // Return early for misses
+        if (color === "white") {
+            return { type: "Miss", description: "The attack misses completely." };
+        }
+        
+        // Effect mapping based on attack type and result color
+        switch(attackType) {
+            case "BA": // Blunt Attack
+                switch(color) {
+                    case "green": return { type: "Hit", description: "A solid hit." };
+                    case "yellow": return { type: "Slam", description: "Target may be knocked back." };
+                    case "red": return { type: "Stun", description: "Target may be stunned." };
+                }
+                break;
+
+            case "EA": // Edged Attack
+                switch(color) {
+                    case "green": return { type: "Hit", description: "A clean hit." };
+                    case "yellow": return { type: "Stun", description: "Target may be stunned." };
+                    case "red": return { type: "Kill", description: "A potentially lethal blow." };
+                }
+                break;
+
+            case "SH": // Shooting
+                switch(color) {
+                    case "green": return { type: "Hit", description: "A direct hit." };
+                    case "yellow": return { type: "Bullseye", description: "A precise shot." };
+                    case "red": return { type: "Kill", description: "A potentially lethal shot." };
+                }
+                break;
+                
+            case "TE": // Throwing Edged
+                switch(color) {
+                    case "green": return { type: "Hit", description: "A clean hit." };
+                    case "yellow": return { type: "Stun", description: "Target may be stunned." };
+                    case "red": return { type: "Kill", description: "A potentially lethal blow." };
+                }
+                break;
+                
+            case "TB": // Throwing Blunt
+                switch(color) {
+                    case "green": return { type: "Hit", description: "A solid hit." };
+                    case "yellow": return { type: "Hit", description: "A solid hit." };
+                    case "red": return { type: "Stun", description: "Target may be stunned." };
+                }
+                break;
+                
+            case "EN": // Energy
+                switch(color) {
+                    case "green": return { type: "Hit", description: "A direct hit." };
+                    case "yellow": return { type: "Bullseye", description: "A precise hit." };
+                    case "red": return { type: "Kill", description: "A potentially lethal hit." };
+                }
+                break;
+                
+            case "FO": // Force
+                switch(color) {
+                    case "green": return { type: "Hit", description: "The force connects." };
+                    case "yellow": return { type: "Bullseye", description: "A precise application of force." };
+                    case "red": return { type: "Stun", description: "Target may be stunned." };
+                }
+                break;
+                
+            default:
+                return { type: "Hit", description: "The attack connects." };
+        }
+        
+        return { type: "Hit", description: "The attack connects." };
     }
 
+    // Add this method for consistency
     _getAttackEffect(attackType, color) {
-        // Your existing _getAttackEffect code
+        const effect = this._handleCombatEffect(attackType, color);
+        return effect ? effect.type : null;
     }
 
+    // Add description method
     _getEffectDescription(effect) {
-        // Your existing _getEffectDescription code
+        switch(effect) {
+            case "Stun":
+                return "Target may be stunned for 1-10 rounds.";
+            case "Slam":
+                return "Target may be knocked back.";
+            case "Kill":
+                return "Target may be mortally wounded.";
+            case "Bullseye":
+                return "A precise hit at a vulnerable spot.";
+            case "Hit":
+                return "The attack connects.";
+            case "Miss":
+                return "The attack misses.";
+            default:
+                return "";
+        }
     }
 
-    // Moving resistance system
     _getAttackResistanceType(attackType) {
-        // Your existing _getAttackResistanceType code
+        // Case-insensitive mapping
+        const attackTypeUpper = attackType.toUpperCase();
+        
+        const resistanceMap = {
+            "BA": "physical",    // Blunt Attack
+            "EA": "physical",    // Edged Attack
+            "SH": "physical",    // Shooting
+            "TE": "physical",    // Throwing Edged
+            "TB": "physical",    // Throwing Blunt
+            "EN": "energy",      // Energy Attack
+            "FO": "force",       // Force Attack
+            "GP": "physical",    // Grappling
+            "GB": "physical",    // Grabbing
+            "ES": "physical",    // Escaping
+            "CH": "physical"     // Charging
+        };
+        
+        return resistanceMap[attackTypeUpper] || "physical";
     }
 
+    // Missing resistance calculation method
     _getApplicableResistance(target, attackType) {
-        // Your existing _getApplicableResistance code
-    }
+        // Safety check
+        if (!target?.system?.resistances?.list) {
+            return 0;
+        }
 
+        // Get resistance type needed
+        const resistanceType = this._getAttackResistanceType(attackType);
+        
+        // Convert object to array if needed
+        let resistances = [];
+        if (typeof target.system.resistances.list === 'object') {
+            resistances = Object.values(target.system.resistances.list);
+        } else if (Array.isArray(target.system.resistances.list)) {
+            resistances = target.system.resistances.list;
+        }
+        
+        // Find matching resistance
+        const resistance = resistances.find(r => 
+            r && r.type && r.type.toLowerCase() === resistanceType.toLowerCase()
+        );
+        
+        // Return resistance number or 0 if none found
+        return resistance?.number || 0;
+    }
     // Format combat results for display
     _formatCombatResult(actor, target, actionType, result, damage, effect) {
         const actionName = CONFIG.marvel.actionResults[actionType]?.name || actionType;
