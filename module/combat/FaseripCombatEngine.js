@@ -6,6 +6,29 @@ export class FaseripCombatEngine {
         this.initializeListeners();
     }
 
+    /**
+     * Initialize global event listeners for combat
+     */
+    initializeListeners() {
+        // Event handlers for system-wide combat events
+        Hooks.on("marvelCombatAction", (data) => {
+            return this.resolveAction(
+                data.actor,
+                data.target,
+                data.actionType,
+                data.options
+            );
+        });
+    }
+
+    /**
+     * Core combat resolution method
+     * @param {Actor} actor - Attacking actor
+     * @param {Actor} target - Target actor
+     * @param {string} actionType - Type of action (BA, EA, SH, etc.)
+     * @param {Object} options - Additional options for the attack
+     * @returns {Object} Result of the combat action
+     */
     async resolveAction(actor, target, actionType, options = {}) {
         try {
             // Input validation
@@ -16,13 +39,19 @@ export class FaseripCombatEngine {
     
             console.log(`Resolving action: ${actionType}`, {actor: actor.name, target: target.name, options});
     
-            // Normalize action type to uppercase
-            actionType = actionType.toUpperCase();
-            const actionDefinition = CONFIG.marvel.actionResults[actionType];
-            if (!actionDefinition) {
+            // Find the action in CONFIG regardless of case
+            const normalizedActionType = Object.keys(CONFIG.marvel.actionResults).find(
+                key => key.toLowerCase() === actionType.toLowerCase()
+            );
+            
+            if (!normalizedActionType) {
                 console.error(`Invalid action type: ${actionType}`);
                 return this._createErrorResult(`Invalid action type: ${actionType}`);
             }
+            
+            // Use the correctly cased key
+            const actionDefinition = CONFIG.marvel.actionResults[normalizedActionType];
+
     
             // Get ability scores and calculate base chance
             const ability = actionDefinition.ability.toLowerCase();
@@ -40,7 +69,7 @@ export class FaseripCombatEngine {
     
             // Roll and get result
             const rankName = this._getRankFromValue(baseChance);
-            const roll = await (new Roll("1d100")).evaluate();
+            const roll = await (new Roll("1d100")).evaluate({async: true});
             
             // Apply Karma to the roll total
             let finalRollTotal = roll.total;
@@ -48,40 +77,8 @@ export class FaseripCombatEngine {
                 console.log(`Adding ${karmaPoints} karma to roll ${roll.total}`);
                 finalRollTotal += karmaPoints;
                 
-                // Reduce actor's karma - critical!
-                const currentKarma = actor.system.secondaryAbilities.karma.value;
-                console.log(`Current karma: ${currentKarma}, will be reduced to: ${Math.max(0, currentKarma - karmaPoints)}`);
-                
-                await actor.update({
-                    "system.secondaryAbilities.karma.value": Math.max(0, currentKarma - karmaPoints)
-                });
-                
-                // Add to karma history - make sure we have the right path
-                // Check if actor has karmaHistory directly or in karmaTracking
-                let historyPath = "system.karmaHistory";
-                let currentHistory = actor.system.karmaHistory;
-                
-                // If not found directly, check in karmaTracking structure
-                if (!currentHistory && actor.system.karmaTracking?.history) {
-                    historyPath = "system.karmaTracking.history";
-                    currentHistory = actor.system.karmaTracking.history;
-                }
-                
-                if (currentHistory) {
-                    console.log("Adding karma history entry", historyPath);
-                    
-                    const newEntry = {
-                        date: new Date().toLocaleString(),
-                        amount: -karmaPoints,
-                        description: `Used ${karmaPoints} karma on ${actionType} action`
-                    };
-                    
-                    const updateData = {};
-                    updateData[historyPath] = [...currentHistory, newEntry];
-                    await actor.update(updateData);
-                } else {
-                    console.warn("Could not find karma history path on actor");
-                }
+                // Reduce actor's karma
+                await this._spendKarma(actor, karmaPoints, `${actionType} action`);
             }
     
             // Get result color based on adjusted roll
@@ -90,30 +87,34 @@ export class FaseripCombatEngine {
     
             // Handle wrestling moves specially
             if (["GP", "GB", "ES"].includes(actionType)) {
-                return this._handleWrestlingResult(actor, target, actionType, result);
+                return await this._handleWrestlingResult(actor, target, actionType, result);
             }
     
-            // Calculate regular combat results
+            // Calculate damage
             const damage = await this._calculateDamage(actor, target, actionType, result, options);
             console.log("Calculated damage:", damage);
             
-            const effect = await this._handleCombatEffect(actionType, result, actor, target, damage.base);
+            // Get combat effect
+            const effect = this._getCombatEffect(actionType, result);
             console.log("Combat effect:", effect);
             
             // Format result for display
             const formattedText = this._formatCombatResult(actor, target, actionType, result, damage, effect);
     
-            // APPLY DAMAGE TO TARGET - THIS IS CRITICAL
+            // APPLY DAMAGE TO TARGET
             if (damage.final > 0) {
-                console.log(`Attempting to apply ${damage.final} damage to ${target.name}`);
+                console.log(`Applying ${damage.final} damage to ${target.name}`);
                 try {
                     await target.applyDamage(damage.final);
                     console.log(`Successfully applied ${damage.final} damage to ${target.name}`);
                 } catch (error) {
                     console.error("Error applying damage to target:", error);
                 }
-            } else {
-                console.log(`No damage to apply (final damage: ${damage.final})`);
+            }
+            
+            // Apply special effects if necessary (Stun, Slam, Kill)
+            if (result !== "white" && effect.type !== "Hit" && effect.type !== "Miss") {
+                await this._applySpecialEffect(effect.type, target, actor, damage.final);
             }
     
             return {
@@ -135,11 +136,55 @@ export class FaseripCombatEngine {
         }
     }
 
+    /**
+     * Spend karma points and update actor's karma history
+     * @param {Actor} actor - Actor spending karma
+     * @param {number} amount - Amount of karma to spend
+     * @param {string} reason - Reason for spending karma
+     */
+    async _spendKarma(actor, amount, reason) {
+        if (!actor || amount <= 0) return;
+        
+        const currentKarma = actor.system.secondaryAbilities.karma.value;
+        console.log(`Current karma: ${currentKarma}, will be reduced to: ${Math.max(0, currentKarma - amount)}`);
+        
+        await actor.update({
+            "system.secondaryAbilities.karma.value": Math.max(0, currentKarma - amount)
+        });
+        
+        // Add to karma history
+        let historyPath = "system.karmaHistory";
+        let currentHistory = actor.system.karmaHistory;
+        
+        // If not found directly, check in karmaTracking structure
+        if (!currentHistory && actor.system.karmaTracking?.history) {
+            historyPath = "system.karmaTracking.history";
+            currentHistory = actor.system.karmaTracking.history;
+        }
+        
+        if (currentHistory) {
+            console.log("Adding karma history entry");
+            
+            const newEntry = {
+                date: new Date().toLocaleString(),
+                amount: -amount,
+                description: `Used ${amount} karma on ${reason}`
+            };
+            
+            const updateData = {};
+            updateData[historyPath] = [...currentHistory, newEntry];
+            await actor.update(updateData);
+        }
+    }
+
+    /**
+     * Create an error result object
+     */
     _createErrorResult(message) {
         return {
             roll: null,
             result: "white",
-            effect: { effect: "Miss", damage: 0 },
+            effect: { type: "Miss", description: "The attack misses completely." },
             ability: "none",
             abilityScore: null,
             error: true,
@@ -147,7 +192,9 @@ export class FaseripCombatEngine {
         };
     }
 
-    // Your existing helper methods remain the same
+    /**
+     * Get the rank name from a numeric value
+     */
     _getRankFromValue(value) {
         const rankValues = CONFIG.marvel.rankValues;
         
@@ -160,6 +207,10 @@ export class FaseripCombatEngine {
         // Default to Shift 0 if no match
         return "Shift 0";
     }
+
+    /**
+     * Apply column shift to a rank value
+     */
     _applyColumnShift(baseValue, shift) {
         if (shift === 0) return baseValue;
         
@@ -183,6 +234,9 @@ export class FaseripCombatEngine {
         return Math.floor((range.min + range.max) / 2);
     }
     
+    /**
+     * Get color result from roll total and target rank
+     */
     _getColorResult(rollTotal, targetRank) {
         const ranges = CONFIG.marvel.universalTableRanges[targetRank];
         if (!ranges) return "white"; // Default to miss
@@ -193,59 +247,112 @@ export class FaseripCombatEngine {
         return "red";
     }
 
-    // Enhanced damage calculation incorporating resistance
-    async _calculateDamage(actor, target, actionType, result, options) {
-        let baseDamage = 0;
-        
-        // Calculate base damage by action type
-        switch(actionType) {
-            case "BA": // Blunt Attack
-            case "TB": // Throwing Blunt
-                baseDamage = actor.system.primaryAbilities.strength.number;
-                break;
-            case "EA": // Edged Attack
-            case "TE": // Throwing Edged
-                baseDamage = Math.max(
-                    actor.system.primaryAbilities.strength.number,
-                    options.weaponDamage || 0
-                );
-                break;
-            case "Sh": // Shooting
-            case "En": // Energy
-            case "Fo": // Force
-                baseDamage = options.weaponDamage || 0;
-                break;
-        }
+/**
+ * Calculate damage for an attack - FIXED VERSION
+ * @param {Actor} actor - Attacking actor
+ * @param {Actor} target - Target actor
+ * @param {string} actionType - Type of action (BA, EA, SH, etc.)
+ * @param {string} result - Color result (white, green, yellow, red)
+ * @param {Object} options - Additional options for the attack
+ * @returns {Object} Damage calculation result
+ */
+ // In FaseripCombatEngine.js, modify the _calculateDamage method to handle all action types:
 
-        // Apply result modifiers
-        if (result === "red") baseDamage *= 2;
-        if (result === "yellow") baseDamage *= 1.5;
-
-        // Get and apply resistance
-        const resistance = await this._getApplicableResistance(target, actionType);
-        const finalDamage = Math.max(0, baseDamage - resistance);
-
+async _calculateDamage(actor, target, actionType, result, options) {
+    // Return zero damage for misses
+    if (result === "white") {
         return {
-            base: baseDamage,
-            resistance: resistance,
-            final: finalDamage,
+            base: 0,
+            resistance: 0,
+            final: 0,
             resistanceType: this._getAttackResistanceType(actionType)
         };
     }
+    
+    let baseDamage = 0;
+    const strengthValue = actor.system.primaryAbilities.strength.number;
+    console.log(`${actor.name}'s strength value: ${strengthValue}`);
+    
+    // Normalize action type to uppercase
+    actionType = actionType.toUpperCase();
+    
+    // Calculate base damage by attack type - CORRECT FASERIP RULES
+    switch(actionType) {
+        case "BA": // Blunt Attack
+        case "TB": // Throwing Blunt
+        case "CH": // Charging
+            baseDamage = strengthValue;
+            console.log(`Base damage for ${actionType} set to strength: ${baseDamage}`);
+            break;
+        case "EA": // Edged Attack
+        case "TE": // Throwing Edged
+            baseDamage = Math.max(
+                strengthValue,
+                options.weaponDamage || 0
+            );
+            console.log(`Base damage for ${actionType} set to max of strength (${strengthValue}) or weapon (${options.weaponDamage || 0}): ${baseDamage}`);
+            break;
+        case "SH": // Shooting
+        case "EN": // Energy
+        case "FO": // Force
+            baseDamage = options.weaponDamage || 0;
+            console.log(`Base damage for ${actionType} set to weapon damage: ${baseDamage}`);
+            break;
+        case "GP": // Grappling
+            // Grappling only does damage on a full hold
+            if (result === "red") {
+                baseDamage = strengthValue;
+                console.log(`Grappling full hold damage: ${baseDamage}`);
+            } else {
+                baseDamage = 0;
+                console.log(`Grappling no damage for result: ${result}`);
+            }
+            break;
+        case "GB": // Grabbing
+        case "ES": // Escaping
+            // These typically don't do direct damage
+            baseDamage = 0;
+            console.log(`${actionType} actions don't typically do direct damage`);
+            break;
+        default:
+            console.log(`Unknown attack type ${actionType}, defaulting to strength damage`);
+            baseDamage = strengthValue;
+    }
+    
+    // Get and apply resistance
+    const resistanceType = this._getAttackResistanceType(actionType);
+    const resistance = await this._getApplicableResistance(target, actionType);
+    console.log(`Target resistance (${resistanceType}): ${resistance}`);
+    
+    const finalDamage = Math.max(0, baseDamage - resistance);
+    console.log(`Final damage after resistance: ${finalDamage}`);
 
-    // Moving wrestling system from CombatSystem
+    return {
+        base: baseDamage,
+        resistance: resistance,
+        final: finalDamage,
+        resistanceType: resistanceType
+    };
+}
+
+    /**
+     * Handle wrestling result
+     */
     async _handleWrestlingResult(attacker, target, attackType, color) {
         let result;
+        
         switch(attackType) {
-            case "Gp":
+            case "GP": // Grappling
                 result = await this._handleGrapplingResult(attacker, target, color);
                 break;
-            case "Gb":
+            case "GB": // Grabbing
                 result = await this._handleGrabbingResult(attacker, target, color);
                 break;
-            case "Es":
+            case "ES": // Escaping
                 result = await this._handleEscapeResult(attacker, target, color);
                 break;
+            default:
+                result = { effect: "None", description: "Invalid wrestling action type" };
         }
 
         // Format wrestling result for display
@@ -270,7 +377,7 @@ export class FaseripCombatEngine {
             </div>
         `;
 
-        // Apply effects if needed
+        // Apply hold effects if needed
         if (result.effect === "Hold" || result.effect === "Partial") {
             await this._applyWrestlingEffect(target, result);
         }
@@ -280,115 +387,320 @@ export class FaseripCombatEngine {
             formattedText
         };
     }
-
-    // Moving your existing wrestling methods
-    async _handleGrapplingResult(attacker, target, color) { /* Your existing code */ }
-    async _handleGrabbingResult(attacker, target, color) { /* Your existing code */ }
-    async _handleEscapeResult(attacker, target, color) { /* Your existing code */ }
-    async _handleHoldOptions(attacker, target) { /* Your existing code */ }
-    async _applyWrestlingEffect(target, result) { /* Your existing code */ }
-
-    // Enhanced effect handling for combat
-    async _handleCombatEffect(attackType, color, attacker, target, baseDamage) {
-        // Convert attack type to uppercase for consistency
-        attackType = attackType.toUpperCase();
-        
-        // Return early for misses
-        if (color === "white") {
-            return { type: "Miss", description: "The attack misses completely." };
+    
+    /**
+     * Handle grappling result
+     */
+    async _handleGrapplingResult(attacker, target, color) {
+        switch(color) {
+            case "white":
+            case "green":
+                return {
+                    effect: "Miss",
+                    description: "The grappling attempt fails"
+                };
+            case "yellow":
+                return {
+                    effect: "Partial",
+                    description: "Target is partially held and suffers -2CS to actions"
+                };
+            case "red":
+                const holdOptions = await this._handleHoldOptions(attacker, target);
+                return {
+                    effect: "Hold",
+                    damage: holdOptions.holdDamage,
+                    description: "Target is fully held",
+                    holdAction: holdOptions.holdAction
+                };
         }
-        
-        // Effect mapping based on attack type and result color
-        switch(attackType) {
-            case "BA": // Blunt Attack
-                switch(color) {
-                    case "green": return { type: "Hit", description: "A solid hit." };
-                    case "yellow": return { type: "Slam", description: "Target may be knocked back." };
-                    case "red": return { type: "Stun", description: "Target may be stunned." };
-                }
-                break;
-
-            case "EA": // Edged Attack
-                switch(color) {
-                    case "green": return { type: "Hit", description: "A clean hit." };
-                    case "yellow": return { type: "Stun", description: "Target may be stunned." };
-                    case "red": return { type: "Kill", description: "A potentially lethal blow." };
-                }
-                break;
-
-            case "SH": // Shooting
-                switch(color) {
-                    case "green": return { type: "Hit", description: "A direct hit." };
-                    case "yellow": return { type: "Bullseye", description: "A precise shot." };
-                    case "red": return { type: "Kill", description: "A potentially lethal shot." };
-                }
-                break;
-                
-            case "TE": // Throwing Edged
-                switch(color) {
-                    case "green": return { type: "Hit", description: "A clean hit." };
-                    case "yellow": return { type: "Stun", description: "Target may be stunned." };
-                    case "red": return { type: "Kill", description: "A potentially lethal blow." };
-                }
-                break;
-                
-            case "TB": // Throwing Blunt
-                switch(color) {
-                    case "green": return { type: "Hit", description: "A solid hit." };
-                    case "yellow": return { type: "Hit", description: "A solid hit." };
-                    case "red": return { type: "Stun", description: "Target may be stunned." };
-                }
-                break;
-                
-            case "EN": // Energy
-                switch(color) {
-                    case "green": return { type: "Hit", description: "A direct hit." };
-                    case "yellow": return { type: "Bullseye", description: "A precise hit." };
-                    case "red": return { type: "Kill", description: "A potentially lethal hit." };
-                }
-                break;
-                
-            case "FO": // Force
-                switch(color) {
-                    case "green": return { type: "Hit", description: "The force connects." };
-                    case "yellow": return { type: "Bullseye", description: "A precise application of force." };
-                    case "red": return { type: "Stun", description: "Target may be stunned." };
-                }
-                break;
-                
-            default:
-                return { type: "Hit", description: "The attack connects." };
-        }
-        
-        return { type: "Hit", description: "The attack connects." };
     }
 
-    // Add this method for consistency
-    _getAttackEffect(attackType, color) {
-        const effect = this._handleCombatEffect(attackType, color);
-        return effect ? effect.type : null;
+    /**
+     * Handle grabbing result
+     */
+    async _handleGrabbingResult(attacker, target, color) {
+        switch(color) {
+            case "white":
+                return {
+                    effect: "Miss",
+                    description: "The grabbing attempt fails completely"
+                };
+            case "green":
+                return {
+                    effect: "Take",
+                    description: "Attempt to take item if Strength sufficient"
+                };
+            case "yellow":
+                return {
+                    effect: "Grab",
+                    description: "Successfully grab item regardless of Strength"
+                };
+            case "red":
+                return {
+                    effect: "Break",
+                    description: "Can break/activate item or move away"
+                };
+        }
     }
 
-    // Add description method
+    /**
+     * Handle escape result
+     */
+    async _handleEscapeResult(attacker, target, color) {
+        switch(color) {
+            case "white":
+            case "green":
+                return {
+                    effect: "Miss",
+                    description: "Failed to escape"
+                };
+            case "yellow":
+                return {
+                    effect: "Escape",
+                    description: "Break free and can move half speed"
+                };
+            case "red":
+                return {
+                    effect: "Reverse",
+                    description: "Break free and can counter-attack or move"
+                };
+        }
+    }
+
+    /**
+     * Get hold options from user
+     */
+    async _handleHoldOptions(attacker, target) {
+        const maxDamage = attacker.system.primaryAbilities.strength.number;
+        
+        const content = `
+            <form>
+                <div class="form-group">
+                    <label>Hold Options:</label>
+                    <div class="form-fields">
+                        <input type="number" name="holdDamage" min="0" max="${maxDamage}" value="0">
+                        <p class="notes">Enter damage (0-${maxDamage})</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Additional Action:</label>
+                    <select name="holdAction">
+                        <option value="none">None - Just maintain hold</option>
+                        <option value="damage">Apply selected damage</option>
+                        <option value="other">Perform another action at -2CS</option>
+                    </select>
+                </div>
+            </form>
+        `;
+
+        return new Promise((resolve) => {
+            new Dialog({
+                title: "Hold Actions",
+                content: content,
+                buttons: {
+                    apply: {
+                        label: "Apply",
+                        callback: (html) => {
+                            const holdDamage = Number(html.find('[name="holdDamage"]').val());
+                            const holdAction = html.find('[name="holdAction"]').val();
+                            resolve({ holdDamage, holdAction });
+                        }
+                    },
+                    cancel: {
+                        label: "Cancel",
+                        callback: () => resolve({ holdDamage: 0, holdAction: "none" })
+                    }
+                },
+                default: "apply"
+            }).render(true);
+        });
+    }
+
+    /**
+     * Apply wrestling effect to target
+     */
+    async _applyWrestlingEffect(target, result) {
+        // Remove any existing wrestling effects
+        await target.effects.forEach(e => {
+            if (e.flags?.marvel?.wrestlingEffect) {
+                e.delete();
+            }
+        });
+
+        // Apply new effect
+        const effectData = {
+            label: result.effect === "Hold" ? "Held" : "Partially Held",
+            icon: "icons/svg/net.svg",
+            duration: { rounds: 1 },
+            flags: { marvel: { wrestlingEffect: true }}
+        };
+
+        if (result.effect === "Partial") {
+            effectData.changes = [{
+                key: "system.columnShift",
+                mode: 2,
+                value: -2
+            }];
+        } else if (result.effect === "Hold") {
+            effectData.changes = [{
+                key: "system.held",
+                mode: 5,
+                value: true
+            }];
+        }
+
+        await target.createEmbeddedDocuments("ActiveEffect", [effectData]);
+    }
+
+_getCombatEffect(attackType, color) {
+    // Normalize attack type to uppercase
+    attackType = attackType.toUpperCase();
+    
+    // Return early for misses
+    if (color === "white") {
+        return { type: "Miss", description: "The attack misses completely." };
+    }
+    
+    // Effect mapping based on attack type and result color
+    switch(attackType) {
+        case "BA": // Blunt Attack
+            switch(color) {
+                case "green": return { type: "Hit", description: "A solid hit." };
+                case "yellow": return { type: "Slam", description: "Target may be knocked back." };
+                case "red": return { type: "Stun", description: "Target may be stunned." };
+            }
+            break;
+
+        case "EA": // Edged Attack
+            switch(color) {
+                case "green": return { type: "Hit", description: "A clean hit." };
+                case "yellow": return { type: "Stun", description: "Target may be stunned." };
+                case "red": return { type: "Kill", description: "A potentially lethal blow." };
+            }
+            break;
+
+        case "SH": // Shooting
+            switch(color) {
+                case "green": return { type: "Hit", description: "A direct hit." };
+                case "yellow": return { type: "Bullseye", description: "A precise shot." };
+                case "red": return { type: "Kill", description: "A potentially lethal shot." };
+            }
+            break;
+            
+        case "TE": // Throwing Edged
+            switch(color) {
+                case "green": return { type: "Hit", description: "A clean hit." };
+                case "yellow": return { type: "Stun", description: "Target may be stunned." };
+                case "red": return { type: "Kill", description: "A potentially lethal blow." };
+            }
+            break;
+            
+        case "TB": // Throwing Blunt
+            switch(color) {
+                case "green": return { type: "Hit", description: "A solid hit." };
+                case "yellow": return { type: "Hit", description: "A solid hit." };
+                case "red": return { type: "Stun", description: "Target may be stunned." };
+            }
+            break;
+            
+        case "EN": // Energy
+            switch(color) {
+                case "green": return { type: "Hit", description: "A direct hit." };
+                case "yellow": return { type: "Bullseye", description: "A precise hit." };
+                case "red": return { type: "Kill", description: "A potentially lethal hit." };
+            }
+            break;
+            
+        case "FO": // Force
+            switch(color) {
+                case "green": return { type: "Hit", description: "The force connects." };
+                case "yellow": return { type: "Bullseye", description: "A precise application of force." };
+                case "red": return { type: "Stun", description: "Target may be stunned." };
+            }
+            break;
+            
+        case "GP": // Grappling
+            switch(color) {
+                case "green": return { type: "Miss", description: "The grappling attempt fails." };
+                case "yellow": return { type: "Partial", description: "Partial hold, target at -2CS to actions." };
+                case "red": return { type: "Hold", description: "Full hold, target is restrained." };
+            }
+            break;
+            
+        case "GB": // Grabbing
+            switch(color) {
+                case "green": return { type: "Take", description: "Take item if Strength sufficient." };
+                case "yellow": return { type: "Grab", description: "Successfully grab item." };
+                case "red": return { type: "Break", description: "Can break item or move away." };
+            }
+            break;
+            
+        case "ES": // Escaping
+            switch(color) {
+                case "green": return { type: "Miss", description: "Failed to escape." };
+                case "yellow": return { type: "Escape", description: "Break free, can move half speed." };
+                case "red": return { type: "Reverse", description: "Break free and can counter-attack." };
+            }
+            break;
+            
+        case "CH": // Charging
+            switch(color) {
+                case "green": return { type: "Hit", description: "A solid hit." };
+                case "yellow": return { type: "Slam", description: "Target may be knocked back." };
+                case "red": return { type: "Stun", description: "Target may be stunned." };
+            }
+            break;
+    }
+    
+    return { type: "Hit", description: "The attack connects." };
+}
+
+    /**
+     * Apply special effects (Stun, Slam, Kill)
+     */
+    async _applySpecialEffect(effect, target, attacker, damage) {
+        // Special effects only apply if damage was dealt
+        if (damage <= 0) return;
+        
+        // Create message about special effect
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({actor: attacker}),
+            content: `
+                <div class="marvel-effect">
+                    <h3>${attacker.name} scores a ${effect} on ${target.name}!</h3>
+                    <div class="effect-details">
+                        <div>${this._getEffectDescription(effect)}</div>
+                        <div>${target.name} must make an Endurance FEAT to resist.</div>
+                    </div>
+                </div>`
+        });
+        
+        // Have target roll to resist the effect
+        if (target.handleCombatEffect) {
+            await target.handleCombatEffect(effect);
+        } else {
+            console.warn(`Target actor ${target.name} does not have handleCombatEffect method for: ${effect}`);
+        }
+    }
+
+    /**
+     * Get description of effect
+     */
     _getEffectDescription(effect) {
         switch(effect) {
-            case "Stun":
-                return "Target may be stunned for 1-10 rounds.";
-            case "Slam":
-                return "Target may be knocked back.";
-            case "Kill":
-                return "Target may be mortally wounded.";
-            case "Bullseye":
-                return "A precise hit at a vulnerable spot.";
-            case "Hit":
-                return "The attack connects.";
-            case "Miss":
-                return "The attack misses.";
-            default:
-                return "";
+            case "Stun": return "Target may be stunned for 1-10 rounds.";
+            case "Slam": return "Target may be knocked back.";
+            case "Kill": return "Target may be mortally wounded.";
+            case "Bullseye": return "A precise hit at a vulnerable spot.";
+            case "Hit": return "The attack connects.";
+            case "Miss": return "The attack misses.";
+            default: return "";
         }
     }
 
+    /**
+     * Get resistance type for attack
+     */
     _getAttackResistanceType(attackType) {
         // Case-insensitive mapping
         const attackTypeUpper = attackType.toUpperCase();
@@ -410,7 +722,9 @@ export class FaseripCombatEngine {
         return resistanceMap[attackTypeUpper] || "physical";
     }
 
-    // Missing resistance calculation method
+    /**
+     * Get applicable resistance from target
+     */
     _getApplicableResistance(target, attackType) {
         // Safety check
         if (!target?.system?.resistances?.list) {
@@ -436,7 +750,10 @@ export class FaseripCombatEngine {
         // Return resistance number or 0 if none found
         return resistance?.number || 0;
     }
-    // Format combat results for display
+
+    /**
+     * Format combat result for chat display
+     */
     _formatCombatResult(actor, target, actionType, result, damage, effect) {
         const actionName = CONFIG.marvel.actionResults[actionType]?.name || actionType;
         
@@ -451,15 +768,12 @@ export class FaseripCombatEngine {
                 </div>`;
         }
 
-        // Add a safety check for result being undefined
-        const resultDisplay = result ? result.toUpperCase() : "UNKNOWN";
-
         return `
             <div class="marvel-damage">
                 <h3>${actor.name} attacks ${target.name}</h3>
                 <div class="attack-details">
                     <div class="detail-row"><span class="detail-label">Attack Type:</span> ${actionName}</div>
-                    <div class="detail-row"><span class="detail-label">Result:</span> <span class="result-${result || 'unknown'}">${resultDisplay}</span></div>
+                    <div class="detail-row"><span class="detail-label">Result:</span> <span class="result-${result}">${result.toUpperCase()}</span></div>
                     ${effect ? `<div class="detail-row"><span class="detail-label">Effect:</span> ${effect.type || 'None'}</div>` : ''}
                 </div>
                 <div class="damage-details">
@@ -468,17 +782,5 @@ export class FaseripCombatEngine {
                     <div class="detail-row"><span class="detail-label">Final Damage:</span> ${damage?.final || 0}</div>
                 </div>
             </div>`;
-    }
-
-    initializeListeners() {
-        // Event handlers for system-wide combat events
-        Hooks.on("marvelCombatAction", (data) => {
-            return this.resolveAction(
-                data.actor,
-                data.target,
-                data.actionType,
-                data.options
-            );
-        });
     }
 }

@@ -36,7 +36,7 @@
 
      Total Files Listed:
               13 File(s)        274,104 bytes
-               8 Dir(s)  254,268,121,088 bytes free
+               8 Dir(s)  254,258,245,632 bytes free
  Volume in drive C is Windows
  Volume Serial Number is 94F9-1583
 
@@ -54,7 +54,7 @@
 
      Total Files Listed:
                6 File(s)         56,323 bytes
-               2 Dir(s)  254,268,121,088 bytes free
+               2 Dir(s)  254,258,245,632 bytes free
  Volume in drive C is Windows
  Volume Serial Number is 94F9-1583
 
@@ -67,7 +67,7 @@
 
      Total Files Listed:
                1 File(s)          1,636 bytes
-               2 Dir(s)  254,268,112,896 bytes free
+               2 Dir(s)  254,258,245,632 bytes free
  Volume in drive C is Windows
  Volume Serial Number is 94F9-1583
 
@@ -89,12 +89,12 @@
 
 02/24/2025  04:52 AM    <DIR>          .
 02/23/2025  09:33 AM    <DIR>          ..
-02/24/2025  04:40 PM            20,610 FaseripCombatEngine.js
-02/24/2025  04:52 AM            29,794 FaseripCombatSystem.js
+02/24/2025  05:19 PM            28,442 FaseripCombatEngine.js
+02/24/2025  04:57 PM             8,046 FaseripCombatSystem.js
 02/23/2025  12:46 PM             1,292 FaseripUniversalTable.js
-02/24/2025  04:04 PM             9,183 MarvelCombatHUD.js
+02/24/2025  04:56 PM             9,500 MarvelCombatHUD.js
 02/24/2025  04:36 AM    <DIR>          templates
-               4 File(s)         60,879 bytes
+               4 File(s)         47,280 bytes
 
  Directory of C:\Users\grayc\OneDrive\Desktop\Foundry12.330\data\Data\systems\marvel-faserip\module\combat\templates
 
@@ -163,8 +163,8 @@
                1 File(s)         17,536 bytes
 
      Total Files Listed:
-              22 File(s)        407,910 bytes
-              29 Dir(s)  254,268,108,800 bytes free
+              22 File(s)        394,311 bytes
+              29 Dir(s)  254,258,233,344 bytes free
  Volume in drive C is Windows
  Volume Serial Number is 94F9-1583
 
@@ -233,4 +233,4 @@
 
      Total Files Listed:
               22 File(s)         89,730 bytes
-              17 Dir(s)  254,268,108,800 bytes free
+              17 Dir(s)  254,258,233,344 bytes free

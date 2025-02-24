@@ -39,6 +39,9 @@ export class MarvelCombatHUD extends Application {
         html.find('.table-toggle').click(this._onTableToggleClick.bind(this));
     }
     
+    /**
+     * Show the universal table dialog
+     */
     async _onTableToggleClick(event) {
         event.preventDefault();
         
@@ -84,6 +87,9 @@ export class MarvelCombatHUD extends Application {
         }).render(true);
     }
 
+    /**
+     * Make HUD element draggable
+     */
     _makeDraggable(element) {
         if (!element) return;
 
@@ -127,16 +133,9 @@ export class MarvelCombatHUD extends Application {
         });
     }
 
-    _updateButtonStates() {
-        const buttons = this.element.find('.action-btn');
-        buttons.removeClass('active');
-        
-        const currentAction = this.getCurrentAction();
-        if (currentAction) {
-            buttons.filter(`[data-action="${currentAction}"]`).addClass('active');
-        }
-    }
-
+    /**
+     * Handle action button click
+     */
     async _onActionClick(event) {
         event.preventDefault();
         const button = event.currentTarget;
@@ -158,6 +157,7 @@ export class MarvelCombatHUD extends Application {
             const dialogOptions = await this._showActionDialog(actionType, token.actor);
             if (!dialogOptions) return;
     
+            // Delegate to combat engine for resolution
             const result = await this.engine.resolveAction(
                 token.actor,
                 Array.from(targets)[0].actor,
@@ -176,6 +176,9 @@ export class MarvelCombatHUD extends Application {
         }
     }
 
+    /**
+     * Show action dialog
+     */
     async _showActionDialog(actionType, actor) {
         const template = "systems/marvel-faserip/module/combat/templates/combat-action.html";
         const dialogData = {
@@ -212,6 +215,9 @@ export class MarvelCombatHUD extends Application {
         });
     }
 
+    /**
+     * Create chat message for action result
+     */
     async _createChatMessage(result, actor, actionType) {
         if (!result || result.error) {
             ui.notifications.error(`Failed to resolve ${actionType} action`);
@@ -219,7 +225,17 @@ export class MarvelCombatHUD extends Application {
         }
         
         try {
-            // Format the data correctly for the template
+            // If result already has formatted text, use it
+            if (result.formattedText) {
+                await ChatMessage.create({
+                    speaker: ChatMessage.getSpeaker({actor}),
+                    content: result.formattedText,
+                    rolls: result.roll ? [result.roll] : []
+                });
+                return;
+            }
+            
+            // Otherwise, format the data for the template
             const templateData = {
                 actor: actor,
                 actionType: CONFIG.marvel.actionResults[actionType.toUpperCase()]?.name || actionType.toUpperCase(),
@@ -230,7 +246,6 @@ export class MarvelCombatHUD extends Application {
                     result: result.result,
                     damage: result.damage,
                     effect: result.effect,
-                    // Add column shift and karma points from options
                     columnShift: result.columnShift || 0,
                     karmaPoints: result.karmaPoints || 0
                 }
@@ -247,10 +262,10 @@ export class MarvelCombatHUD extends Application {
             console.error("Error creating chat message:", error);
             ui.notifications.error("Failed to create result message");
             
-            // Fallback to inline HTML if template fails
+            // Fallback to simple text
             await ChatMessage.create({
                 speaker: ChatMessage.getSpeaker({actor}),
-                content: result.formattedText || "Attack resolved",
+                content: `${actor.name} performs a ${actionType} action`,
                 rolls: result.roll ? [result.roll] : []
             });
         }
