@@ -27,7 +27,7 @@ export class MarvelActorSheet extends ActorSheet {
         console.log("Current actor items:", this.actor.items);
     
         // Add available actions from new combat system
-        context.availableActions = getAvailableActions(this.actor);
+        context.availableActions = CONFIG.marvel.getAvailableActions(this.actor);
     
         // Add headquarters data to context
         context.headquarters = MARVEL.headquarters;
