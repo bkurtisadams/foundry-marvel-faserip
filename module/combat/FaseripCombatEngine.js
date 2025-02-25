@@ -160,45 +160,45 @@ export class FaseripCombatEngine {
     }
 
     /**
-     * Spend karma points and update actor's karma history
-     * @param {Actor} actor - Actor spending karma
-     * @param {number} amount - Amount of karma to spend
-     * @param {string} reason - Reason for spending karma
-     */
-    async _spendKarma(actor, amount, reason) {
-        if (!actor || amount <= 0) return;
-        
-        const currentKarma = actor.system.secondaryAbilities.karma.value;
-        console.log(`Current karma: ${currentKarma}, will be reduced to: ${Math.max(0, currentKarma - amount)}`);
-        
+ * Spend karma points and update actor's karma history
+ * @param {Actor} actor - Actor spending karma
+ * @param {number} amount - Amount of karma to spend
+ * @param {string} reason - Reason for spending karma
+ */
+async _spendKarma(actor, amount, reason) {
+    if (!actor || amount <= 0) return;
+    
+    // Get current karma values
+    const currentKarma = actor.system.secondaryAbilities.karma.value;
+    const currentKarmaPool = actor.system.karmaTracking?.karmaPool || 0;
+    
+    console.log(`Current karma: ${currentKarma}, karma pool: ${currentKarmaPool}, will be reduced by: ${amount}`);
+    
+    // Update both the karma value and karma pool
+    await actor.update({
+        "system.secondaryAbilities.karma.value": Math.max(0, currentKarma - amount),
+        "system.karmaTracking.karmaPool": Math.max(0, currentKarmaPool - amount)
+    });
+    
+    // Add to karma history - check if history exists first
+    const currentHistory = actor.system.karmaTracking?.history || [];
+    
+    const newEntry = {
+        date: new Date().toLocaleString(),
+        amount: -amount,
+        description: `Used ${amount} karma on ${reason}`
+    };
+    
+    // Update karma history if it exists
+    if (actor.system.karmaTracking) {
         await actor.update({
-            "system.secondaryAbilities.karma.value": Math.max(0, currentKarma - amount)
+            "system.karmaTracking.history": [...currentHistory, newEntry]
         });
-        
-        // Add to karma history
-        let historyPath = "system.karmaHistory";
-        let currentHistory = actor.system.karmaHistory;
-        
-        // If not found directly, check in karmaTracking structure
-        if (!currentHistory && actor.system.karmaTracking?.history) {
-            historyPath = "system.karmaTracking.history";
-            currentHistory = actor.system.karmaTracking.history;
-        }
-        
-        if (currentHistory) {
-            console.log("Adding karma history entry");
-            
-            const newEntry = {
-                date: new Date().toLocaleString(),
-                amount: -amount,
-                description: `Used ${amount} karma on ${reason}`
-            };
-            
-            const updateData = {};
-            updateData[historyPath] = [...currentHistory, newEntry];
-            await actor.update(updateData);
-        }
+        console.log("Added karma history entry:", newEntry);
+    } else {
+        console.warn("Could not find karma history structure for actor:", actor.name);
     }
+}
 
     /**
      * Create an error result object
@@ -944,7 +944,7 @@ _getCombatEffect(attackType, color) {
         const rollTotal = roll?.total || 0;
         const karmaUsed = (adjustedRoll && adjustedRoll > rollTotal) ? adjustedRoll - rollTotal : 0;
         
-        // Get column shift information (passed in via options.columnShift)
+        // Calculate column shift (if available in options)
         const columnShift = effect.columnShift || 0;
         const columnShiftText = columnShift !== 0 ? 
             `<div style="color: #0077cc; font-weight: bold;">Column Shift: ${columnShift > 0 ? '+' : ''}${columnShift}</div>` : '';
