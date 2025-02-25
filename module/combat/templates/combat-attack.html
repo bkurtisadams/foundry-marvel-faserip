@@ -1,0 +1,50 @@
+<!-- module/combat/templates/combat-attack.html -->
+<form class="faserip-attack-form">
+    <div class="form-group">
+        <label>Distance:</label>
+        <input type="text" value="{{distance}} areas" disabled>
+    </div>
+
+    <div class="form-group">
+        <label>Attack Type:</label>
+        <select name="attackType" id="attackType">
+            {{#each attackTypes}}
+            <option value="{{@key}}">{{this.name}} ({{@key}})</option>
+            {{/each}}
+        </select>
+    </div>
+
+    {{#if weapons.length}}
+    <div class="form-group">
+        <label>Available Weapons:</label>
+        <select name="item">
+            <option value="">None</option>
+            {{#each weapons}}
+            <option value="{{this.id}}">{{this.name}} (Damage: {{this.system.damage}})</option>
+            {{/each}}
+        </select>
+    </div>
+    {{/if}}
+
+    {{#if powers.length}}
+    <div class="form-group">
+        <label>Available Powers:</label>
+        <select name="item">
+            <option value="">None</option>
+            {{#each powers}}
+            <option value="{{this.id}}">{{this.name}} (Rank: {{this.system.rank}})</option>
+            {{/each}}
+        </select>
+    </div>
+    {{/if}}
+    
+    <div class="form-group">
+        <label>Column Shift:</label>
+        <input type="number" name="columnShift" value="0">
+    </div>
+    
+    <div class="form-group">
+        <label>Karma Points (Max: {{maxKarma}}):</label>
+        <input type="number" name="karmaPoints" value="0" max="{{maxKarma}}">
+    </div>
+</form>

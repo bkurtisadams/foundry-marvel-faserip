@@ -1,4 +1,4 @@
-import { MARVEL_RANKS } from "../config.js";
+import { MARVEL_RANKS, MARVEL } from "../config.js";
 
 export class MarvelActorSheet extends ActorSheet {
     /** @override */
@@ -12,13 +12,52 @@ export class MarvelActorSheet extends ActorSheet {
         });
     }
 
+    static equipmentTypes = {
+        "weapon": "Weapons",
+        "armor": "Armor", 
+        "gear": "Gear"
+    };
+
     async getData(options = {}) {
         const context = await super.getData(options);
+        console.log("Sheet data context:", context.actor.system.primaryAbilities);
         
         // Ensure context.actor.system exists and initialize if needed
         const system = context.actor.system || {};
-
         console.log("Current actor items:", this.actor.items);
+    
+        // Add available actions from new combat system
+        context.availableActions = CONFIG.marvel.getAvailableActions(this.actor);
+    
+        // Add headquarters data to context
+        context.headquarters = MARVEL.headquarters;
+    
+        // Add HQ CONFIG references
+        context.config = {
+            ...context.config,
+            headquarters: MARVEL.headquarters
+        };
+    
+        // Initialize headquarters if not set
+        if (!system.headquarters) {
+            system.headquarters = {
+                name: "",
+                type: "",
+                location: "",
+                description: "",
+                ownership: "",
+                cost: "",
+                size: "",
+                material: ""
+            };
+        }
+    
+        // Equipment organization
+        context.equipmentTypes = MarvelActorSheet.equipmentTypes;
+        context.equipmentByType = {};
+        for (let type in MarvelActorSheet.equipmentTypes) {
+            context.equipmentByType[type] = context.items.filter(i => i.type === type);
+        }
         
         // Initialize primary abilities if not set
         if (!system.primaryAbilities) {
@@ -48,9 +87,29 @@ export class MarvelActorSheet extends ActorSheet {
             system.karmaTracking = {
                 karmaPool: 0,
                 advancementFund: 0,
-                history: []
+                lifetimeTotal: 0
             };
         }
+    
+        // Get equipment items
+        context.equipment = context.items.filter(item => 
+            ["weapon", "armor", "gear"].includes(item.type)
+        );
+        
+        // Get weapons specifically for weapon-related features
+        context.weapons = context.items.filter(item => item.type === "weapon");
+        
+        // Add equipment configuration
+        context.equipmentConfig = {
+            types: {
+                weapon: "Weapon",
+                armor: "Armor",
+                gear: "Gear"
+            },
+            weaponTypes: CONFIG.marvel.weaponTypes,
+            armorTypes: CONFIG.marvel.armorTypes,
+            materialTypes: CONFIG.marvel.materialTypes
+        };
     
         // Get the active tab from flags or default to 'special'
         const activeTab = this.actor.getFlag('marvel-faserip', 'activeTab') || 'special';
@@ -66,17 +125,8 @@ export class MarvelActorSheet extends ActorSheet {
             vehicles: activeTab === 'vehicles'
         };
         
-        // Get all powers as items and log the process
-        console.log("Sheet data context:", {
-            actor: this.actor,
-            items: context.items,
-            powers: context.powers,
-            config: context.config
-        });
+        // Get all powers and attacks
         context.powers = this.actor.items.filter(item => item.type === "power");
-        console.log("Filtered powers:", context.powers);
-    
-        // Get attacks
         context.attacks = context.items.filter(item => item.type === "attack");
     
         // Add configuration for ranks
@@ -102,7 +152,7 @@ export class MarvelActorSheet extends ActorSheet {
                 }
             };
         }
-        
+    
         // Initialize talents according to template.json schema
         if (!system.talents) {
             system.talents = {
@@ -119,7 +169,8 @@ export class MarvelActorSheet extends ActorSheet {
         
         // Update context with initialized system
         context.actor.system = system;
-
+    
+        // Debug logging
         console.log("Actor items:", this.actor.items);
         console.log("Filtered powers:", context.powers);
         
@@ -145,20 +196,451 @@ export class MarvelActorSheet extends ActorSheet {
         event.dataTransfer.effectAllowed = "copy";
     }
 
+    // Equipment methods
+    async _onAddEquipment(event) {
+        event.preventDefault();
+        console.log("Starting _onAddEquipment method");
+    
+        // Get the weapon system
+        if (!game.marvel?.WeaponSystem) {
+            console.error("Weapon system not initialized");
+            ui.notifications.error("Weapon system not available");
+            return;
+        }
+    
+        const weaponSystem = game.marvel.WeaponSystem;
+    
+        // Prepare dialog data (keeping your existing structure)
+        const dialogData = {
+            types: {
+                "S": "Shooting",
+                "F": "Force",
+                "E": "Energy",
+                "EA": "Edged Attack",
+                "ET": "Edged Thrown",
+                "BA": "Blunt Attack",
+                "BT": "Blunt Thrown"
+            },
+            ranks: Object.entries(CONFIG.marvel.ranks).reduce((obj, [key, value]) => {
+                obj[key] = game.i18n.localize(`MARVEL.Rank${key.replace(/\s+/g, '')}`);
+                return obj;
+            }, {}),
+            materials: {
+                "Poor": "Poor",
+                "Typical": "Typical",
+                "Good": "Good",
+                "Excellent": "Excellent",
+                "Remarkable": "Remarkable"
+            },
+            ammoTypes: {
+                "standard": "Standard",
+                "mercy": "Mercy Shot",
+                "ap": "Armor Piercing",
+                "rubber": "Rubber Shot",
+                "explosive": "Explosive Shot"
+            },
+            weightClasses: {
+                "light": "Light",
+                "medium": "Medium", 
+                "heavy": "Heavy",
+                "superheavy": "Super Heavy"
+            },
+            magazinePresets: {
+                "S": 6,  // Standard firearms
+                "F": 10, // Force weapons
+                "E": 10, // Energy weapons
+                "ET": 1, // Thrown edged
+                "BT": 1  // Thrown blunt
+            },
+            weapons: weaponSystem.weapons
+        };
+        
+        console.log("Dialog data prepared:", dialogData);
+    
+        try {
+            const template = "systems/marvel-faserip/templates/dialogs/add-equipment.html";
+            const html = await renderTemplate(template, dialogData);
+    
+            return new Dialog({
+                title: "Add Equipment",
+                content: html,
+                buttons: {
+                    create: {
+                        label: "Create",
+                        callback: async (html) => {
+                            try {
+                                const form = html.find('form');
+                                const equipmentSource = form.find('[name="equipmentSource"]').val();
+                                let equipmentData;
+    
+                                if (equipmentSource === "predefined") {
+                                    const weaponKey = form.find('[name="predefinedWeapon"]').val();
+                                    const weapon = weaponSystem.weapons[weaponKey];
+                                    
+                                    equipmentData = {
+                                        name: weapon.name,
+                                        type: "equipment",
+                                        img: "systems/marvel-faserip/assets/icons/weapons/generic-weapon.svg",
+                                        system: {
+                                            subtype: "weapon",
+                                            type: weapon.type,
+                                            range: weapon.range,
+                                            damage: weapon.damage,
+                                            rate: weapon.rate,
+                                            shots: weapon.shots,
+                                            maxShots: weapon.shots,
+                                            material: weapon.material,
+                                            price: weapon.price,
+                                            special: weapon.notes?.join(", ") || "",
+                                            description: "",
+                                            powerPack: weapon.notes?.includes("Power pack") || false
+                                        }
+                                    };
+    
+                                    if (equipmentData.system.powerPack) {
+                                        equipmentData.system.powerPackCharge = 10;
+                                        equipmentData.system.powerPackMaxCharge = 10;
+                                    }
+                                } else {
+                                    equipmentData = {
+                                        name: form.find('[name="equipmentName"]').val(),
+                                        type: "equipment",
+                                        img: "systems/marvel-faserip/assets/icons/weapons/generic-weapon.svg",
+                                        system: {
+                                            subtype: "weapon",
+                                            type: form.find('[name="type"]').val(),
+                                            range: form.find('[name="range"]').val(),
+                                            damage: parseInt(form.find('[name="damage"]').val()) || 0,
+                                            rate: parseInt(form.find('[name="rate"]').val()) || 1,
+                                            shots: parseInt(form.find('[name="shots"]').val()) || 0,
+                                            maxShots: parseInt(form.find('[name="magazineSize"]').val()) || 0,
+                                            material: form.find('[name="material"]').val(),
+                                            price: form.find('[name="price"]').val(),
+                                            weight: form.find('[name="weight"]').val(),
+                                            legality: form.find('[name="legality"]').val(),
+                                            special: form.find('[name="special"]').val(),
+                                            description: form.find('[name="description"]').val(),
+                                            powerPack: form.find('[name="powerPack"]').prop("checked") || false
+                                        }
+                                    };
+    
+                                    // Add ammunition tracking for shooting weapons
+                                    if (equipmentData.system.type === "S") {
+                                        equipmentData.system.ammunition = {
+                                            type: form.find('[name="ammoType"]').val() || "standard",
+                                            current: parseInt(form.find('[name="shots"]').val()) || 6,
+                                            max: parseInt(form.find('[name="shots"]').val()) || 6
+                                        };
+                                    }
+    
+                                    // Add power pack for energy/force weapons
+                                    if (equipmentData.system.type === "E" || equipmentData.system.type === "F") {
+                                        equipmentData.system.powerPack = true;
+                                        equipmentData.system.powerPackCharge = 10;
+                                        equipmentData.system.powerPackMaxCharge = 10;
+                                    }
+                                }
+    
+                                console.log("Equipment data prepared:", equipmentData);
+                                const created = await this.actor.createEmbeddedDocuments("Item", [equipmentData]);
+                                console.log("Equipment created:", created);
+                                
+                                ui.notifications.info(`Created equipment: ${equipmentData.name}`);
+    
+                            } catch (error) {
+                                console.error("Error in create callback:", error);
+                                console.error("Error stack:", error.stack);
+                                ui.notifications.error("Error creating equipment. Check console for details.");
+                            }
+                        }
+                    },
+                    cancel: {
+                        label: "Cancel"
+                    }
+                },
+                default: "create",
+                width: 400,
+                render: (html) => {
+                    console.log("Dialog rendered with HTML:", html);
+                    
+                    // Handle equipment source changes
+                    html.find('[name="equipmentSource"]').on('change', (event) => {
+                        const source = event.currentTarget.value;
+                        html.find('.predefined-section').toggle(source === "predefined");
+                        html.find('.custom-section').toggle(source === "custom");
+                    });
+    
+                    // Enhanced weapon type change handler
+                    html.find('[name="type"]').on('change', (event) => {
+                        const weaponType = event.currentTarget.value;
+                        const isRanged = ["S", "F", "E", "ET", "BT"].includes(weaponType);
+                        const isPowered = ["E", "F"].includes(weaponType);
+                        const usesAmmo = weaponType === "S";
+                        
+                        html.find('.range-group').toggle(isRanged);
+                        html.find('.power-pack-group').toggle(isPowered);
+                        html.find('.ammo-group').toggle(usesAmmo);
+                        html.find('.legality-group').toggle(true);
+                        
+                        // Set default shots based on weapon type
+                        const shotsField = html.find('[name="shots"]');
+                        if (weaponType === "S") shotsField.val(6);
+                        else if (weaponType === "E" || weaponType === "F") shotsField.val(10);
+                        else shotsField.val(0);
+                    });
+                }
+            }).render(true);
+            
+        } catch (error) {
+            console.error("Error rendering dialog:", error);
+            console.error("Error stack:", error.stack);
+            ui.notifications.error("Error rendering equipment dialog. Check console for details.");
+        }
+    }
+
+    async _onReloadWeapon(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
+        const item = this.actor.items.get(itemId);
+        
+        if (!item) {
+            ui.notifications.error("Weapon not found");
+            return;
+        }
+    
+        // Reload to max shots
+        await item.update({
+            "system.shots": item.system.maxShots
+        });
+    
+        await item.update(updateData);
+        ui.notifications.info(`${item.name} reloaded!`);
+    }
+
+    async _onRollEquipment(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
+        const item = this.actor.items.get(itemId);
+        
+        if (!item) {
+            ui.notifications.error("Equipment not found");
+            return;
+        }
+
+        // Check ammo for shooting weapons
+    if (item.system.type === "S") {
+        const currentShots = item.system.shots ?? 0;
+        if (currentShots <= 0) {
+            ui.notifications.warn("Out of ammunition! Reload required.");
+            return;
+        }
+        
+        // Consume ammo
+        await item.update({
+            "system.shots": Math.max(0, currentShots - 1)
+        });
+    }
+
+        // Map equipment types to attack types from ACTION_RESULTS
+        const typeMap = {
+            "S": "Sh",    // Shooting
+            "F": "Fo",    // Force
+            "E": "En",    // Energy
+            "EA": "EA",   // Edged Attack
+            "ET": "TE",   // Throwing Edged
+            "BA": "BA",   // Blunt Attack
+            "BT": "TB"    // Throwing Blunt
+        };
+
+        const attackType = typeMap[item.system.type];
+        if (!attackType || !CONFIG.marvel.actionResults[attackType]) {
+            ui.notifications.error("Invalid attack type");
+            return;
+        }
+
+        // Get the ability associated with this attack type from ACTION_RESULTS
+        const ability = CONFIG.marvel.actionResults[attackType].ability.toLowerCase();
+    
+        // Get the stored roll options or use defaults
+        const stored = await game.user.getFlag("world", "marvelEquipmentOptions") || {
+            columnShift: 0,
+            karmaPoints: 0
+        };
+    
+        // Prepare the template data
+        const templateData = {
+            config: CONFIG.marvel,
+            columnShift: stored.columnShift,
+            karmaPoints: stored.karmaPoints,
+            equipment: item
+        };
+    
+        // Render the roll dialog
+        const html = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/ability-roll.html",
+            templateData
+        );
+    
+        return new Dialog({
+            title: `${item.name} Equipment Roll`,
+            content: html,
+            buttons: {
+                roll: {
+                    label: "Roll",
+                    callback: async (html) => {
+                        const form = html[0].querySelector("form");
+                        const options = {
+                            columnShift: parseInt(form.querySelector('[name="columnShift"]')?.value || "0"),
+                            karmaPoints: parseInt(form.querySelector('[name="karmaPoints"]')?.value || "0"),
+                            weaponDamage: item.system.damage,
+                            range: item.system.range,
+                            featType: "combat",
+                            actionType: attackType
+                        };
+    
+                        // Store options for next time
+                        await game.user.setFlag("world", "marvelEquipmentOptions", {
+                            columnShift: options.columnShift,
+                            karmaPoints: options.karmaPoints
+                        });
+    
+                        // Determine which ability to use based on equipment type
+                        /* let ability;
+                        switch(item.system.type) {
+                            case "S": ability = "agility"; break;  // Shooting
+                            case "F": ability = "strength"; break; // Force
+                            case "E": ability = "reason"; break;   // Energy
+                            case "EA":
+                            case "BA": ability = "fighting"; break; // Edged/Blunt Attack
+                            case "ET":
+                            case "BT": ability = "agility"; break;  // Thrown weapons
+                            default: ability = "fighting";
+                        } */
+    
+                        // Roll using the appropriate ability
+                        await this.actor.rollAttack(ability, item.system.type, options);
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
+                }
+            },
+            default: "roll"
+        }).render(true);
+    }
+    
+    async _onEditEquipment(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
+        const item = this.actor.items.get(itemId);
+        
+        if (!item) {
+            ui.notifications.error("Equipment not found");
+            return;
+        }
+    
+        // Prepare dialog data
+        const dialogData = {
+            types: {
+                "S": "Shooting",
+                "F": "Force",
+                "E": "Energy",
+                "EA": "Edged Attack",
+                "ET": "Edged Thrown",
+                "BA": "Blunt Attack",
+                "BT": "Blunt Thrown"
+            },
+            item: item
+        };
+    
+        // Get the template
+        const template = "systems/marvel-faserip/templates/dialogs/edit-equipment.html";
+        const html = await renderTemplate(template, dialogData);
+    
+        return new Dialog({
+            title: `Edit Equipment: ${item.name}`,
+            content: html,
+            buttons: {
+                save: {
+                    label: "Save",
+                    callback: async (html) => {
+                        const form = html.find('form')[0];
+                        const formData = new FormData(form);
+                        
+                        const equipmentData = {
+                            name: formData.get("equipmentName"),
+                            system: {
+                                type: formData.get("type"),
+                                range: formData.get("range"),
+                                damage: parseInt(formData.get("damage")) || 0,
+                                rate: parseInt(formData.get("rate")) || 1,
+                                shots: parseInt(formData.get("shots")) || 0,
+                                material: formData.get("material"),
+                                price: formData.get("price"),
+                                special: formData.get("special"),
+                                description: formData.get("description")
+                            }
+                        };
+    
+                        try {
+                            await item.update(equipmentData);
+                            ui.notifications.info(`Updated equipment: ${equipmentData.name}`);
+                        } catch (error) {
+                            console.error("Error updating equipment:", error);
+                            ui.notifications.error("Error updating equipment");
+                        }
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
+                }
+            },
+            default: "save",
+        }).render(true);
+    }
+
+    async _onDeleteEquipment(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
+        
+        const confirmDelete = await Dialog.confirm({
+            title: "Delete Equipment",
+            content: "<p>Are you sure you want to delete this equipment?</p>",
+            yes: () => true,
+            no: () => false,
+            defaultYes: false
+        });
+    
+        if (confirmDelete) {
+            await this.actor.deleteEmbeddedDocuments("Item", [itemId]);
+        }
+    }
+    
+
     activateListeners(html) {
         super.activateListeners(html);
     
         if (this.isEditable) {
-            console.log("Setting up listeners"); // Add this line
+            console.log("Setting up listeners");
+            //html.find('.initial-roll-input').change(this._onInitialRollChange.bind(this));
+             // Basic input change handlers
+            html.find('.initial-roll-input').change(this._onInitialRollChange.bind(this));
+            html.find('.initial-rank-input').change(this._onRankChange.bind(this));
+            html.find('.rank-select').change(this._onRankChange.bind(this));
+            html.find('.ability-number').change(this._onNumberChange.bind(this));
+
+            // Add keyboard navigation
+            html.find('.ability-row input, .ability-row select').on('keydown', this._onAbilityKeyDown.bind(this));
             
             // Add drag events for macros
             let handler = ev => this._onDragStart(ev);
             html.find('li.item').each((i, li) => {
-            if (li.classList.contains("item-header")) return;
-            li.setAttribute("draggable", true);
-            li.addEventListener("dragstart", handler, false);
-        });
-            // Test each method exists before binding
+                if (li.classList.contains("item-header")) return;
+                li.setAttribute("draggable", true);
+                li.addEventListener("dragstart", handler, false);
+            });
+    
+            // Testing bindings remain the same
             const bindings = [
                 { selector: '.add-power', method: this._onAddPower },
                 { selector: '.add-talent', method: this._onAddTalent },
@@ -172,355 +654,260 @@ export class MarvelActorSheet extends ActorSheet {
                 { selector: '.power-edit', method: this._onPowerEdit },
                 { selector: '.roll-power', method: this._onPowerRoll },
                 { selector: '.power-info-icon', method: this._onPowerInfo },
-                { selector: '.karma-history-button', method: this._onKarmaTracking },
                 { selector: '.add-power-stunt', method: this._onCreatePowerStunt },
                 { selector: '.roll-power-stunt', method: this._onRollPowerStunt }
             ];
-            
-            // Add power button binding
-            html.find('.add-power').click(async (ev) => this._onAddPower(ev));
-
+    
+            // Power related listeners - keep only one set
+            html.find('.add-power').click(ev => this._onAddPower(ev));
             html.find('.power-info-icon').click(ev => this._onPowerInfo(ev));
             html.find('.power-edit').click(ev => this._onPowerEdit(ev));
             html.find('.roll-power').click(ev => this._onPowerRoll(ev));
             html.find('.item-delete[data-type="power"]').click(ev => this._onDeletePower(ev));
-            // Add console logs for debugging
-            console.log("Power buttons found:", {
-                info: html.find('.power-info-icon').length,
-                edit: html.find('.power-edit').length,
-                roll: html.find('.roll-power').length,
-                delete: html.find('.item-delete[data-type="power"]').length
-            });
+    
+            // Equipment related listeners - consolidated
+            html.find('.add-equipment').click(ev => this._onAddEquipment(ev));
+            html.find('.equipment-row img').click(ev => this._onEquipmentInfo(ev));
+            html.find('.roll-equipment').click(ev => this._onRollEquipment(ev));
+            html.find('.item-edit[data-type="equipment"]').click(ev => this._onEditEquipment(ev));
+            html.find('.item-delete[data-type="equipment"]').click(ev => this._onDeleteEquipment(ev));
+            html.find('.reload-weapon').click(ev => this._onReloadWeapon(ev));
 
-            // clickable karma history
-            this._onDeleteKarmaEntry = this._onDeleteKarmaEntry.bind(this);
-            this._onEditKarmaEntry = this._onEditKarmaEntry.bind(this);
-
-            html.find('.clickable-karma').click(this._onKarmaHistoryClick.bind(this));
-            html.find('.delete-entry').click(async (ev) => {
-                const index = $(ev.currentTarget).data('index');
-                if (this._onDeleteKarmaEntry) {
-                    await this._onDeleteKarmaEntry(ev, index);
+            // Equipment related listeners - corrected selectors
+            html.find('.item-controls .item-edit').click(ev => this._onEditEquipment(ev));
+            html.find('.item-controls .item-delete').click(ev => this._onDeleteEquipment(ev));
+            html.find('.item-controls .reload-weapon').click(ev => this._onReloadWeapon(ev));
+            
+            // Equipment filters
+            html.find('.filter-btn').click(ev => {
+                const filter = ev.currentTarget.dataset.filter;
+                html.find('.filter-btn').removeClass('active');
+                ev.currentTarget.classList.add('active');
+                
+                if (filter === 'all') {
+                    html.find('.equipment-row').show();
                 } else {
-                    console.error("Delete Karma Entry function is missing!");
+                    html.find('.equipment-row').hide();
+                    html.find(`.equipment-row[data-type="${filter}"]`).show();
                 }
             });
-            html.find('.edit-entry').click(async (ev) => {
-                const index = $(ev.currentTarget).data('index');
-                const entry = filteredHistory[index];
-                await this._onEditKarmaEntry(ev, entry);
-              });
-
-            // Add event listeners for ability, popularity, and resource rolls
-            html.find('.ability-label').click(async (ev) => this._onAbilityRoll(ev));
-            html.find('.clickable-popularity').click(async (ev) => this._onPopularityRoll(ev));
-            html.find('.clickable-resources').click(async (ev) => this._onResourceRoll(ev));
-
-            // Alternative approach using arrow functions
-            html.find('.add-talent').on('click', (ev) => this._onAddTalent(ev));
-            html.find('.add-contact').on('click', (ev) => this._onAddContact(ev));
-
-            // Add resistance change handlers
+    
+            // Karma history
+            html.find('.karma-history-button').click(ev => this._onKarmaHistoryClick(ev));
+    
+            // Ability, popularity, and resource rolls
+            html.find('.ability-label').click(ev => this._onAbilityRoll(ev));
+            html.find('.clickable-popularity').click(ev => this._onPopularityRoll(ev));
+            html.find('.clickable-resources').click(ev => this._onResourceRoll(ev));
+            
+            // Talents and contacts
+            /* html.find('.add-talent').click(ev => this._onAddTalent(ev));
+            html.find('.add-contact').click(ev => this._onAddContact(ev)); */
+            // Talents and contacts
+            html.find('.add-talent').click(ev => this._onAddTalent(ev));
+            html.find('.add-contact').click(ev => this._onAddContact(ev));
+            html.find('.item-delete[data-type="talents"]').click(ev => this._onDeleteTalent(ev));
+            html.find('.item-delete[data-type="contacts"]').click(ev => this._onDeleteContact(ev));
+    
+            // Resistance handlers
             html.find('.resistance-number').change(this._onResistanceNumberChange.bind(this));
             html.find('.rank-select').change(this._onResistanceRankChange.bind(this));
-            // Add resistance controls
-            html.find('.add-resistance').click(this._onAddResistance.bind(this));
+            html.find('.add-resistance').click(ev => this._onAddResistance(ev));
     
             // Navigation tabs
-            html.find('.nav-item').off('click').on('click', this._onTabChange.bind(this));
+            html.find('.nav-item').off('click').on('click', ev => this._onTabChange(ev));
     
-            // Add attack button
-            html.find('.add-attack').click(async (ev) => this._onAddAttack(ev));
+            // Attack handlers
+            html.find('.add-attack').click(ev => this._onAddAttack(ev));
+            html.find('.roll-attack').click(ev => this._onAttackRoll(ev));
+            html.find('.attack-row img').click(ev => this._onAttackInfo(ev));
 
-            // Attack roll button
-            html.find('.roll-attack').click(async (ev) => {
-                ev.preventDefault();
-                const attackRow = ev.currentTarget.closest(".attack-row");
-                if (!attackRow) return;
-                
-                const itemId = attackRow.dataset.itemId;
-                if (!itemId) return;
-                
-                const item = this.actor.items.get(itemId);
-                if (!item) return;
-            
-                // Get selected token as target
-                const targets = game.user.targets;
-                const target = targets.size === 1 ? targets.first().actor : null;
-                
-                if (!target) {
-                    ui.notifications.warn("Please select a target token first");
-                    return;
+            /* html.find('.add-headquarters').click(async ev => {
+                const itemData = await AddHeadquartersDialog.create(this.actor);
+                if (itemData) {
+                    await this.actor.createEmbeddedDocuments("Item", [itemData]);
                 }
-            
-                console.log("Attack initiated:", {
-                    attacker: this.actor.name,
-                    target: target.name,
-                    item: item.name,
-                    ability: item.system.ability,
-                    attackType: item.system.attackType
+            }); */
+
+            // SIMPLE HQ
+            html.find('.hq-type-select').change(async (ev) => {
+                const selectedType = ev.currentTarget.value;
+                const hqData = MARVEL.headquarters[selectedType] || { cost: "", size: "", material: "" };
+                
+                // Debug log to verify data
+                console.log("Selected HQ type:", selectedType);
+                console.log("HQ Data:", hqData);
+
+                await this.actor.update({
+                    'system.headquarters': {
+                        ...this.actor.system.headquarters,
+                        type: selectedType,
+                        cost: hqData.cost,
+                        size: hqData.size,
+                        material: hqData.material
+                    }
                 });
-            
-                // Call handleAttack directly instead of item.roll()
-                return await this.actor.handleAttack(
-                    item.system.ability,
-                    item.system.attackType,
-                    {
-                        weaponDamage: item.system.weaponDamage,
-                        range: item.system.range,
-                        columnShift: item.system.columnShift
-                    },
-                    target
-                );
             });
-            
-             // Edit attack button
+
+            /* 
+            // Edit headquarters
             html.find('.item-edit').click(ev => {
-                ev.preventDefault();
-                const attackRow = ev.currentTarget.closest(".attack-row");
-                if (!attackRow) return;
-                const itemId = attackRow.dataset.itemId;
-                const item = this.actor.items.get(itemId);
-                if (!item) return;
+                const li = ev.currentTarget.closest(".item");
+                const item = this.actor.items.get(li.dataset.itemId);
                 item.sheet.render(true);
             });
 
-            // make attack row icon button clickable
-            html.find('.attack-row img').click(async (ev) => {
-                ev.preventDefault();
-                const itemId = ev.currentTarget.closest(".attack-row").dataset.itemId;
-                if (!itemId) return;
-                const item = this.actor.items.get(itemId);
-                if (!item) return;
-                
-                // Create chat message with attack description
-                const messageContent = `
-                    <div class="marvel-roll">
-                        <h3>${item.name} - Attack Details</h3>
-                        <div class="roll-details">
-                            <div>Ability: ${item.system.ability}</div>
-                            <div>Attack Type: ${item.system.attackType}</div>
-                            ${item.system.weaponDamage ? `<div>Weapon Damage: ${item.system.weaponDamage}</div>` : ''}
-                            ${item.system.range ? `<div>Range: ${item.system.range}</div>` : ''}
-                            ${item.system.description ? `<div class="description">${item.system.description}</div>` : ''}
-                        </div>
-                    </div>`;
-
-                await ChatMessage.create({
-                    speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-                    content: messageContent
-                });
-            });
-
-            // Delete item handling updated to match template.json structure
+            // Delete headquarters
             html.find('.item-delete').click(async ev => {
-                const element = ev.currentTarget;
-                const type = element.dataset.type;
-                const id = element.dataset.id;
-    
-                let itemName = "";
-                if (type && id !== undefined) {
-                    // Handle deleting from list arrays based on template.json structure
-                    let path;
-                    switch(type) {
-                        case 'powers':
-                            path = 'system.powers.list';
-                            break;
-                        case 'stunts':
-                            path = 'system.stunts.list';
-                            break;
-                        case 'talents':
-                            path = 'system.talents.talents.list';
-                            break;
-                        case 'contacts':
-                            path = 'system.contacts.contacts.list';
-                            break;
-                        case 'resistances':
-                            path = 'system.resistances.list';
-                            break;
-                        default:
-                            path = null;
-                    }
-                    
-                    if (path) {
-                        const items = foundry.utils.getProperty(this.actor, path) || [];
-                        itemName = items[id]?.name || `${type} entry`;
-                    }
-                } else {
-                    const li = $(element).parents(".attack-row");
-                    const item = this.actor.items.get(li.data("itemId"));
-                    itemName = item?.name || "attack";
-                }
-    
-                const confirmDelete = await Dialog.confirm({
-                    title: "Confirm Deletion",
-                    content: `<p>Are you sure you want to delete "${itemName}"?</p>`,
-                    defaultYes: false
-                });
-    
-                if (!confirmDelete) return;
-    
-                if (type && id !== undefined) {
-                    // Handle deleting from list arrays based on template.json structure
-                    let path;
-                    switch(type) {
-                        case 'powers':
-                            path = 'system.powers.list';
-                            break;
-                        case 'stunts':
-                            path = 'system.stunts.list';
-                            break;
-                        case 'talents':
-                            path = 'system.talents.talents.list';
-                            break;
-                        case 'contacts':
-                            path = 'system.contacts.contacts.list';
-                            break;
-                        default:
-                            return;
-                    }
-                    
-                    const items = foundry.utils.getProperty(this.actor, path) || [];
-                    const updatedItems = items.filter((_, idx) => idx !== Number(id));
-                    return this.actor.update({[path]: updatedItems});
-                } else {
-                    const li = $(element).parents(".attack-row");
-                    const item = this.actor.items.get(li.data("itemId"));
-                    if (item) await item.delete();
+                const li = ev.currentTarget.closest(".item");
+                const item = this.actor.items.get(li.dataset.itemId);
+                if (item) {
+                    await item.delete();
                 }
             });
+            */    
+           
+            // Karma input listeners
+            html.find('input[name="system.karmaTracking.advancementFund"], input[name="system.karmaTracking.karmaPool"], input[name="system.karmaTracking.lifetimeTotal"]')
+                .on('change', async (event) => {
+                    const target = event.currentTarget;
+                    const value = parseInt(target.value) || 0;
+                    const field = target.name;
+                    await this.actor.update({
+                        [field]: value
+                    });
+                });
         }
-        // Modify the attack roll button handler
-        html.find('.roll-attack').click(async (ev) => {
-            ev.preventDefault();
-            const itemId = ev.currentTarget.closest(".attack-row").dataset.itemId;
-            if (!itemId) return;
-            
-            const item = this.actor.items.get(itemId);
-            if (!item) return;
+    }
 
-            // Get selected token as target
-            const targets = game.user.targets;
-            const target = targets.size === 1 ? targets.first().actor : null;
-            
-            if (!target) {
-                ui.notifications.warn("Please select a target token first");
-                return;
+    async _onInitialRollChange(event) {
+        event.preventDefault();
+        const element = event.currentTarget;
+        const abilityPath = element.dataset.ability;
+        const newRoll = element.value;
+        const cleanPath = abilityPath.replace('primaryAbilities.', '');
+        
+        console.log(`Updating initial roll for ${cleanPath} to ${newRoll}`);
+        
+        await this.actor.update({
+            [`system.primaryAbilities.${cleanPath}.initialRoll`]: newRoll
+        });
+    }
+    
+        _onAbilityKeyDown(event) {
+            if (event.key === 'Tab') {
+                // Let the default tab behavior work
+                return true;
             }
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const inputs = $(this.element).find('.ability-row input, .ability-row select');
+                const currentIndex = inputs.index(event.currentTarget);
+                const nextInput = inputs.eq(currentIndex + 1);
+                if (nextInput.length) {
+                    nextInput.focus();
+                }
+                return false;
+            }
+        }
 
-            // Call the new handleAttack method
-            return await this.actor.handleAttack(
-                item.system.ability,
-                item.system.attackType,
-                {
-                    weaponDamage: item.system.weaponDamage,
-                    range: item.system.range,
-                    columnShift: item.system.columnShift
-                },
-                target
-            );
+    async _onAttackRoll(event) {
+        event.preventDefault();
+        const element = event.currentTarget;
+        const itemId = element.closest(".attack-row").dataset.itemId;
+        const item = this.actor.items.get(itemId);
+        
+        if (!item) {
+            ui.notifications.error("Attack item not found");
+            return;
+        }
+    
+        return await item.roll();
+    }
+    
+    async _onAttackInfo(event) {
+        event.preventDefault();
+        const itemId = event.currentTarget.closest(".attack-row").dataset.itemId;
+        if (!itemId) return;
+        const item = this.actor.items.get(itemId);
+        if (!item) return;
+        
+        // Create chat message with attack description
+        const messageContent = `
+            <div class="marvel-roll">
+                <h3>${item.name} - Attack Details</h3>
+                <div class="roll-details">
+                    <div>Ability: ${item.system.ability}</div>
+                    <div>Attack Type: ${item.system.attackType}</div>
+                    ${item.system.weaponDamage ? `<div>Weapon Damage: ${item.system.weaponDamage}</div>` : ''}
+                    ${item.system.range ? `<div>Range: ${item.system.range}</div>` : ''}
+                    ${item.system.description ? `<div class="description">${item.system.description}</div>` : ''}
+                </div>
+            </div>`;
+    
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+            content: messageContent
         });
     }
 
     // handler for karma history
-    async _onKarmaHistoryClick(event) {
+    /* async _onKarmaHistoryClick(event) {
         event.preventDefault();
         
         // Initialize properties
-        this._karmaHistory = this.actor.system.karmaTracking.history || [];
-        this._filteredHistory = [...this._karmaHistory];
-        this._currentSort = { field: 'date', direction: 'desc' };
+        const history = this.actor.system.karmaTracking.history || [];
         
         const content = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/karma-history.html",
             {
                 actor: this.actor,
-                karmaHistory: this._sortKarmaHistory(this._filteredHistory, this._currentSort)
+                karmaHistory: history
             }
         );
     
-        const dialog = new Dialog({
+        new Dialog({
             title: `Karma History - ${this.actor.name}`,
             content: content,
             buttons: {
+                add: {
+                    label: "Add Entry",
+                    callback: async (html) => {
+                        const form = html.find('form')[0];
+                        const date = form.date.value;
+                        const amount = parseInt(form.amount.value);
+                        const description = form.description.value;
+                        
+                        if (!date || !amount || !description) {
+                            ui.notifications.warn("Please fill in all fields");
+                            return;
+                        }
+    
+                        const currentHistory = this.actor.system.karmaTracking.history || [];
+                        await this.actor.update({
+                            "system.karmaTracking.history": [...currentHistory, {
+                                date,
+                                amount,
+                                description
+                            }]
+                        });
+    
+                        this._onKarmaHistoryClick(event);
+                    }
+                },
                 close: {
                     label: "Close"
                 }
             },
-            // Around line 406, replace the render function with:
-        render: (html) => {  // Change to arrow function to preserve 'this' context
-            const dialog = this;
-            
-            // Sorting
-            html.find('.sortable').click(ev => {
-                const field = ev.currentTarget.dataset.sort;
-                if (dialog._currentSort.field === field) {
-                    dialog._currentSort.direction = dialog._currentSort.direction === 'asc' ? 'desc' : 'asc';
-                } else {
-                    dialog._currentSort = { field, direction: 'asc' };
-                }
-                dialog._updateKarmaDisplay(html, dialog._sortKarmaHistory(dialog._filteredHistory, dialog._currentSort));
-                dialog._updateSortIndicators(html, dialog._currentSort);
-            });
-
-            // Filtering
-            html.find('.karma-type-filter').change(ev => {
-                const filterType = ev.target.value;
-                dialog._filteredHistory = dialog._filterKarmaHistory(dialog._karmaHistory, filterType);
-                dialog._updateKarmaDisplay(html, dialog._sortKarmaHistory(dialog._filteredHistory, dialog._currentSort));
-            });
-
-            // Search
-            html.find('.karma-search').on('input', ev => {
-                const searchTerm = ev.target.value.toLowerCase();
-                dialog._filteredHistory = dialog._karmaHistory.filter(entry => 
-                    entry.description.toLowerCase().includes(searchTerm)
-                );
-                dialog._updateKarmaDisplay(html, dialog._sortKarmaHistory(dialog._filteredHistory, dialog._currentSort));
-            });
-
-            // Add the event listeners for edit and delete buttons
-            html.find('.karma-entries').on('click', '.edit-entry', async (ev) => {
-                ev.preventDefault();
-                const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
-                const entry = dialog._filteredHistory[index];
-                await dialog._onEditKarmaEntry(ev, entry);
-            });
-
-            html.find('.karma-entries').on('click', '.delete-entry', async (ev) => {
-                ev.preventDefault();
-                const entryDiv = $(ev.currentTarget).closest('.karma-entry');
-                const index = entryDiv.data('entry-index');
-                console.log("Deleting entry at index:", index); // Add logging
-                if (typeof index !== 'undefined') {
-                    await this._onDeleteKarmaEntry(ev, index);
-                } else {
-                    console.error("Could not find index for karma entry");
-                }
-            });
-
-            // Export
-            html.find('.export-button').click(() => dialog._exportKarmaHistory(dialog._karmaHistory));
-
-            // Add Entry
-            html.find('.add-entry').click(async (ev) => {
-                ev.preventDefault();
-                await dialog._onAddKarmaEntry(ev);
-            });
-        }
-        }, {
             classes: ["karma-history"],
             width: 600,
             height: 400,
             resizable: true
-        });
-    
-        dialog.render(true);
-    }
-    
-    // Add this method to handle adding new karma entries
+        }).render(true);
+    } */
+
     // In MarvelActorSheet.js, in the _onAddKarmaEntry method
-async _onAddKarmaEntry(event) {
+/* async _onAddKarmaEntry(event) {
     event.preventDefault();
     
     const addEntryContent = await renderTemplate(
@@ -578,9 +965,9 @@ async _onAddKarmaEntry(event) {
             amountInput.focus();
         }
     }).render(true);
-}
+} */
     
-    async _onEditKarmaEntry(event, entry) {
+    /* async _onEditKarmaEntry(event, entry) {
         event.preventDefault();
         
         const addEntryContent = await renderTemplate(
@@ -655,8 +1042,33 @@ async _onAddKarmaEntry(event) {
                 form.description.value = entry.description;
             }
         }).render(true);
+    } */
+    
+    async _onDeleteTalent(event) {
+        event.preventDefault();
+        const index = event.currentTarget.dataset.id;
+        const talents = foundry.utils.getProperty(this.actor.system, "talents.list") || [];
+        
+        // Create updated talents array without the deleted talent
+        const updatedTalents = talents.filter((_, i) => i !== parseInt(index));
+        
+        await this.actor.update({
+            "system.talents.list": updatedTalents
+        });
     }
     
+    async _onDeleteContact(event) {
+        event.preventDefault();
+        const index = event.currentTarget.dataset.id;
+        const contacts = foundry.utils.getProperty(this.actor.system, "contacts.list") || [];
+        
+        // Create updated contacts array without the deleted contact
+        const updatedContacts = contacts.filter((_, i) => i !== parseInt(index));
+        
+        await this.actor.update({
+            "system.contacts.list": updatedContacts
+        });
+    }
     // delete karma entry
     async _onDeleteKarmaEntry(event, index) {
         event.preventDefault();
@@ -745,6 +1157,278 @@ async _onAddKarmaEntry(event) {
             `;
             entriesContainer.append(entryHtml);
         });
+    }
+
+    async _onJoinPool(event) {
+        event.preventDefault();
+        
+        const content = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/join-pool.html",
+            {
+                actor: this.actor,
+                maxContribution: this.actor.system.karmaTracking.karmaPool
+            }
+        );
+    
+        new Dialog({
+            title: "Join Karma Pool",
+            content: content,
+            buttons: {
+                join: {
+                    label: "Join",
+                    callback: async (html) => {
+                        const contribution = parseInt(html.find('[name="contribution"]').val()) || 0;
+                        const isPermanent = html.find('[name="permanent"]').prop("checked");
+                        const isLocked = html.find('[name="locked"]').prop("checked");
+                        
+                        await this.actor.joinKarmaPool({
+                            contribution,
+                            isPermanent,
+                            isLocked
+                        });
+                    }
+                },
+                cancel: {
+                    label: "Cancel"
+                }
+            }
+        }).render(true);
+    }
+    
+    async _onLeavePool(event) {
+        event.preventDefault();
+        
+        const confirmLeave = await Dialog.confirm({
+            title: "Leave Karma Pool",
+            content: "Are you sure you want to leave the karma pool? You'll receive your share of the remaining karma.",
+            yes: () => true,
+            no: () => false,
+            defaultYes: false
+        });
+    
+        if (confirmLeave) {
+            await this.actor.leaveKarmaPool();
+        }
+    }
+
+    async _onKarmaHistoryClick(event) {
+        event.preventDefault();
+       
+        // Initialize properties
+        this._karmaHistory = this.actor.system.karmaTracking.history || [];
+        this._filteredHistory = [...this._karmaHistory];
+        this._currentSort = { field: 'date', direction: 'desc' };
+
+        // Calculate total karma
+        const karmaTotal = this._karmaHistory.reduce((sum, entry) => sum + entry.amount, 0);
+       
+        const content = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/karma-history.html",
+            {
+                actor: this.actor,
+                karmaHistory: this._sortKarmaHistory(this._filteredHistory, this._currentSort),
+                karmaTotal: karmaTotal  // Pass the total to the template
+            }
+        );
+    
+        const dialog = new Dialog({
+            title: `Karma History - ${this.actor.name}`,
+            content: content,
+            buttons: {
+                close: {
+                    label: "Close"
+                }
+            },
+           
+            render: (html) => {
+                const dialog = this;
+               
+                // Add event listeners
+                html.find('.karma-entries').on('click', '.edit-entry', async (ev) => {
+                    ev.preventDefault();
+                    const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
+                    const entry = dialog._filteredHistory[index];
+                    await dialog._onEditKarmaEntry(ev, entry);
+                });
+    
+                html.find('.karma-entries').on('click', '.delete-entry', async (ev) => {
+                    ev.preventDefault();
+                    const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
+                    await this._onDeleteKarmaEntry(ev, index);
+                });
+    
+                // Add Entry
+                html.find('.add-karma-entry').click(async (ev) => {
+                    ev.preventDefault();
+                    await dialog._onAddKarmaEntry(ev);
+                });
+    
+                // Add Clear All handler
+                html.find('.clear-all-karma').click(async (ev) => {
+                    ev.preventDefault();
+                    
+                    // Close current dialog
+                    dialog.close();
+    
+                    // Show confirmation dialog
+                    const confirm = await Dialog.confirm({
+                        title: "Clear All Karma History",
+                        content: "<p>Are you sure you want to delete ALL karma history entries? This cannot be undone.</p>",
+                        yes: () => true,
+                        no: () => false,
+                        defaultYes: false
+                    });
+    
+                    if (confirm) {
+                        await this.actor.update({
+                            "system.karmaTracking.history": []
+                        });
+                        ui.notifications.info("All karma history entries have been cleared.");
+                    }
+                    
+                    // Reopen karma history dialog
+                    this._onKarmaHistoryClick(new Event('click'));
+                });
+            }
+        }, {
+            classes: ["karma-history"],
+            width: 600,
+            height: 400,
+            resizable: true
+        });
+    
+        dialog.render(true);
+    }
+    
+    async _onAddKarmaEntry(event) {
+        event.preventDefault();
+        
+        // First close existing karma history dialog
+        $('.karma-history').remove();
+        
+        const addEntryContent = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
+            { entry: { amount: '', description: '' } }
+        );
+        
+        new Dialog({
+            title: "Add Karma Entry",
+            content: addEntryContent,
+            buttons: {
+                add: {
+                    label: "Add Entry",
+                    callback: async (html) => {
+                        // Get form data
+                        const form = html.find('form')[0];
+                        const amount = Number(form.amount.value);
+                        const description = form.description.value;
+                        
+                        if (isNaN(amount) || !description) {
+                            ui.notifications.error("Please enter a valid amount and description");
+                            return;
+                        }
+                        
+                        // Create and save new entry
+                        const newEntry = {
+                            date: new Date().toLocaleString(),
+                            amount: amount,
+                            description: description
+                        };
+                        
+                        const currentHistory = this.actor.system.karmaTracking.history || [];
+                        await this.actor.update({
+                            "system.karmaTracking.history": [...currentHistory, newEntry]
+                        });
+                        
+                        // Reopen karma history with new data
+                        this._onKarmaHistoryClick(new Event('click'));
+                    }
+                },
+                cancel: {
+                    label: "Cancel",
+                    callback: () => this._onKarmaHistoryClick(new Event('click'))
+                }
+            },
+            default: "add"
+        }).render(true);
+    }
+    
+    async _onDeleteKarmaEntry(event, index) {
+        // Currently keeps karma history open during confirmation
+        // Should:
+        // 1. Close karma history
+        // 2. Show confirmation
+        // 3. After delete, reopen karma history
+        
+        // Suggested fix:
+        $('.karma-history').remove();
+        
+        const confirmDelete = await Dialog.confirm({
+            title: "Delete Karma Entry",
+            content: "Are you sure you want to delete this karma entry?",
+            yes: () => true,
+            no: () => false,
+            defaultYes: false
+        });
+    
+        if (confirmDelete) {
+            const history = duplicate(this.actor.system.karmaTracking.history);
+            history.splice(index, 1);
+            await this.actor.update({"system.karmaTracking.history": history});
+        }
+        
+        // Always reopen karma history
+        this._onKarmaHistoryClick(new Event('click'));
+    }
+    
+    async _onEditKarmaEntry(event, entry) {
+        event.preventDefault();
+        $('.karma-history').remove();
+        
+        const editContent = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/add-karma-entry.html",
+            { entry }  // Entry data is being passed but not used in the template
+        );
+    
+        new Dialog({
+            title: "Edit Karma Entry",
+            content: editContent,
+            buttons: {
+                save: {
+                    label: "Save",
+                    callback: async (html) => {
+                        const form = html.find('form')[0];
+                        const updatedEntry = {
+                            date: form.querySelector('[name="date"]').value,
+                            amount: parseInt(form.querySelector('[name="amount"]').value),
+                            description: form.querySelector('[name="description"]').value
+                        };
+    
+                        // Get current history
+                        const history = duplicate(this.actor.system.karmaTracking.history);
+                        const index = history.findIndex(e => 
+                            e.date === entry.date && 
+                            e.amount === entry.amount && 
+                            e.description === entry.description
+                        );
+    
+                        if (index !== -1) {
+                            history[index] = updatedEntry;
+                            await this.actor.update({
+                                "system.karmaTracking.history": history
+                            });
+                        }
+    
+                        // Reopen karma history dialog
+                        this._onKarmaHistoryClick(new Event('click'));
+                    }
+                },
+                cancel: {
+                    label: "Cancel",
+                    callback: () => this._onKarmaHistoryClick(new Event('click'))
+                }
+            }
+        }).render(true);
     }
     
     _updateSortIndicators(html, currentSort) {
@@ -1320,7 +2004,6 @@ async _onAddPower(event) {
         default: "create"
     }).render(true);
 }
-                        
 
 async _onAddTalent(event) {
     console.log("Add talent clicked");
@@ -1409,103 +2092,108 @@ async _onRankChange(event) {
     }
 }
 
-async _onPopularityRoll(event) {
-    event.preventDefault();
-    const popularityType = event.currentTarget.dataset.popularityType;
+    async _onPopularityRoll(event) {
+        event.preventDefault();
+        const popularityType = event.currentTarget.dataset.popularityType;
+        
+        // Verify we have a valid popularity type
+        if (!popularityType || !['hero', 'secret'].includes(popularityType)) {
+            ui.notifications.error("Invalid popularity type");
+            return;
+        }
     
-    const stored = await game.user.getFlag("world", "marvelPopularityOptions") || {
-        disposition: "neutral",
-        modifiers: {
-            benefits: false,
-            danger: false,
-            goodValue: false,
-            remarkableValue: false,
-            noReturn: false,
-            unique: false
-        },
-        additionalShift: 0,
-        karmaPoints: 0
-    };
-
-    const templateData = {
-        config: CONFIG.marvel,
-        stored: stored,
-        popularity: this.actor.system.secondaryAbilities.popularity // Using correct path from template.json
-    };
-
-    const html = await renderTemplate(
-        "systems/marvel-faserip/templates/dialogs/popularity-roll.html",
-        templateData
-    );
-
-    return new Promise(resolve => {
-        new Dialog({
-            title: "Popularity FEAT Roll",
-            content: html,
-            buttons: {
-                roll: {
-                    label: "Roll",
-                    callback: async (html) => {
-                        const form = html[0].querySelector("form");
-                        const formData = new FormData(form);
-                        
-                        const options = {
-                            disposition: formData.get("disposition"),
-                            modifiers: {
-                                benefits: formData.get("benefits") === "on",
-                                danger: formData.get("danger") === "on",
-                                goodValue: formData.get("goodValue") === "on",
-                                remarkableValue: formData.get("remarkableValue") === "on",
-                                noReturn: formData.get("noReturn") === "on",
-                                unique: formData.get("unique") === "on"
-                            },
-                            additionalShift: parseInt(formData.get("additionalShift")) || 0,
-                            karmaPoints: parseInt(formData.get("karmaPoints")) || 0
-                        };
-
-                        await game.user.setFlag("world", "marvelPopularityOptions", options);
-                        await this.actor.rollPopularityFeat(popularityType, options);
-                        resolve(true);
+        const stored = await game.user.getFlag("world", "marvelPopularityOptions") || {
+            disposition: "neutral",
+            modifiers: {
+                benefits: false,
+                danger: false,
+                goodValue: false,
+                remarkableValue: false,
+                noReturn: false,
+                unique: false
+            },
+            additionalShift: 0,
+            karmaPoints: 0
+        };
+    
+        const templateData = {
+            config: CONFIG.marvel,
+            stored: stored,
+            popularity: this.actor.system.secondaryAbilities.popularity[popularityType],
+            popularityType: popularityType
+        };
+    
+        const html = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/popularity-roll.html",
+            templateData
+        );
+    
+        return new Promise(resolve => {
+            new Dialog({
+                title: `${popularityType === 'hero' ? 'Hero' : 'Secret ID'} Popularity FEAT Roll`,
+                content: html,
+                buttons: {
+                    roll: {
+                        label: "Roll",
+                        callback: async (html) => {
+                            const form = html[0].querySelector("form");
+                            const formData = new FormData(form);
+                            
+                            const options = {
+                                disposition: formData.get("disposition"),
+                                modifiers: {
+                                    benefits: formData.get("benefits") === "on",
+                                    danger: formData.get("danger") === "on",
+                                    goodValue: formData.get("goodValue") === "on",
+                                    remarkableValue: formData.get("remarkableValue") === "on",
+                                    noReturn: formData.get("noReturn") === "on",
+                                    unique: formData.get("unique") === "on"
+                                },
+                                additionalShift: parseInt(formData.get("additionalShift")) || 0,
+                                karmaPoints: parseInt(formData.get("karmaPoints")) || 0
+                            };
+    
+                            await game.user.setFlag("world", "marvelPopularityOptions", options);
+                            await this.actor.rollPopularityFeat(popularityType, options);
+                            resolve(true);
+                        }
+                    },
+                    cancel: {
+                        label: "Cancel",
+                        callback: () => resolve(false)
                     }
                 },
-                cancel: {
-                    label: "Cancel",
-                    callback: () => resolve(false)
-                }
-            },
-            default: "roll"
-        }).render(true);
-    });
-}
+                default: "roll"
+            }).render(true);
+        });
+    }
 
-async _onResourceRoll(event) {
+// original version of onResourceRoll
+/* async _onResourceRoll(event) {
     event.preventDefault();
-
     if (!game.modules.get("simple-calendar")?.active) {
         ui.notifications.warn("Simple Calendar module is required for proper Resource FEAT timing restrictions.");
     }
-    
+   
     // Get resources from proper template.json path
     const resourceRank = this.actor.system.secondaryAbilities.resources.rank || "Shift 0";
     const resourceNumber = this.actor.system.secondaryAbilities.resources.number || 0;
-
     const stored = await game.user.getFlag("world", "marvelResourceOptions") || {
         itemRank: "Typical",
         columnShift: 0,
         karmaPoints: 0
     };
-
     const lastAttempt = this.actor.getFlag("marvel-faserip", "lastResourceAttempt");
     const lastFailure = this.actor.getFlag("marvel-faserip", "lastResourceFailure");
-
     let warningMessage = "";
     if (lastAttempt) {
         const daysSinceAttempt = Math.floor((Date.now() - lastAttempt.timestamp) / (24 * 60 * 60 * 1000));
         if (daysSinceAttempt < 7) {
+            //warningMessage = Warning: Last Resource FEAT attempt was ${daysSinceAttempt} days ago. Must wait 7 days between attempts.;
             warningMessage = `Warning: Last Resource FEAT attempt was ${daysSinceAttempt} days ago. Must wait 7 days between attempts.`;
+
         }
     }
-
     const html = await renderTemplate(
         "systems/marvel-faserip/templates/dialogs/resource-roll.html",
         {
@@ -1520,7 +2208,6 @@ async _onResourceRoll(event) {
             lastFailure: lastFailure
         }
     );
-
     return new Promise(resolve => {
         const dialog = new Dialog({
             title: "Resource FEAT Roll",
@@ -1535,15 +2222,12 @@ async _onResourceRoll(event) {
                             columnShift: parseInt(form.columnShift.value) || 0,
                             karmaPoints: parseInt(form.karmaPoints.value) || 0
                         };
-
                         await game.user.setFlag("world", "marvelResourceOptions", options);
-
                         const canAttempt = await this.actor._canAttemptResourceFeat(options.itemRank);
                         if (!canAttempt.allowed) {
                             ui.notifications.warn(canAttempt.message);
                             return;
                         }
-
                         await this.actor.rollResourceFeat(options.itemRank, options);
                         resolve(true);
                     }
@@ -1555,79 +2239,65 @@ async _onResourceRoll(event) {
             },
             default: "roll"
         });
-
         dialog.render(true);
     });
-}
+} */
 
-async _onAbilityRoll(event) {
-    event.preventDefault();
-    const element = event.currentTarget;
-    const abilityId = element.closest('.ability-row').dataset.ability;
+    // Modified _onResourceRoll for MarvelActorSheet.js
+    async _onResourceRoll(event) {
+        event.preventDefault();
+        
+        // Get resources and stored values
+        const resourceRank = this.actor.system.secondaryAbilities.resources.rank || "Shift 0";
+        const stored = await game.user.getFlag("world", "marvelResourceOptions") || {
+            itemRank: "Typical",
+            columnShift: 0,
+            karmaPoints: 0,
+            useBank: false
+        };
+        
+        // Get last attempt data
+        const lastAttempt = this.actor.getFlag("marvel-faserip", "lastResourceAttempt");
+        const lastFailure = this.actor.getFlag("marvel-faserip", "lastResourceFailure");
+        
+        // Let actor method determine if warning is needed
+        const warningMessage = await this.actor._getResourceWarningMessage(lastAttempt);
     
-    // Get stored values
-    const stored = await game.user.getFlag("world", "marvelRollOptions") || {
-        featType: "ability",
-        actionType: "BA",
-        columnShift: 0,
-        karmaPoints: 0
-    };
+        const html = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/resource-roll.html",
+            {
+                config: CONFIG.marvel,
+                ranks: Object.keys(CONFIG.marvel.ranks),
+                resourceRank: resourceRank,
+                itemRank: stored.itemRank,
+                columnShift: stored.columnShift,
+                karmaPoints: stored.karmaPoints,
+                warningMessage: warningMessage,
+                lastAttempt: lastAttempt,
+                lastFailure: lastFailure,
+                isGM: game.user.isGM,
+                useBank: stored.useBank
+            }
+        );
     
-    // Prepare template data using template.json ability structure
-    const ability = this.actor.system.primaryAbilities[abilityId];
-    const templateData = {
-        config: CONFIG.marvel,
-        defaultFeatType: stored.featType,
-        defaultAction: stored.actionType,
-        columnShift: stored.columnShift,
-        karmaPoints: stored.karmaPoints,
-        showActionSelect: stored.featType === "combat",
-        actionTypes: CONFIG.marvel.actionResults,
-        ability: ability
-    };
-    
-    const html = await renderTemplate(
-        "systems/marvel-faserip/templates/dialogs/ability-roll.html",
-        templateData
-    );
-    
-    return new Promise(resolve => {
-        const dialog = new Dialog({
-            title: "FEAT Roll",
-            content: html,
-            buttons: {
+        return new Promise(resolve => {
+            const buttons = {
                 roll: {
                     label: "Roll",
-                    callback: async (html) => {
-                        const form = html[0].querySelector("form");
-                        const featType = form.querySelector('input[name="featType"]:checked').value;
+                    callback: async (dialogHtml) => {
+                        const form = dialogHtml[0].querySelector("form");
                         const options = {
-                            featType: featType,
-                            actionType: featType === "combat" ? form.actionType.value : null,
+                            itemRank: form.itemRank.value,
                             columnShift: parseInt(form.columnShift.value) || 0,
-                            karmaPoints: parseInt(form.karmaPoints.value) || 0
+                            karmaPoints: parseInt(form.karmaPoints.value) || 0,
+                            useBank: form.useBank?.checked || false
                         };
-                        
-                        // Store values for next time
-                        await game.user.setFlag("world", "marvelRollOptions", options);
-                        
-                        // Update karma tracking if karma points were spent
-                        if (options.karmaPoints > 0) {
-                            const currentKarma = this.actor.system.karmaTracking.karmaPool;
-                            const newHistory = [...(this.actor.system.karmaTracking.history || []), {
-                                date: new Date().toLocaleString(),
-                                amount: -options.karmaPoints,
-                                description: `Spent on ${abilityId.toUpperCase()} FEAT roll`
-                            }];
-                            
-                            await this.actor.update({
-                                "system.karmaTracking.karmaPool": currentKarma - options.karmaPoints,
-                                "system.karmaTracking.history": newHistory
-                            });
-                        }
-                        
-                        // Perform the roll
-                        await this.actor.rollAbility(abilityId, options);
+    
+                        // Store options for future use
+                        await game.user.setFlag("world", "marvelResourceOptions", options);
+    
+                        // Let actor handle all game logic
+                        await this.actor.rollResourceFeat(options.itemRank, options);
                         resolve(true);
                     }
                 },
@@ -1635,25 +2305,140 @@ async _onAbilityRoll(event) {
                     label: "Cancel",
                     callback: () => resolve(false)
                 }
-            },
-            default: "roll",
-            
-            render: (html) => {
-                // Add listeners for feat type changes
-                const radioButtons = html[0].querySelectorAll('input[name="featType"]');
-                radioButtons.forEach(radio => {
-                    radio.addEventListener('change', (event) => {
-                        const actionSelect = html[0].querySelector('.action-select');
-                        if (event.currentTarget.value === "combat") {
-                            actionSelect.style.display = "";
-                        } else {
-                            actionSelect.style.display = "none";
-                        }
-                    });
-                });
+            };
+    
+            // Add GM clear button
+            if (game.user.isGM) {
+                buttons.clearLockout = {
+                    label: "Clear Lockout (GM)",
+                    callback: async () => {
+                        // Let actor handle flag clearing
+                        await this.actor.clearResourceLockout();
+                        resolve(false);
+                        
+                        // Show new dialog
+                        setTimeout(() => {
+                            this._onResourceRoll(new Event('click'));
+                        }, 100);
+                    }
+                };
             }
-        }).render(true);
-    });
+    
+            new Dialog({
+                title: "Resource FEAT Roll",
+                content: html,
+                buttons: buttons,
+                default: "roll"
+            }).render(true);
+        });
+    }
+
+async _onAbilityRoll(event) {
+    try {
+        event.preventDefault();
+        const element = event.currentTarget;
+        const abilityId = element.closest('.ability-row').dataset.ability;
+        
+        // Get stored values
+        const stored = await game.user.getFlag("world", "marvelRollOptions") || {
+            featType: "ability",
+            actionType: "BA",
+            columnShift: 0,
+            karmaPoints: 0
+        };
+        
+        // Prepare template data using template.json ability structure
+        const ability = this.actor.system.primaryAbilities[abilityId];
+        const templateData = {
+            config: CONFIG.marvel,
+            defaultFeatType: stored.featType,
+            defaultAction: stored.actionType,
+            columnShift: stored.columnShift,
+            karmaPoints: stored.karmaPoints,
+            showActionSelect: stored.featType === "combat",
+            actionTypes: CONFIG.marvel.actionResults,
+            ability: ability
+        };
+        
+        const html = await renderTemplate(
+            "systems/marvel-faserip/templates/dialogs/ability-roll.html",
+            templateData
+        );
+        
+        return new Promise(resolve => {
+            const dialog = new Dialog({
+                title: "FEAT Roll",
+                content: html,
+                buttons: {
+                    roll: {
+                        label: "Roll",
+                        callback: async (html) => {
+                            try {
+                                const form = html[0].querySelector("form");
+                                const featType = form.querySelector('input[name="featType"]:checked').value;
+                                const options = {
+                                    featType: featType,
+                                    actionType: featType === "combat" ? form.actionType.value : null,
+                                    columnShift: parseInt(form.columnShift.value) || 0,
+                                    karmaPoints: parseInt(form.karmaPoints.value) || 0
+                                };
+                                
+                                // Store values for next time
+                                await game.user.setFlag("world", "marvelRollOptions", options);
+                                
+                                // Update karma tracking if karma points were spent
+                                if (options.karmaPoints > 0) {
+                                    const currentKarma = this.actor.system.karmaTracking.karmaPool;
+                                    const newHistory = [...(this.actor.system.karmaTracking.history || []), {
+                                        date: new Date().toLocaleString(),
+                                        amount: -options.karmaPoints,
+                                        description: `Spent on ${abilityId.toUpperCase()} FEAT roll`
+                                    }];
+                                    
+                                    await this.actor.update({
+                                        "system.karmaTracking.karmaPool": currentKarma - options.karmaPoints,
+                                        "system.karmaTracking.history": newHistory
+                                    });
+                                }
+                                
+                                // Perform the roll with await
+                                await this.actor.rollAbility(abilityId, options);
+                                resolve(true);
+                            } catch (err) {
+                                console.error("Error in ability roll dialog:", err);
+                                ui.notifications.error("Error processing ability roll");
+                                resolve(false);
+                            }
+                        }
+                    },
+                    cancel: {
+                        label: "Cancel",
+                        callback: () => resolve(false)
+                    }
+                },
+                default: "roll",
+                
+                render: (html) => {
+                    // Add listeners for feat type changes
+                    const radioButtons = html[0].querySelectorAll('input[name="featType"]');
+                    radioButtons.forEach(radio => {
+                        radio.addEventListener('change', (event) => {
+                            const actionSelect = html[0].querySelector('.action-select');
+                            if (event.currentTarget.value === "combat") {
+                                actionSelect.style.display = "";
+                            } else {
+                                actionSelect.style.display = "none";
+                            }
+                        });
+                    });
+                }
+            });
+            dialog.render(true);
+        });
+    } catch (err) {
+        console.error("Error initiating ability roll:", err);
+        ui.notifications.error("Error initiating ability roll");
+    }
 }
 
 async _onPowerInfo(event) {
@@ -1693,6 +2478,35 @@ async _onPowerInfo(event) {
             </div>
         </div>
     `;
+
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+        content: messageContent
+    });
+}
+
+async _onEquipmentInfo(event) {
+    event.preventDefault();
+    const itemId = event.currentTarget.closest(".equipment-row").dataset.itemId;
+    const item = this.actor.items.get(itemId);
+    if (!item) return;
+
+    // Create chat message with equipment info
+    const messageContent = `
+        <div class="marvel-roll">
+            <h3>${item.name} - Equipment Details</h3>
+            <div class="roll-details">
+                ${item.system.type ? `<div>Type: ${item.system.type}</div>` : ''}
+                ${item.system.damage ? `<div>Damage: ${item.system.damage}</div>` : ''}
+                ${item.system.range ? `<div>Range: ${item.system.range}</div>` : ''}
+                ${item.system.rate ? `<div>Rate: ${item.system.rate}</div>` : ''}
+                ${item.system.shots ? `<div>Shots: ${item.system.shots}</div>` : ''}
+                ${item.system.material ? `<div>Material: ${item.system.material}</div>` : ''}
+                ${item.system.price ? `<div>Price: ${item.system.price}</div>` : ''}
+                ${item.system.special ? `<div>Special: ${item.system.special}</div>` : ''}
+                ${item.system.description ? `<div class="description">${item.system.description}</div>` : ''}
+            </div>
+        </div>`;
 
     await ChatMessage.create({
         speaker: ChatMessage.getSpeaker({ actor: this.actor }),
@@ -1839,18 +2653,30 @@ async _onAddResistance(event) {
     this.render(false);
 }
 
+// In MarvelActorSheet.js, around line 1055
 async _onResistanceNumberChange(event) {
     console.log("Resistance number change triggered");
     event.preventDefault();
     const element = event.currentTarget;
-    const resistancePath = element.dataset.resistance;
     const newNumber = parseInt(element.value) || 0;
     const newRank = this.actor.getRankFromValue(newNumber);
 
-    // Create update data
+    // Get the full path from the name attribute instead of dataset
+    const fullPath = element.name;
+    
+    // Extract the index from the path
+    const pathMatch = fullPath.match(/system\.resistances\.list\.(\d+)\.number/);
+    if (!pathMatch) {
+        console.error("Could not parse resistance path:", fullPath);
+        return;
+    }
+    
+    const idx = pathMatch[1];
+
+    // Create update data with correct path
     const updateData = {
-        [`system.resistances.${resistancePath}.rank`]: newRank,
-        [`system.resistances.${resistancePath}.number`]: newNumber
+        [`system.resistances.list.${idx}.rank`]: newRank,
+        [`system.resistances.list.${idx}.number`]: newNumber
     };
 
     console.log("Updating resistance with data:", updateData);
@@ -1876,6 +2702,207 @@ async _onResistanceRankChange(event) {
     await this.actor.update(updateData);
     this.render(false);
 }
+
+/* async _onKarmaSheet(event) {
+    event.preventDefault();
+    
+    // Prepare data for the sheet
+    const data = {
+        actor: this.actor,
+        karmaHistory: this._prepareKarmaHistory(),
+        advancementFunds: this._prepareAdvancementFunds(),
+        teamPools: await this._prepareTeamPools()
+    };
+
+    // Render the sheet
+    const content = await renderTemplate(
+        "systems/marvel-faserip/templates/dialogs/karma-sheet.html",
+        data
+    );
+
+    new Dialog({
+        title: `${this.actor.name} - Karma Sheet`,
+        content: content,
+        buttons: {
+            close: {
+                label: "Close"
+            }
+        },
+        render: (html) => {
+            // Add listeners for the gain/spend buttons
+            html.find('.gain-karma').click(this._onGainKarma.bind(this));
+            html.find('.spend-karma').click(this._onSpendKarma.bind(this));
+        },
+        width: 800,
+        height: 600
+    }).render(true);
+} */
+
+/* _prepareKarmaHistory() {
+    const history = this.actor.system.karmaTracking.history || [];
+    let balance = 0;
+    
+    return history.map(entry => {
+        balance += entry.amount;
+        return {
+            date: new Date(entry.date).toLocaleDateString(),
+            description: entry.description,
+            change: entry.amount,
+            balance: balance
+        };
+    });
+} */
+
+/* _prepareAdvancementFunds() {
+    const funds = [];
+    const advancementFund = this.actor.system.karmaTracking.advancementFund || 0;
+    
+    // Calculate costs based on current abilities
+    Object.entries(this.actor.system.primaryAbilities).forEach(([key, ability]) => {
+        const currentValue = ability.number || 0;
+        const cost = this._getAbilityAdvancementCost(currentValue);
+        
+        if (ability.advancementKarma) {
+            funds.push({
+                trait: key.charAt(0).toUpperCase() + key.slice(1),
+                saved: ability.advancementKarma,
+                needed: cost,
+                progressPercent: (ability.advancementKarma / cost) * 100
+            });
+        }
+    });
+
+    // Add any power advancement funds
+    Object.values(this.actor.items.filter(i => i.type === "power")).forEach(power => {
+        if (power.system.advancementKarma) {
+            const cost = this._getPowerAdvancementCost(power.system.rank);
+            funds.push({
+                trait: `Power: ${power.name}`,
+                saved: power.system.advancementKarma,
+                needed: cost,
+                progressPercent: (power.system.advancementKarma / cost) * 100
+            });
+        }
+    });
+
+    return funds;
+} */
+
+/* async _prepareTeamPools() {
+    const pools = [];
+    const groupPool = this.actor.system.karmaTracking.groupPool;
+    
+    if (groupPool.active) {
+        const pool = await game.settings.get("marvel-faserip", `karmaPools.${groupPool.poolId}`);
+        if (pool) {
+            pools.push({
+                name: pool.name || "Team Pool",
+                contribution: groupPool.contributed,
+                total: pool.total,
+                share: Math.floor(pool.total / pool.members.length)
+            });
+        }
+    }
+    
+    return pools;
+} */
+
+/* async _onGainKarma(event) {
+    event.preventDefault();
+    
+    const content = await renderTemplate(
+        "systems/marvel-faserip/templates/dialogs/gain-karma.html",
+        {
+            reasons: CONFIG.marvel.karmaReasons
+        }
+    );
+
+    new Dialog({
+        title: "Gain Karma",
+        content: content,
+        buttons: {
+            gain: {
+                label: "Gain",
+                callback: async (html) => {
+                    const amount = parseInt(html.find('[name="amount"]').val()) || 0;
+                    const reason = html.find('[name="reason"]').val();
+                    
+                    if (amount <= 0) {
+                        ui.notifications.error("Amount must be positive");
+                        return;
+                    }
+
+                    await this.actor.addKarma(amount, reason);
+                    this._onKarmaSheet(event); // Refresh the sheet
+                }
+            },
+            cancel: {
+                label: "Cancel"
+            }
+        }
+    }).render(true);
+} */
+
+async _onSpendKarma(event) {
+    event.preventDefault();
+    
+    const content = await renderTemplate(
+        "systems/marvel-faserip/templates/dialogs/spend-karma.html",
+        {
+            reasons: CONFIG.marvel.karmaSpendTypes,
+            maxKarma: this.actor.system.karmaTracking.karmaPool
+        }
+    );
+
+    new Dialog({
+        title: "Spend Karma",
+        content: content,
+        buttons: {
+            spend: {
+                label: "Spend",
+                callback: async (html) => {
+                    const amount = parseInt(html.find('[name="amount"]').val()) || 0;
+                    const reason = html.find('[name="reason"]').val();
+                    
+                    if (amount <= 0) {
+                        ui.notifications.error("Amount must be positive");
+                        return;
+                    }
+
+                    if (amount > this.actor.system.karmaTracking.karmaPool) {
+                        ui.notifications.error("Not enough karma");
+                        return;
+                    }
+
+                    await this.actor.spendKarma(amount, reason);
+                    this._onKarmaSheet(event); // Refresh the sheet
+                }
+            },
+            cancel: {
+                label: "Cancel"
+            }
+        }
+    }).render(true);
+}
+
+async _onDeleteEquipment(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const itemId = element.closest(".equipment-row").dataset.itemId;
+    
+    const confirmDelete = await Dialog.confirm({
+        title: "Delete Equipment",
+        content: "<p>Are you sure you want to delete this equipment?</p>",
+        yes: () => true,
+        no: () => false,
+        defaultYes: false
+    });
+
+    if (confirmDelete) {
+        await this.actor.deleteEmbeddedDocuments("Item", [itemId]);
+    }
+}
+
 }
 async function createFaseripMacro(data, slot) {
     if (data.type !== "Item") return;
@@ -1909,3 +2936,5 @@ async function createFaseripMacro(data, slot) {
     // Trigger the item roll
     return item.roll();
   }
+
+  

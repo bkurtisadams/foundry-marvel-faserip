@@ -3,7 +3,9 @@ export class MarvelActor extends Actor {
     prepareData() {
         // Always call super first to ensure core data is initialized
         super.prepareData();
-
+    
+        console.log("Preparing actor data:", this.system.primaryAbilities);
+    
         // Initialize base template data structure if needed
         this._initializeBaseTemplate();
         
@@ -19,9 +21,21 @@ export class MarvelActor extends Actor {
                 this._initializeNPCTemplate();
                 break;
         }
-
-        // Calculate derived values
-        this._calculateHealth();
+    
+        // Store current health value
+        const currentHealth = this.system.secondaryAbilities?.health?.value || 0;
+        
+        // Calculate max health
+        this._calculateMaxHealth();
+        
+        // Preserve current health value (don't reset to max)
+        if (currentHealth > 0) {
+            // Make sure health doesn't exceed max 
+            const maxHealth = this.system.secondaryAbilities.health.max;
+            this.system.secondaryAbilities.health.value = Math.min(currentHealth, maxHealth);
+        }
+        
+        // Calculate other derived values
         this._calculateKarma();
         this._updateResourceRank();
     }
@@ -61,6 +75,10 @@ export class MarvelActor extends Actor {
                 popularity: { hero: 0, secret: 0 }
             };
         }
+        // Calculate derived values
+        this._calculateMaxHealth();
+        this._calculateKarma();
+        this._updateResourceRank();
 
         if (!this.system.resistances) {
             this.system.resistances = {
@@ -68,14 +86,31 @@ export class MarvelActor extends Actor {
             };
         }
 
-        if (!this.system.karmaTracking) {
+        /* if (!this.system.karmaTracking) {
             this.system.karmaTracking = {
                 karmaPool: 0,
                 advancementFund: 0,
-                history: []
+                history: [],
+                lifetimeTotal: 0,
+                groupPool: {  // Changed to groupPool to match usage
+                    active: false,
+                    contributed: 0,
+                    poolId: null
+                }
             };
-        }
-    }
+        } */
+            if (!this.system.karmaTracking) {
+                this.system.karmaTracking = {
+                    advancementFund: 0,
+                    karmaPool: 0,
+                    lifetimeTotal: 0
+                };
+            } else {
+                // Ensure values are numbers
+                this.system.karmaTracking.advancementFund = parseInt(this.system.karmaTracking.advancementFund) || 0;
+                this.system.karmaTracking.karmaPool = parseInt(this.system.karmaTracking.karmaPool) || 0;
+                this.system.karmaTracking.lifetimeTotal = this.system.karmaTracking.advancementFund + this.system.karmaTracking.karmaPool;
+            }    }
 
     /** Initialize hero-specific template data */
     _initializeHeroTemplate() {
@@ -157,45 +192,54 @@ export class MarvelActor extends Actor {
     }
 
     /**
-     * Calculate Health from primary abilities
-     * @private
-     */
-    _calculateHealth() {
+ * Calculate Max Health from primary abilities
+ * @private
+ */
+    _calculateMaxHealth() {
         if (!this.system.primaryAbilities) return;
-
+        
+        // Save the current value before recalculating
+        const currentValue = this.system.secondaryAbilities?.health?.value || 0;
+        
+        // Calculate max health
         const health = Number(this.system.primaryAbilities.fighting.number || 0) +
                       Number(this.system.primaryAbilities.agility.number || 0) +
                       Number(this.system.primaryAbilities.strength.number || 0) +
                       Number(this.system.primaryAbilities.endurance.number || 0);
-        
-        // Update maximum health
+       
+        // Only update max health, not current health
         this.system.secondaryAbilities.health.max = health;
         
-        // Initialize current health if not set
-        if (!this.system.secondaryAbilities.health.value) {
+        // IMPORTANT: Only initialize current health for new characters
+        // Otherwise, preserve the current value
+        if (currentValue === 0 && !this._isInitialized) {
             this.system.secondaryAbilities.health.value = health;
+            this._isInitialized = true;
         }
     }
-
+    
     /**
      * Calculate Karma from mental abilities
      * @private
      */
     _calculateKarma() {
         if (!this.system.primaryAbilities) return;
-
         const karma = Number(this.system.primaryAbilities.reason.number || 0) +
                      Number(this.system.primaryAbilities.intuition.number || 0) +
                      Number(this.system.primaryAbilities.psyche.number || 0);
-        
-        // Update maximum karma
+       
+        // Always update both max and current karma
         this.system.secondaryAbilities.karma.max = karma;
-        
-        // Initialize current karma if not set
-        if (!this.system.secondaryAbilities.karma.value) {
-            this.system.secondaryAbilities.karma.value = karma;
-        }
+        this.system.secondaryAbilities.karma.value = karma;
     }
+    /* async updateKarma(advancementFund, karmaPool) {
+        const lifetimeTotal = karmaPool + advancementFund;
+        await this.update({
+            "system.karmaTracking.advancementFund": advancementFund,
+            "system.karmaTracking.karmaPool": karmaPool,
+            "system.karmaTracking.lifetimeTotal": lifetimeTotal
+        });
+    } */
 
     /**
      * Update resource rank based on the current number value
@@ -296,65 +340,71 @@ export class MarvelActor extends Actor {
      * @returns {Promise<Roll>} The roll result
      */
     async rollAbility(abilityId, options = {}) {
-        const ability = this.system.primaryAbilities[abilityId];
-        if (!ability) {
-            throw new Error(`Ability ${abilityId} not found`);
-        }
-
-        const baseRank = ability.rank || this.getRankFromValue(ability.number);
-        const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
-        
-        // Roll the dice and add karma
-        const roll = new Roll("1d100").evaluateSync();
-        const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
-        const finalRoll = Math.min(100, roll.total + karmaPoints);
-        
-        // Deduct karma if used
-        if (karmaPoints > 0) {
-            await this.update({
-                "system.secondaryAbilities.karma.value": this.system.secondaryAbilities.karma.value - karmaPoints
-            });
-        }
-        
-        // Get the color result and outcome
-        const color = this.getColorResult(finalRoll, shiftedRank);
-        let resultText = color.toUpperCase();
-        
-        // Handle combat specific results
-        if (options.featType === "combat" && options.actionType) {
-            resultText = CONFIG.marvel.actionResults[options.actionType]?.results[color] || resultText;
-        }
-
-        // Create formatted ability name
-        const formattedAbility = abilityId.charAt(0).toUpperCase() + abilityId.slice(1);
-        
-        // Create chat message content
-        const messageContent = `
-            <div class="marvel-roll">
-                <h3>${this.name} - ${options.featType === "combat" ? 
-                    CONFIG.marvel.actionResults[options.actionType]?.name || "Combat" : 
-                    formattedAbility + " FEAT"}</h3>
-                <div class="roll-details">
-                    <div>${formattedAbility}: ${ability.number} (${baseRank})</div>
-                    ${options.columnShift ? 
-                        `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                    <div>Roll: ${roll.total}${karmaPoints ? 
-                        ` + ${karmaPoints} Karma = ${finalRoll}` : ''}</div>
-                </div>
-                <div class="roll-result ${this._getColorClass(color)}">
-                    ${resultText}
+        try {
+            const ability = this.system.primaryAbilities[abilityId];
+            if (!ability) {
+                throw new Error(`Ability ${abilityId} not found`);
+            }
+    
+            // Get base rank and apply column shift
+            const baseRank = ability.rank || this.getRankFromValue(ability.number);
+            const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
+            
+            // Create and evaluate the roll asynchronously
+            const roll = new Roll("1d100");
+            await roll.evaluate(); // Evaluate properly in Foundry V12
+            
+            const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
+            const finalRoll = Math.min(100, roll.total + karmaPoints);
+            
+            // Deduct karma if used
+            if (karmaPoints > 0) {
+                await this.update({
+                    "system.secondaryAbilities.karma.value": this.system.secondaryAbilities.karma.value - karmaPoints
+                });
+            }
+            
+            // Get the color result and outcome
+            const color = this.getColorResult(finalRoll, shiftedRank);
+            let resultText = color.toUpperCase();
+            
+            // Handle combat specific results
+            if (options.featType === "combat" && options.actionType) {
+                resultText = CONFIG.marvel.actionResults[options.actionType]?.results[color] || resultText;
+            }
+    
+            // Create formatted ability name
+            const formattedAbility = abilityId.charAt(0).toUpperCase() + abilityId.slice(1);
+            
+            // Create chat message content
+            const messageContent = `
+            <div class="faserip-roll">
+                <h3>${this.name} - ${formattedAbility} Roll ${options.featType === "combat" ? 
+                    `(${CONFIG.marvel.actionResults[options.actionType]?.name || "Combat"})` : 
+                    "(Ability FEAT)"}</h3>
+                <div>Base Rank: ${baseRank} (${ability.number})</div>
+                ${options.columnShift ? 
+                    `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
+                <div>Roll: ${roll.total}${karmaPoints ? 
+                    ` + Karma: ${karmaPoints} = ${finalRoll}` : ''}</div>
+                <div class="roll-result" style="background-color: ${color}; color: ${color === 'white' || color === 'yellow' ? 'black' : 'white'}; padding: 5px; text-align: center; font-weight: bold; border: 1px solid black;">
+                    ${resultText} (${color.toUpperCase()})
                 </div>
             </div>`;
-        
-        // Create the chat message
-        await ChatMessage.create({
-            speaker: ChatMessage.getSpeaker({ actor: this }),
-            content: messageContent,
-            rolls: [roll],
-            sound: CONFIG.sounds.dice
-        });
-
-        return { roll, color, result: resultText };
+            // Create the chat message
+            await ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({ actor: this }),
+                content: messageContent,
+                rolls: [roll],
+                sound: CONFIG.sounds.dice
+            });
+    
+            return { roll, color, result: resultText };
+        } catch (error) {
+            console.error("Error in rollAbility:", error);
+            ui.notifications.error("Error rolling ability check");
+            throw error;
+        }
     }
 
     /**
@@ -376,7 +426,9 @@ export class MarvelActor extends Actor {
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
         
         // Roll and add karma
-        const roll = new Roll("1d100").evaluateSync();
+        const roll = new Roll("1d100");
+        await roll.evaluate({ async: true });
+        
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
         
@@ -419,48 +471,88 @@ export class MarvelActor extends Actor {
         return { roll, color };
     }
     
-    // roll attack method 
-    async rollAttack(ability, attackType, options = {}) {
-        console.log("Rolling attack with:", { ability, attackType, options });
-        
-        // Get the ability data
+async rollAttack(ability, attackType, options = {}) {
+    try {
         const abilityData = this.system.primaryAbilities[ability.toLowerCase()];
         if (!abilityData) {
             console.error(`Ability ${ability} not found`);
             throw new Error(`Ability ${ability} not found`);
         }
-    
+
+        // Map equipment types to combat types
+        const typeMapping = {
+            "S": "Sh",    // Shooting should map to "Sh"
+            "F": "Fo",    // Force maps to "Fo"
+            "E": "En",    // Energy maps to "En"
+            "EA": "EA",   // Edged Attack maps to "EA"
+            "ET": "TE",   // Edged Thrown maps to "TE"
+            "BA": "BA",   // Blunt Attack maps to "BA"
+            "BT": "TB",    // Blunt Thrown maps to "TB"
+            "W": "Gr",     // Wrestling maps to "Gr" (Grappling)
+            "Gr": "Gp",   // Explicit Grappling maps to "Gp"
+            "Gp": "Gp"    // Direct Grappling code maps to "Gp"
+        };
+
+        // Get the mapped combat type
+        const combatType = typeMapping[attackType] || attackType;  // This allows it to pass through unmapped types
+        
         // Get base rank and apply column shift
         const baseRank = abilityData.rank || this.getRankFromValue(abilityData.number);
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
     
         // Roll the dice
-        const roll = await new Roll("1d100").evaluate();
-        const total = roll.total;
-    
+        const roll = new Roll("1d100");
+        await roll.evaluate(); // Evaluate properly in Foundry V12
+
+        const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
+        const total = Math.min(100, roll.total + karmaPoints);
+
         console.log("Attack roll result:", { 
             total, 
             baseRank, 
             shiftedRank,
-            abilityData 
+            abilityData,
+            combatType
         });
+
+        // Handle karma deduction if karma was spent
+        if (karmaPoints > 0) {
+            const currentKarma = this.system.karmaTracking.karmaPool;
+            const currentHistory = this.system.karmaTracking.history || [];
+            
+            const newEntry = {
+                date: new Date().toLocaleString(),
+                amount: -karmaPoints,
+                description: `Spent on ${ability.toUpperCase()} Attack roll`
+            };
+
+            await this.update({
+                "system.karmaTracking.karmaPool": currentKarma - karmaPoints,
+                "system.karmaTracking.history": [...currentHistory, newEntry]
+            });
+        }
     
         // Get the color result
         const color = this.getColorResult(total, shiftedRank);
+
+        // Get combat results based on combat type
+        let resultText;
+        const attackCode = typeMapping[attackType] || "BA";  // Default to Blunt Attack if type not found
+        resultText = CONFIG.marvel.actionResults[attackCode]?.results[color] || color.toUpperCase();
     
-        // Create chat message
+        // Create chat message content
         const messageContent = `
-            <div class="marvel-roll">
-                <h3>${this.name} - ${attackType} Attack</h3>
-                <div class="roll-details">
-                    <div>${ability}: ${abilityData.number} (${baseRank})</div>
-                    ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                    <div>Roll: ${total}</div>
-                </div>
-                <div class="roll-result ${this._getColorClass(color)}">
-                    ${color.toUpperCase()}
-                </div>
-            </div>`;
+        <div class="faserip-roll">
+            <h3>${this.name} - ${ability.toUpperCase()} Roll (${combatType})</h3>
+            <div>Base Rank: ${baseRank} (${abilityData.number})</div>
+            ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
+            <div>Roll: ${roll.total}${karmaPoints ? ` + Karma: ${karmaPoints} = ${total}` : ''}</div>
+            ${options.weaponDamage ? `<div>Weapon Damage: ${options.weaponDamage}</div>` : ''}
+            ${options.range ? `<div>Range: ${options.range}</div>` : ''}
+            <div class="roll-result" style="background-color: ${color}; color: ${color === 'white' || color === 'yellow' ? 'black' : 'white'}; padding: 5px; text-align: center; font-weight: bold; border: 1px solid black;">
+                ${resultText} (${color.toUpperCase()})
+            </div>
+        </div>`;
     
         await ChatMessage.create({
             speaker: ChatMessage.getSpeaker({ actor: this }),
@@ -469,8 +561,13 @@ export class MarvelActor extends Actor {
             sound: CONFIG.sounds.dice
         });
     
-        return { roll, color };
+        return { roll, color, total };
+    } catch (err) {
+        console.error("Error in rollAttack:", err);
+        ui.notifications.error("Error processing attack roll");
+        return null;
     }
+}
 
     /**
      * Calculate damage from a combat hit
@@ -534,114 +631,47 @@ export class MarvelActor extends Actor {
      * @returns {Promise<Object>} The attack results
      */
     async handleAttack(ability, attackType, options = {}, target) {
-        console.log("HandleAttack started with:", {ability, attackType, options, target});
-        
-        if (!target) {
-            ui.notifications.error("No target selected");
-            return null;
-        }
+        try {
+            // Prevent double processing
+            if (this._processingAttack) {
+                console.log("Attack already being processed");
+                return null;
+            }
+            this._processingAttack = true;
     
-        // Get the target's current health before we start
-        const currentHealth = target.system.secondaryAbilities.health.value;
-        const maxHealth = target.system.secondaryAbilities.health.max;
-        console.log("Target initial health status:", {
-            currentHealth,
-            maxHealth,
-            target: target.name,
-            healthSystem: target.system.secondaryAbilities.health
-        });
-    
-        // Roll the attack - this already handles the dialog
-        console.log("About to roll attack with:", {ability, attackType, options});
-        const attackRoll = await this.rollAttack(ability, attackType, options);
-        console.log("Attack roll result:", attackRoll);
-        
-        if (!attackRoll) {
-            console.log("No attack roll result, returning null");
-            return null;
-        }
-    
-        // If hit (anything but white), calculate and apply damage
-        if (attackRoll.color !== "white") {
-            let calculatedDamage = 0;
-    
-            // Calculate base damage based on attack type
-            console.log("Calculating damage for attack type:", attackType);
-            switch(attackType) {
-                case "BA": // Blunt Attack
-                    calculatedDamage = this.system.primaryAbilities.strength.number;
-                    console.log("Blunt Attack damage based on strength:", calculatedDamage);
-                    break;
-                case "EA": // Edged Attack
-                    calculatedDamage = options.weaponDamage || this.system.primaryAbilities.strength.number;
-                    console.log("Edged Attack damage:", calculatedDamage);
-                    break;
-                case "TB": // Throwing Blunt
-                case "TE": // Throwing Edged
-                    calculatedDamage = Math.min(this.system.primaryAbilities.strength.number, options.weaponDamage || 0);
-                    console.log("Throwing attack damage:", calculatedDamage);
-                    break;
-                case "Sh": // Shooting
-                    calculatedDamage = options.weaponDamage || 0;
-                    console.log("Shooting damage:", calculatedDamage);
-                    break;
-                case "En": // Energy
-                case "Fo": // Force
-                    calculatedDamage = options.weaponDamage || 0;
-                    console.log("Energy/Force damage:", calculatedDamage);
-                    break;
+            if (!target?.actor) {
+                ui.notifications.error("Valid target required");
+                this._processingAttack = false;
+                return null;
             }
     
-            // Get target's armor/protection if any
-            const targetArmor = target.system.resistances?.list?.find(r => 
-                r.type.toLowerCase() === "physical")?.number || 0;
-            console.log("Target armor found:", targetArmor);
-    
-            // Reduce damage by armor
-            const finalDamage = Math.max(0, calculatedDamage - targetArmor);
-            console.log("Final damage after armor reduction:", finalDamage);
-    
-            try {
-                // Update target's health
-                const newHealth = Math.max(0, currentHealth - finalDamage);
-                console.log("Updating target health:", {
-                    current: currentHealth,
-                    damage: finalDamage,
-                    new: newHealth,
-                    target: target.name
-                });
-    
-                await target.update({
-                    "system.secondaryAbilities.health.value": newHealth
-                });
-    
-                // Create damage message
-                const messageContent = `
-                    <div class="marvel-damage">
-                        <h3>${this.name} hits ${target.name}!</h3>
-                        <div class="damage-details">
-                            <div>Base Damage: ${calculatedDamage}</div>
-                            ${targetArmor ? `<div>Target Armor: ${targetArmor}</div>` : ''}
-                            <div>Final Damage: ${finalDamage}</div>
-                            <div>Target Health: ${currentHealth} → ${newHealth}</div>
-                        </div>
-                    </div>`;
-    
-                await ChatMessage.create({
-                    speaker: ChatMessage.getSpeaker({ actor: this }),
-                    content: messageContent
-                });
-    
-            } catch (error) {
-                console.error('Error applying damage:', error);
-                ui.notifications.error("Error applying damage to target");
-                throw error;
+            // Roll attack with proper error handling
+            const attackRoll = await this.rollAttack(ability, attackType, options);
+            if (!attackRoll?.success) {
+                this._processingAttack = false;
+                return attackRoll;
             }
     
-            return { ...attackRoll, damage: finalDamage };
-        }
+            // Calculate and apply damage
+            const damageResult = await this._calculateAndApplyDamage(
+                attackRoll, 
+                attackType, 
+                options, 
+                target
+            );
     
-        return attackRoll;
+            this._processingAttack = false;
+            return {
+                ...attackRoll,
+                ...damageResult
+            };
+    
+        } catch (err) {
+            console.error("Error in handleAttack:", err);
+            ui.notifications.error("Error processing attack");
+            this._processingAttack = false;
+            return null;
+        }
     }
 
 
@@ -653,7 +683,7 @@ export class MarvelActor extends Actor {
      * @param {Actor} target - The target actor
      * @returns {Promise<Object>} The attack results
      */
-    async handleAttack(ability, attackType, options = {}, target) {
+    /* async handleAttack(ability, attackType, options = {}, target) {
         if (!target) {
             ui.notifications.error("No target selected");
             return null;
@@ -780,7 +810,7 @@ export class MarvelActor extends Actor {
         }
     
         return attackRoll;
-    }
+    } */
 
     /**
      * Get CSS class for color formatting
@@ -800,7 +830,10 @@ export class MarvelActor extends Actor {
 
     async handleCombatEffect(effectType) {
         // Roll endurance FEAT for effect
-        const enduranceRoll = new Roll("1d100").evaluateSync();
+        /* const enduranceRoll = new Roll("1d100").evaluateSync(); */
+        const enduranceRoll = new Roll("1d100");
+        await enduranceRoll.evaluate({async: true});
+
         const enduranceRank = this.system.primaryAbilities.endurance.rank;
         
         // Get color result from universal table
@@ -989,25 +1022,55 @@ export class MarvelActor extends Actor {
      * @param {Object} options - Roll options
      * @returns {Promise<Roll|null>} The roll result or null if automatic/failed
      */
+    
     async rollResourceFeat(itemRank, options = {}) {
+        // Get rank calculations
         const resourceRank = this.system.secondaryAbilities.resources.rank;
-        
-        // Create base message content
+        const ranks = Object.keys(CONFIG.marvel.ranks);
+        const resourceIndex = ranks.indexOf(resourceRank);
+        const itemIndex = ranks.indexOf(itemRank);
+        const rankDiff = resourceIndex - itemIndex;
+    
+        // Check if automatic purchase
+        const isAutomaticPurchase = rankDiff >= 3 && !options.useBank;
+    
+        // Check timing only if not automatic and not GM
+        if (!isAutomaticPurchase && !game.user.isGM) {
+            const lastAttempt = this.getFlag("marvel-faserip", "lastResourceAttempt");
+            if (lastAttempt) {
+                const daysSinceAttempt = Math.floor((Date.now() - lastAttempt.timestamp) / (24 * 60 * 60 * 1000));
+                if (daysSinceAttempt < 7) {
+                    ui.notifications.error(`Must wait ${7 - daysSinceAttempt} more days before making another resource roll.`);
+                    return null;
+                }
+            }
+        }
+
         let messageContent = `
             <div class="marvel-roll">
                 <h3>${this.name} - Resource FEAT</h3>
                 <div class="roll-details">
                     <div>Resource Rank: ${resourceRank}</div>
-                    <div>Item Rank: ${itemRank}</div>
-        `;
+                    <div>Item Rank: ${itemRank}</div>`;
 
-        // Check if attempt is allowed
-        const canAttempt = await this._canAttemptResourceFeat(itemRank);
-        if (!canAttempt.allowed) {
+        // Handle bank loan attempts
+        if (options.useBank) {
+            if (rankDiff < -1) {
+                messageContent += `
+                    <div class="resource-failure">Bank loans only available for items one rank above Resources</div>
+                </div>`;
+                await ChatMessage.create({
+                    speaker: ChatMessage.getSpeaker({ actor: this }),
+                    content: messageContent
+                });
+                return null;
+            }
+        }
+        // Handle non-bank attempts above resource rank
+        else if (rankDiff < 0) {
             messageContent += `
-                <div class="resource-failure">${canAttempt.message}</div>
+                <div class="resource-failure">Cannot purchase items above Resource rank without bank loan</div>
             </div>`;
-            
             await ChatMessage.create({
                 speaker: ChatMessage.getSpeaker({ actor: this }),
                 content: messageContent
@@ -1015,50 +1078,41 @@ export class MarvelActor extends Actor {
             return null;
         }
 
-        // Get difficulty assessment
-        const difficulty = this._getResourceFeatDifficulty(resourceRank, itemRank);
-        
-        if (!difficulty.allowed) {
+        // Handle automatic success (3+ ranks below)
+        if (rankDiff >= 3 && !options.useBank) {
             messageContent += `
-                <div class="resource-failure">${difficulty.message}</div>
+                <div class="success">Automatic Success (item rank is 3+ ranks below Resources)</div>
             </div>`;
-            
-            await ChatMessage.create({
-                speaker: ChatMessage.getSpeaker({ actor: this }),
-                content: messageContent
-            });
-            return null;
-        }
-
-        // Handle automatic success
-        if (difficulty.automatic) {
-            messageContent += `
-                <div class="success">${difficulty.message}</div>
-            </div>`;
-            
             await ChatMessage.create({
                 speaker: ChatMessage.getSpeaker({ actor: this }),
                 content: messageContent
             });
 
-            // Record successful attempt
             await this.setFlag("marvel-faserip", "lastResourceAttempt", {
                 timestamp: Date.now(),
                 rank: itemRank,
                 date: new Date().toISOString()
             });
 
-            return null;
+            return { success: true, automatic: true };
         }
-     
-        // Previous method content remains the same until the automatic success check...
 
-        // Apply column shifts and roll
-        const shiftedRank = this.applyColumnShift(resourceRank, options.columnShift || 0);
-        const roll = new Roll("1d100").evaluateSync();
+        // Determine required color
+        let requiredColor;
+        if (options.useBank) {
+            requiredColor = "yellow"; // Bank loans require yellow FEAT
+        } else if (rankDiff === 0) {
+            requiredColor = "yellow"; // Equal rank requires yellow
+        } else if (rankDiff > 0) {
+            requiredColor = "green"; // 1-2 ranks below requires green
+        }
+
+        // Roll with karma points
+        const roll = new Roll("1d100");
+        await roll.evaluate({async: true});
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
-        
+
         // Deduct karma if used
         if (karmaPoints > 0) {
             await this.update({
@@ -1066,67 +1120,113 @@ export class MarvelActor extends Actor {
             });
         }
 
-        // Get color result and determine success
-        const color = this.getColorResult(finalRoll, shiftedRank);
-        const colors = ["white", "green", "yellow", "red"];
-        const requiredColorIndex = colors.indexOf(difficulty.color);
-        const resultColorIndex = colors.indexOf(color);
-        const success = resultColorIndex >= requiredColorIndex;
+        // Get result color
+        let shiftedRank = resourceRank;
+        if (options.columnShift) {
+            shiftedRank = this.applyColumnShift(resourceRank, options.columnShift);
+        }
+        const result = this.getColorResult(finalRoll, shiftedRank);
+        const success = this.isSuccessfulColor(result, requiredColor);
 
         // Record attempt
-        await this.setFlag("marvel-faserip", "lastResourceAttempt", {
+        const attemptData = {
             timestamp: Date.now(),
             rank: itemRank,
             date: new Date().toISOString()
-        });
+        };
+        await this.setFlag("marvel-faserip", "lastResourceAttempt", attemptData);
 
-        // Handle failure
+        // If failed, record failure and lockout
         if (!success) {
-            const failureData = {
-                timestamp: Date.now(),
-                rank: itemRank,
-                date: new Date().toISOString()
-            };
-
-            await this.setFlag("marvel-faserip", "lastResourceFailure", failureData);
-
-            const nextAttemptDate = new Date(Date.now() + (7 * 24 * 60 * 60 * 1000));
-            messageContent += `
-                <div class="roll-details">
-                    ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                    <div>Roll: ${roll.total}${karmaPoints ? ` + ${karmaPoints} Karma = ${finalRoll}` : ''}</div>
-                </div>
-                <div class="roll-result ${this._getColorClass(color)}">
-                    FAILURE
-                </div>
-                <div class="resource-failure">
-                    <div>Resource FEAT failed. Cannot attempt same or higher rank for 7 days.</div>
-                    <div>Next attempt available: ${nextAttemptDate.toLocaleString()}</div>
-                </div>
-            </div>`;
-        } else {
-            messageContent += `
-                <div class="roll-details">
-                    ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
-                    <div>Roll: ${roll.total}${karmaPoints ? ` + ${karmaPoints} Karma = ${finalRoll}` : ''}</div>
-                </div>
-                <div class="roll-result ${this._getColorClass(color)}">
-                    SUCCESS
-                </div>
-            </div>`;
+            await this.setFlag("marvel-faserip", "lastResourceFailure", attemptData);
         }
+
+        // Complete message content
+        messageContent += `
+            ${options.columnShift ? `<div>Column Shift: ${options.columnShift} → ${shiftedRank}</div>` : ''}
+            <div>Roll: ${roll.total}${karmaPoints ? ` + ${karmaPoints} Karma = ${finalRoll}` : ''}</div>
+            ${options.useBank ? '<div>Using Bank Loan</div>' : ''}
+            <div class="roll-result ${this._getColorClass(result)}">
+                ${result.toUpperCase()}
+            </div>
+            <div class="roll-success">
+                ${success ? 'Success!' : 'Failure - Cannot attempt purchases of this rank or higher for one week'}
+            </div>
+        </div>`;
 
         // Create chat message
         await ChatMessage.create({
             speaker: ChatMessage.getSpeaker({ actor: this }),
             content: messageContent,
-            rolls: [roll],
-            sound: CONFIG.sounds.dice
+            rolls: [roll]
         });
 
-        return { roll, success, color };
+        // Handle bank loan approval
+        if (success && options.useBank) {
+            // Calculate loan duration based on item rank value
+            const duration = CONFIG.marvel.ranks[itemRank]?.standard || 12;
+            // Calculate payment rank (2 ranks below item rank)
+            const paymentRankIndex = Math.max(0, itemIndex - 2);
+            const paymentRank = ranks[paymentRankIndex];
+
+            await this.setFlag("marvel-faserip", "activeLoan", {
+                itemRank: itemRank,
+                paymentRank: paymentRank,
+                remainingMonths: duration,
+                startDate: new Date().toISOString()
+            });
+
+            ui.notifications.info(`Loan approved! Monthly payments at ${paymentRank} rank for ${duration} months required.`);
+        }
+
+        return { roll, result, success };
+
+    } catch (error) {
+        console.error("Error in rollResourceFeat:", error);
+        ui.notifications.error("Error processing resource roll");
+        return null;
     }
 
+// Add helper method to MarvelActor.js if not already present
+isSuccessfulColor(resultColor, requiredColor) {
+    const colorValues = {
+        "white": 0,
+        "green": 1,
+        "yellow": 2,
+        "red": 3
+    };
+    return colorValues[resultColor.toLowerCase()] >= colorValues[requiredColor.toLowerCase()];
+}
+
+async _getResourceWarningMessage(lastAttempt) {
+    if (lastAttempt && !game.user.isGM) {
+        const daysSinceAttempt = Math.floor((Date.now() - lastAttempt.timestamp) / (24 * 60 * 60 * 1000));
+        if (daysSinceAttempt < 7) {
+            return `Warning: Last roll attempt was ${daysSinceAttempt} days ago. Must wait ${7 - daysSinceAttempt} more days before making another roll.`;
+        }
+    }
+    return "";
+}
+
+async clearResourceLockout() {
+    await this.unsetFlag("marvel-faserip", "lastResourceAttempt");
+    await this.unsetFlag("marvel-faserip", "lastResourceFailure");
+    await this.unsetFlag("marvel-faserip", "activeLoan");
+    await game.user.unsetFlag("world", "marvelResourceOptions");
+    
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        content: `
+            <div class="marvel-roll">
+                <h3>${this.name} - Resource FEAT Lockout Cleared</h3>
+                <div class="roll-details">
+                    <div>GM has cleared the resource FEAT lockout.</div>
+                </div>
+            </div>`
+    });
+    
+    ui.notifications.info("Resource FEAT roll lockout cleared");
+}   
     /**
      * Roll a Popularity FEAT
      * @param {string} popularityType - Either "hero" or "secret"
@@ -1184,7 +1284,9 @@ export class MarvelActor extends Actor {
         const shiftedRank = this.applyColumnShift(baseRank, totalShift);
 
         // Roll and add karma
-        const roll = new Roll("1d100").evaluateSync();
+        const roll = new Roll("1d100");
+        await roll.evaluate(); // Evaluate properly in Foundry V12
+        
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
 
@@ -1251,18 +1353,17 @@ export class MarvelActor extends Actor {
      */
     async applyDamage(damage, options = {}) {
         console.log(`Applying ${damage} damage to ${this.name}`);
+
+        await this.setFlag("marvel-faserip", "lastDamage", { timestamp: game.time.worldTime });
         
+        // Get current health values
         const currentHealth = this.system.secondaryAbilities.health.value;
         console.log(`Current health: ${currentHealth}`);
         
+        // Calculate new health (ensure it can go to 0 but not negative)
         const newHealth = Math.max(0, currentHealth - damage);
         console.log(`New health will be: ${newHealth}`);
-
-        // Update health value using the correct data path
-        await this.update({
-            "system.secondaryAbilities.health.value": newHealth
-        });
-
+    
         // Create chat message for damage
         const messageContent = `
             <div class="marvel-damage">
@@ -1271,18 +1372,55 @@ export class MarvelActor extends Actor {
                     Health: ${currentHealth} → ${newHealth}
                 </div>
             </div>`;
-
+    
         await ChatMessage.create({
             speaker: ChatMessage.getSpeaker({ actor: this }),
             content: messageContent
         });
-
-        // Check for endurance FEAT if health drops to 0
-        if (newHealth === 0) {
-            await this.rollEnduranceFeat({ type: "death" });
+        
+        try {
+            // Update health with the correct document API
+            await this.update({
+                "system.secondaryAbilities.health.value": newHealth
+            });
+            
+            console.log("Health update successful, new health:", this.system.secondaryAbilities.health.value);
+            
+            // Check if character has reached 0 Health
+            if (newHealth === 0) {
+                console.log(`${this.name} has fallen unconscious at 0 Health!`);
+                await this._handleUnconscious();
+            }
+        } catch (error) {
+            console.error("Error updating health:", error);
+            throw error;
         }
-
+        
         return newHealth;
+    }
+
+    async canRecoverHealth() {
+        const lastDamage = this.getFlag("marvel-faserip", "lastDamage")?.timestamp;
+        const lastRecovery = this.getFlag("marvel-faserip", "lastRecoveryTime");
+        const currentTime = game.time.worldTime;
+        
+        // No recovery if unconscious
+        if (this.effects.find(e => e.statuses.has("unconscious"))) {
+            return { allowed: false, reason: "Character is unconscious" };
+        }
+        
+        // Must wait 10 turns (60 seconds) after damage
+        if (lastDamage && (currentTime - lastDamage) < 60) {
+            const turnsRemaining = Math.ceil((60 - (currentTime - lastDamage.timestamp)) / 6);
+            return { allowed: false, reason: `Must wait ${turnsRemaining} more turns after damage` };
+        }
+        
+        // Only one recovery per day (86400 seconds)
+        if (lastRecovery && (currentTime - lastRecovery) < 86400) {
+            return { allowed: false, reason: "Only one recovery allowed per day" };
+        }
+        
+        return { allowed: true };
     }
 
     /**
@@ -1299,7 +1437,9 @@ export class MarvelActor extends Actor {
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
 
         // Roll with karma option
-        const roll = new Roll("1d100").evaluateSync();
+        //const roll = new Roll("1d100").evaluateSync();
+        const roll = new Roll("1d100");
+        await roll.evaluate({async: true});
         const karmaPoints = Math.min(options.karmaPoints || 0, this.system.secondaryAbilities.karma.value);
         const finalRoll = Math.min(100, roll.total + karmaPoints);
 
@@ -1390,7 +1530,8 @@ export class MarvelActor extends Actor {
                 await this.createEmbeddedDocuments("ActiveEffect", [{
                     label: "Dead",
                     icon: "icons/svg/skull.svg",
-                    flags: { core: { statusId: deadId } }
+                    /* flags: { core: { statusId: deadId } } */
+                    statuses: new Set(["deadId"])
                 }]);
             } else {
                 // Add unconscious effect if not already present
@@ -1399,7 +1540,8 @@ export class MarvelActor extends Actor {
                     await this.createEmbeddedDocuments("ActiveEffect", [{
                         label: "Unconscious",
                         icon: "icons/svg/unconscious.svg",
-                        flags: { core: { statusId: unconsciousId } }
+                        /* flags: { core: { statusId: unconsciousId } } */
+                        statuses: new Set(["unconscious"])
                     }]);
                 }
             }
@@ -1409,43 +1551,444 @@ export class MarvelActor extends Actor {
                 await this.createEmbeddedDocuments("ActiveEffect", [{
                     label: "Unconscious",
                     icon: "icons/svg/unconscious.svg",
-                    flags: { core: { statusId: unconsciousId } }
+                    /* flags: { core: { statusId: unconsciousId } } */
+                    statuses: new Set(["unconscious"])
                 }]);
             }
         }
     }
 
-    /**
-     * Handle healing
-     * @param {number} amount - Amount of healing to apply
-     * @returns {Promise} Promise that resolves when healing is applied
-     */
-    async applyHealing(amount) {
-        const currentHealth = this.system.secondaryAbilities.health.value;
-        const maxHealth = this.system.secondaryAbilities.health.max;
-        const newHealth = Math.min(maxHealth, currentHealth + amount);
+ /**
+ * Handle unconsciousness and potential death when Health reaches 0
+ * @private
+ */
+ async _handleUnconscious() {
+    // First apply unconscious status effect 
+    // Remove any existing unconscious effect to avoid duplicates
+    const existingEffect = this.effects.find(e => e.statuses.has("unconscious"));
+    if (existingEffect) await existingEffect.delete();
+    
+    // Add unconscious effect
+    await this.createEmbeddedDocuments("ActiveEffect", [{
+        label: "Unconscious",
+        icon: "icons/svg/unconscious.svg",
+        statuses: new Set(["unconscious"])
+    }]);
 
-        // Update health value
-        await this.update({
-            "system.secondaryAbilities.health.value": newHealth
-        });
-
-        // Create chat message for healing
-        const messageContent = `
-            <div class="marvel-healing">
-                <h3>${this.name} heals ${amount} health</h3>
-                <div class="health-track">
-                    Health: ${currentHealth} → ${newHealth}
+    // Roll Endurance FEAT to check for Endurance Loss
+    const enduranceRoll = new Roll("1d100");
+    await enduranceRoll.evaluate({async: true});
+    
+    // Get character's endurance rank
+    const enduranceRank = this.system.primaryAbilities.endurance.rank;
+    
+    // Get result based on Kill column of Effects Table
+    const color = this.getColorResult(enduranceRoll.total, enduranceRank);
+    
+    // Determine outcome based on result
+    let effect = "";
+    let message = "";
+    
+    // Check Endurance FEAT result
+    if (color === "white" || color === "green") {
+        // Endurance Loss - character begins dying
+        effect = "Endurance Loss";
+        message = `${this.name} begins losing Endurance ranks and requires immediate aid!`;
+        
+        // Start endurance loss process
+        await this._startEnduranceLoss();
+    } else {
+        // No effect - character is stunned but stable
+        effect = "Stunned";
+        message = `${this.name} is unconscious but stable for 1-10 rounds.`;
+        
+        // Set a timer to check for consciousness
+        const stunRounds = Math.floor(Math.random() * 10) + 1;
+        await this.setFlag("marvel-faserip", "unconsciousRounds", stunRounds);
+    }
+    
+    // Create chat message about the unconsciousness
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        content: `
+            <div class="marvel-health-check">
+                <h3>${this.name} - Health Check</h3>
+                <div class="roll-details">
+                    <div>Endurance FEAT: ${enduranceRoll.total} (${color.toUpperCase()})</div>
+                    <div>Result: ${effect}</div>
+                    <div>${message}</div>
                 </div>
-            </div>`;
+            </div>`,
+        rolls: [enduranceRoll],
+        sound: CONFIG.sounds.dice
+    });
+}
 
+/**
+ * Start the process of endurance loss for a dying character
+ * @private
+ */
+async _startEnduranceLoss() {
+    // Flag the character as dying
+    await this.setFlag("marvel-faserip", "dying", true);
+    
+    // Store the original endurance rank for recovery
+    await this.setFlag("marvel-faserip", "originalEnduranceRank", this.system.primaryAbilities.endurance.rank);
+    
+    // Create a dying effect with a duration of 1 round (6 seconds)
+    await this.createEmbeddedDocuments("ActiveEffect", [{
+        label: "Dying",
+        icon: "icons/svg/skull.svg",
+        duration: {
+            rounds: 1,
+            seconds: 6,
+            startTime: game.time.worldTime
+        },
+        flags: {
+            "marvel-faserip": {
+                isDying: true,
+                lastUpdate: game.time.worldTime
+            }
+        },
+        statuses: new Set(["dying"])
+    }]);
+
+    // Register for time updates
+    this._registerDyingEffect();
+}
+
+_registerDyingEffect() {
+    // Remove any existing hooks first
+    const hookId = this.getFlag("marvel-faserip", "dyingHookId");
+    if (hookId) {
+        Hooks.off("updateWorldTime", hookId);
+    }
+
+    // Create new hook for time updates
+    const newHookId = Hooks.on("updateWorldTime", (worldTime) => {
+        if (!game.paused) {
+            this._checkDyingStatus(worldTime);
+        }
+    });
+
+    // Store the hook ID for later cleanup
+    this.setFlag("marvel-faserip", "dyingHookId", newHookId);
+}
+
+async _checkDyingStatus(worldTime) {
+    const dyingEffect = this.effects.find(e => e.getFlag("marvel-faserip", "isDying"));
+    if (!dyingEffect) return;
+
+    const lastUpdate = dyingEffect.getFlag("marvel-faserip", "lastUpdate");
+    const timePassed = worldTime - lastUpdate;
+
+    // Check if 6 seconds (1 round) has passed
+    if (timePassed >= 6) {
+        await this._loseEnduranceRank();
+        
+        // Update the last check time
+        await dyingEffect.update({
+            "flags.marvel-faserip.lastUpdate": worldTime
+        });
+    }
+}
+
+async _loseEnduranceRank() {
+    // Check if still dying
+    if (!this.getFlag("marvel-faserip", "dying")) return;
+    
+    const currentRank = this.system.primaryAbilities.endurance.rank;
+    
+    // Get available ranks
+    const ranks = Object.keys(CONFIG.marvel.ranks);
+    const currentIndex = ranks.indexOf(currentRank);
+    
+    // If already at Shift 0 or can't find current rank, character dies
+    if (currentIndex <= 0 || currentRank === "Shift 0") {
+        return this._characterDeath();
+    }
+    
+    // Otherwise reduce one rank
+    const newRank = ranks[currentIndex - 1];
+    
+    // Update endurance rank
+    await this.update({
+        "system.primaryAbilities.endurance.rank": newRank,
+        "system.primaryAbilities.endurance.number": CONFIG.marvel.ranks[newRank]?.standard || 0
+    });
+    
+    // Notify about rank loss
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        content: `
+            <div class="marvel-health-check">
+                <h3>${this.name} - Endurance Loss</h3>
+                <div class="roll-details">
+                    <div>Endurance reduced from ${currentRank} to ${newRank}</div>
+                    <div>Character will die if not stabilized!</div>
+                </div>
+            </div>`
+    });
+}
+
+
+/**
+ * Handle character death
+ * @private
+ */
+async _characterDeath() {
+    // Remove dying flag
+    await this.unsetFlag("marvel-faserip", "dying");
+    
+    // Remove dying effect
+    const dyingEffect = this.effects.find(e => e.statuses.has("dying"));
+    if (dyingEffect) await dyingEffect.delete();
+    
+    // Remove unconscious effect if present
+    const unconsciousEffect = this.effects.find(e => e.statuses.has("unconscious"));
+    if (unconsciousEffect) await unconsciousEffect.delete();
+    
+    // Add dead effect - THIS IS THE ONLY PLACE DEAD STATUS SHOULD BE APPLIED
+    await this.createEmbeddedDocuments("ActiveEffect", [{
+        label: "Dead",
+        icon: "icons/svg/skull.svg",
+        statuses: new Set(["dead"])
+    }]);
+    
+    // Create death message
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        content: `
+            <div class="marvel-death">
+                <h3>${this.name} has died</h3>
+                <div class="roll-details">
+                    <div>Endurance reached Shift 0</div>
+                    <div>Character is now deceased.</div>
+                </div>
+            </div>`,
+        sound: CONFIG.sounds.death
+    });
+}
+
+/**
+ * Provide aid to a dying character
+ * @param {string} aidType - Type of aid being provided
+ * @param {Object} options - Options for the aid
+ * @returns {Promise<boolean>} Success of the aid attempt
+ */
+async provideAid(aidType = "firstAid", options = {}) {
+    try {
+        // Check if character is dying or at 0 health
+        const isDying = this.effects.find(e => e.getFlag("marvel-faserip", "isDying"));
+        const isAtZeroHealth = this.system.secondaryAbilities.health.value <= 0;
+        
+        if (!isDying && !isAtZeroHealth) {
+            ui.notifications.warn(`${this.name} is not in need of life-saving aid.`);
+            return false;
+        }
+        
+        // Stop the dying process if applicable
+        if (isDying) {
+            await this.unsetFlag("marvel-faserip", "dying");
+            await isDying.delete();
+            
+            // Remove the time update hook
+            const hookId = this.getFlag("marvel-faserip", "dyingHookId");
+            if (hookId) {
+                Hooks.off("updateWorldTime", hookId);
+                await this.unsetFlag("marvel-faserip", "dyingHookId");
+            }
+        }
+        
+        // Character remains unconscious for 1-10 hours
+        const hoursUnconscious = Math.floor(Math.random() * 10) + 1;
+        
+        // Create message based on aid type and additional details
+        let aidMessage = "";
+        switch (aidType) {
+            case "firstAid":
+                aidMessage = `${options.aider || 'Someone'} has provided first aid to ${this.name}.`;
+                break;
+            case "medical":
+                aidMessage = `${options.aider || 'A medical professional'} has provided medical treatment to ${this.name}.`;
+                break;
+            case "power":
+                aidMessage = `${options.aider || 'Someone'} has used healing powers on ${this.name}.`;
+                break;
+            default:
+                aidMessage = `${options.aider || 'Someone'} has stabilized ${this.name}.`;
+        }
+        
+        // Add any additional details
+        if (options.details) {
+            aidMessage += ` (${options.details})`;
+        }
+        
+        // Create unconscious effect if not already present
+        const unconsciousEffect = this.effects.find(e => e.statuses.has("unconscious"));
+        if (!unconsciousEffect) {
+            await this.createEmbeddedDocuments("ActiveEffect", [{
+                label: "Unconscious",
+                icon: "icons/svg/unconscious.svg",
+                duration: {
+                    hours: hoursUnconscious
+                },
+                statuses: new Set(["unconscious"])
+            }]);
+        }
+        
+        // Create aid message
         await ChatMessage.create({
             speaker: ChatMessage.getSpeaker({ actor: this }),
-            content: messageContent
+            content: `
+                <div class="marvel-aid">
+                    <h3>${this.name} Stabilized</h3>
+                    <div class="roll-details">
+                        <div>${aidMessage}</div>
+                        <div>Character is unconscious but stable for ${hoursUnconscious} hours.</div>
+                    </div>
+                </div>`
         });
-
-        return newHealth;
+        
+        // Set minimum health if at 0
+        if (this.system.secondaryAbilities.health.value <= 0) {
+            await this.update({
+                "system.secondaryAbilities.health.value": 1
+            });
+        }
+        
+        return true;
+    } catch (error) {
+        console.error("Error in provideAid:", error);
+        ui.notifications.error("Error while providing aid");
+        return false;
     }
+}
+
+/**
+ * Attempt to regain consciousness
+ * @returns {Promise<boolean>} Success of consciousness recovery
+ */
+async attemptRegainConsciousness() {
+    // Check if character is unconscious
+    const unconsciousEffect = this.effects.find(e => e.flags?.core?.statusId === "marvel-faserip.unconscious");
+    if (!unconsciousEffect) return false;
+    
+    // Roll Endurance FEAT
+    const enduranceRoll = new Roll("1d100");
+    await enduranceRoll.evaluate({async: true});
+    
+    const enduranceRank = this.system.primaryAbilities.endurance.rank;
+    const color = this.getColorResult(enduranceRoll.total, enduranceRank);
+    
+    // Green or better result means success
+    const success = ["green", "yellow", "red"].includes(color);
+    
+    if (success) {
+        // Remove unconscious effect
+        await unconsciousEffect.delete();
+        
+        // Restore health to endurance rank
+        const enduranceValue = this.system.primaryAbilities.endurance.number;
+        await this.update({
+            "system.secondaryAbilities.health.value": enduranceValue
+        });
+        
+        // Create success message
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this }),
+            content: `
+                <div class="marvel-consciousness">
+                    <h3>${this.name} Regains Consciousness</h3>
+                    <div class="roll-details">
+                        <div>Endurance FEAT: ${enduranceRoll.total} (${color.toUpperCase()})</div>
+                        <div>Character has regained consciousness with ${enduranceValue} Health.</div>
+                    </div>
+                </div>`,
+            rolls: [enduranceRoll]
+        });
+    } else {
+        // Create failure message
+        await ChatMessage.create({
+            speaker: ChatMessage.getSpeaker({ actor: this }),
+            content: `
+                <div class="marvel-consciousness">
+                    <h3>${this.name} Remains Unconscious</h3>
+                    <div class="roll-details">
+                        <div>Endurance FEAT: ${enduranceRoll.total} (${color.toUpperCase()})</div>
+                        <div>Character remains unconscious. Check again in 1-10 rounds.</div>
+                    </div>
+                </div>`,
+            rolls: [enduranceRoll]
+        });
+    }
+    
+    return success;
+}
+
+/**
+ * Apply natural healing to character
+ * @param {string} healType - Type of healing (normal, recovery, medical)
+ * @returns {Promise<number>} Amount of health recovered
+ */
+async applyHealing(healType = "normal") {
+    // Determine healing amount based on type
+    let healAmount = 0;
+    let description = "";
+
+    const recoveryCheck = await this.canRecoverHealth();
+    if (!recoveryCheck.allowed) {
+        ui.notifications.warn(recoveryCheck.reason);
+        return 0;
+    }
+    await this.setFlag("marvel-faserip", "lastRecoveryTime", game.time.worldTime);
+    
+    switch (healType) {
+        case "recovery":
+            // Recovery occurs 10 turns after damage if not further damaged
+            healAmount = this.system.primaryAbilities.endurance.number;
+            description = "Recovery phase (10 turns after damage)";
+            break;
+            
+        case "medical":
+            // Double healing rate under medical care
+            healAmount = this.system.primaryAbilities.endurance.number * 2;
+            description = "Medical treatment (doctor or hospital)";
+            break;
+            
+        default:
+            // Normal healing - endurance rank per hour
+            healAmount = this.system.primaryAbilities.endurance.number;
+            description = "Natural healing (per hour)";
+    }
+    
+    // Cap healing at max health
+    const currentHealth = this.system.secondaryAbilities.health.value;
+    const maxHealth = this.system.secondaryAbilities.health.max;
+    const newHealth = Math.min(maxHealth, currentHealth + healAmount);
+    const actualHeal = newHealth - currentHealth;
+    
+    // Update health
+    await this.update({
+        "system.secondaryAbilities.health.value": newHealth
+    });
+    
+    // Create healing message
+    await ChatMessage.create({
+        speaker: ChatMessage.getSpeaker({ actor: this }),
+        content: `
+            <div class="marvel-healing">
+                <h3>${this.name} Heals</h3>
+                <div class="roll-details">
+                    <div>Healing Type: ${description}</div>
+                    <div>Health recovered: ${actualHeal}</div>
+                    <div>Health: ${currentHealth} → ${newHealth}</div>
+                </div>
+            </div>`
+    });
+    
+    return actualHeal;
+}
 
     /**
      * Roll for a power stunt attempt
@@ -1488,7 +2031,10 @@ export class MarvelActor extends Actor {
         // Apply column shifts and roll
         const baseRank = power.rank;
         const shiftedRank = this.applyColumnShift(baseRank, options.columnShift || 0);
-        const roll = new Roll("1d100").evaluateSync();
+        //const roll = new Roll("1d100").evaluateSync();
+        const roll = new Roll("1d100");
+        await roll.evaluate({async: true});
+
         const finalRoll = roll.total;  // No karma allowed on power stunt attempts
 
         // Deduct karma cost
@@ -1596,7 +2142,7 @@ export class MarvelActor extends Actor {
      * @param {string} reason - Reason for karma award
      * @returns {Promise} Promise that resolves when karma is added
      */
-    async addKarma(amount, reason) {
+    /* async addKarma(amount, reason) {
         if (!amount || isNaN(amount)) {
             throw new Error("Invalid karma amount");
         }
@@ -1641,14 +2187,14 @@ export class MarvelActor extends Actor {
         });
 
         return currentPool + amount;
-    }
+    } */
 
     /**
      * Transfer karma between pool and advancement fund
      * @param {number} amount - Amount to transfer (positive: pool to fund, negative: fund to pool)
      * @returns {Promise} Promise that resolves when transfer is complete
      */
-    async transferKarma(amount) {
+    /* async transferKarma(amount) {
         if (!amount || isNaN(amount)) {
             throw new Error("Invalid karma transfer amount");
         }
@@ -1690,14 +2236,14 @@ export class MarvelActor extends Actor {
         });
 
         return true;
-    }
+    } */
 
     /**
      * Get karma history with optional filtering
      * @param {Object} options - Filter options
      * @returns {Array} Filtered karma history
      */
-    getKarmaHistory(options = {}) {
+    /* getKarmaHistory(options = {}) {
         const history = this.system.karmaTracking.history || [];
         let filtered = [...history];
 
@@ -1718,7 +2264,7 @@ export class MarvelActor extends Actor {
         filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         return filtered;
-    }
+    } */
 
     /**
      * Advance an ability using karma
@@ -1768,81 +2314,83 @@ export class MarvelActor extends Actor {
         return true;
     }
 
+    // _getAbilityAdvancementCost method
     /**
      * Calculate karma cost for advancing an ability
      * @param {number} currentValue - Current ability value
-     * @returns {number} Karma cost
+     * @returns {number} Karma cost for next rank
      * @private
      */
     _getAbilityAdvancementCost(currentValue) {
-        // Based on FASERIP advancement rules
-        if (currentValue < 10) return 50;
-        if (currentValue < 20) return 75;
-        if (currentValue < 30) return 100;
-        if (currentValue < 40) return 150;
-        if (currentValue < 50) return 200;
-        return 300;
+        // Base cost is 10 times current rank number
+        const baseCost = currentValue * 10;
+        
+        // Check if we're cresting to next rank level
+        const nextValue = currentValue + 1;
+        const currentRank = this.getRankFromValue(currentValue);
+        const nextRank = this.getRankFromValue(nextValue);
+        
+        // If ranks are different, we're cresting and need to add 400
+        if (currentRank !== nextRank) {
+            return baseCost + 400; // Cresting costs additional 400
+        }
+        
+        return baseCost;
     }
 
     /**
-     * Advance a power's rank using karma
-     * @param {number} powerIndex - Index of the power to advance
-     * @returns {Promise<boolean>} Success of the advancement
+     * Calculate karma cost for advancing a power
+     * @param {string} currentRank - Current power rank
+     * @param {number} currentValue - Current rank number
+     * @returns {number} Karma cost
+     * @private
      */
-    async advancePower(powerIndex) {
-        const power = this.system.powers.list[powerIndex];
-        if (!power) {
-            throw new Error(`Power at index ${powerIndex} not found`);
-        }
-
-        // Calculate karma cost for power advancement
-        const currentRank = power.rank;
-        const karmaCost = this._getPowerAdvancementCost(currentRank);
+    _getPowerAdvancementCost(currentRank, currentValue) {
+        // Base cost is 20 times rank number
+        const baseCost = currentValue * 20;
         
-        // Check if we have enough karma
-        if (this.system.karmaTracking.advancementFund < karmaCost) {
-            ui.notifications.error(`Not enough karma (${karmaCost} required) to advance power`);
-            return false;
+        // If cresting to next rank, add 500
+        const nextValue = currentValue + 1;
+        const nextRank = this.getRankFromValue(nextValue);
+        
+        if (currentRank !== nextRank) {
+            return baseCost + 500; // Cresting costs additional 500
         }
-
-        // Get next rank
-        const nextRank = this._getNextRank(currentRank);
-        if (!nextRank) {
-            ui.notifications.error("Power cannot be advanced further");
-            return false;
-        }
-
-        // Update power list with new rank
-        const powers = duplicate(this.system.powers.list);
-        powers[powerIndex].rank = nextRank;
-        powers[powerIndex].rankNumber = CONFIG.marvel.ranks[nextRank].standard;
-
-        // Update power and deduct karma
-        await this.update({
-            "system.powers.list": powers,
-            "system.karmaTracking.advancementFund": this.system.karmaTracking.advancementFund - karmaCost
-        });
-
-        // Create chat message
-        const messageContent = `
-            <div class="marvel-advancement">
-                <h3>${this.name} - Power Advancement</h3>
-                <div class="advancement-details">
-                    <div>Power: ${power.name}</div>
-                    <div>Old Rank: ${currentRank}</div>
-                    <div>New Rank: ${nextRank}</div>
-                    <div>Karma Cost: ${karmaCost}</div>
-                </div>
-            </div>`;
-
-        await ChatMessage.create({
-            speaker: ChatMessage.getSpeaker({ actor: this }),
-            content: messageContent
-        });
-
-        return true;
+        
+        return baseCost;
     }
 
+    /**
+     * Calculate karma cost for new power
+     * @param {number} startingRankNumber - Starting rank number for new power
+     * @param {boolean} isRobot - Whether character is robotic
+     * @returns {number} Karma cost
+     * @private
+     */
+    _getNewPowerCost(startingRankNumber, isRobot = false) {
+        const multiplier = isRobot ? 10 : 40;
+        return 3000 + (startingRankNumber * multiplier);
+    }
+
+    /**
+     * Calculate karma cost for new talent
+     * @param {boolean} isNPC - Whether learning from NPC
+     * @returns {number} Karma cost
+     * @private
+     */
+    _getNewTalentCost(isNPC = true) {
+        return isNPC ? 1000 : 2000;
+    }
+
+    /**
+     * Calculate karma cost for new contact
+     * @param {number} contactResourceRank - Resource rank of contact
+     * @returns {number} Karma cost
+     * @private
+     */
+    _getNewContactCost(contactResourceRank) {
+        return 500 + (contactResourceRank * 10);
+    }
     /**
      * Get the next rank in the progression
      * @param {string} currentRank - Current rank
@@ -1856,24 +2404,127 @@ export class MarvelActor extends Actor {
     }
 
     /**
-     * Calculate karma cost for advancing a power
-     * @param {string} currentRank - Current power rank
-     * @returns {number} Karma cost
-     * @private
+     * Join a karma group pool
+     * @param {Object} options - Pool options
+     * @returns {Promise<boolean>} Success/failure of joining
      */
-    _getPowerAdvancementCost(currentRank) {
-        const costs = {
-            "Feeble": 100,
-            "Poor": 150,
-            "Typical": 200,
-            "Good": 300,
-            "Excellent": 400,
-            "Remarkable": 600,
-            "Incredible": 800,
-            "Amazing": 1000,
-            "Monstrous": 1500,
-            "Unearthly": 2000
-        };
-        return costs[currentRank] || 3000;
+    async joinKarmaPool(options = {}) {
+        console.log("Joining karma pool with options:", options);
+        
+        const contribution = Math.min(options.contribution || 0, this.system.karmaTracking.karmaPool);
+        
+        // Get or create pool
+        let pool = await game.settings.get("marvel-faserip", `karmaPools.${options.poolId}`);
+        if (!pool) {
+            pool = {
+                id: options.poolId || randomID(16),
+                total: 0,
+                members: [],
+                isPermanent: options.isPermanent || false,
+                isLocked: options.isLocked || false,
+                contributions: {}
+            };
+        }
+
+        // Add member to pool
+        if (!pool.members.includes(this.id)) {
+            pool.members.push(this.id);
+            pool.total += contribution;
+            pool.contributions[this.id] = contribution;
+
+            // Update actor's karma tracking
+            await this.update({
+                "system.karmaTracking.karmaPool": this.system.karmaTracking.karmaPool - contribution,
+                "system.karmaTracking.groupPool": {
+                    active: true,
+                    contributed: contribution,
+                    poolId: pool.id,
+                    isPermanent: pool.isPermanent,
+                    isLocked: pool.isLocked
+                }
+            });
+
+            // Save pool
+            await game.settings.set("marvel-faserip", `karmaPools.${pool.id}`, pool);
+            return true;
+        }
+        return false;
     }
+
+/**
+ * Leave current karma pool
+ * @returns {Promise<boolean>} Success/failure of leaving
+ */
+async leaveKarmaPool() {
+    console.log("Attempting to leave karma pool");
+    
+    const poolId = this.system.karmaTracking.groupPool.poolId;
+    if (!poolId) return false;
+
+    const pool = await game.settings.get("marvel-faserip", `karmaPools.${poolId}`);
+    if (!pool) return false;
+
+    // Calculate share
+    const share = Math.floor(pool.total / pool.members.length);
+    
+    // Remove from pool
+    pool.members = pool.members.filter(id => id !== this.id);
+    pool.total -= share;
+    delete pool.contributions[this.id];
+
+    // Update actor
+    await this.update({
+        "system.karmaTracking.karmaPool": this.system.karmaTracking.karmaPool + share,
+        "system.karmaTracking.groupPool": {
+            active: false,
+            contributed: 0,
+            poolId: null,
+            isPermanent: false,
+            isLocked: false
+        }
+    });
+
+    // Save or delete pool if empty
+    if (pool.members.length === 0) {
+        await game.settings.delete("marvel-faserip", `karmaPools.${poolId}`);
+    } else {
+        await game.settings.set("marvel-faserip", `karmaPools.${poolId}`, pool);
+    }
+
+    return true;
+}
+
+/**
+ * Use karma from group pool
+ * @param {number} amount - Amount of karma to use
+ * @param {string} reason - Reason for using karma
+ * @returns {Promise<boolean>} Success/failure of using karma
+ */
+async useGroupKarma(amount, reason) {
+    console.log(`Attempting to use ${amount} karma from group pool for: ${reason}`);
+    
+    const poolId = this.system.karmaTracking.groupPool.poolId;
+    if (!poolId) return false;
+
+    const pool = await game.settings.get("marvel-faserip", `karmaPools.${poolId}`);
+    if (!pool) return false;
+
+    // Check if pool is locked and this is for advancement
+    if (pool.isLocked && reason === "advancement") {
+        ui.notifications.error("Cannot use locked pool karma for advancement");
+        return false;
+    }
+
+    // Check if enough karma
+    if (pool.total < amount) {
+        ui.notifications.error("Not enough karma in group pool");
+        return false;
+    }
+
+    // Use karma
+    pool.total -= amount;
+    await game.settings.set("marvel-faserip", `karmaPools.${poolId}`, pool);
+
+    return true;
+}
 }

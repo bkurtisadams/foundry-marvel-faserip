@@ -1,10 +1,110 @@
 console.log("Marvel FASERIP System: marvel-faserip.js has been loaded into Foundry VTT");
+
 // Import required classes and configurations
-import { MARVEL_RANKS, UNIVERSAL_TABLE_RANGES, ACTION_RESULTS, COMBAT_TYPES, COMBAT_EFFECTS } from "./config.js";
+/* import { MARVEL_RANKS, ACTION_RESULTS, ACTION_CATEGORIES, getAvailableActions } from "./config.js"; */
 import { MarvelActor } from "./documents/MarvelActor.js";
 import { MarvelActorSheet } from "./sheets/MarvelActorSheet.js";
 import { MarvelAttackItem } from "./documents/items/MarvelAttackItem.js";
 import { MarvelAttackItemSheet } from "./sheets/items/MarvelAttackItemSheet.js";
+import { MarvelFaseripItem } from "./item/item.js";
+import WeaponSystem from "./weapons/weapon-system.js";
+import { MarvelHeadquartersSheet } from "./sheets/items/MarvelHeadquartersSheet.js";
+import { FaseripCombatSystem } from "./combat/FaseripCombatSystem.js";
+import { FaseripUniversalTable } from "./combat/FaseripUniversalTable.js";
+import { MarvelCombatHUD } from "./combat/MarvelCombatHUD.js";
+import { FaseripCombatEngine } from "./combat/FaseripCombatEngine.js";
+
+import { 
+    MARVEL_RANKS,
+    RANK_VALUES,
+    ACTION_RESULTS, 
+    ACTION_CATEGORIES, 
+    UNIVERSAL_TABLE_RANGES,
+    getAvailableActions,
+    COMBAT_EFFECTS,
+    COMBAT_TYPES,
+    ROOM_PACKAGES,
+    SECURITY_SYSTEMS,
+    KARMA_REASONS,
+    RESISTANCE_TYPES,
+    KARMA_SPEND_TYPES,
+    FEAT_TYPES,
+    STATUS_EFFECTS
+} from "./config.js";
+
+Hooks.once('init', async function() {
+    console.log('marvel-faserip | Initializing Marvel FASERIP System');
+
+    // Initialize CONFIG.marvel first
+    CONFIG.marvel = {
+        combatHUD: null,  // Start with null
+        ranks: MARVEL_RANKS,
+        // Generate selectable ranks from MARVEL_RANKS
+        selectableRanks: Object.keys(MARVEL_RANKS).reduce((obj, key) => {
+            obj[key] = key;
+            return obj;
+        }, {}),
+        rankValues: RANK_VALUES,
+        universalTableRanges: UNIVERSAL_TABLE_RANGES,
+        actionCategories: ACTION_CATEGORIES,
+        actionResults: ACTION_RESULTS,
+        combatEffects: COMBAT_EFFECTS,
+        combatTypes: COMBAT_TYPES,
+        roomPackages: ROOM_PACKAGES,
+        securitySystems: SECURITY_SYSTEMS,
+        karmaReasons: KARMA_REASONS,
+        resistanceTypes: RESISTANCE_TYPES,
+        karmaSpendTypes: KARMA_SPEND_TYPES,
+        featTypes: FEAT_TYPES,
+        getAvailableActions
+    };
+
+    // Add status effects
+    CONFIG.statusEffects.push(...STATUS_EFFECTS);
+    
+    // Initialize game.marvel namespace
+    game.marvel = {
+        MarvelCombatHUD,
+        WeaponSystem: new WeaponSystem(),
+        combatSystem: new FaseripCombatSystem(),
+        combatEngine: new FaseripCombatEngine(),
+        FaseripUniversalTable
+    };
+
+    // Register sheet application classes
+    globalThis.FaseripUniversalTable = FaseripUniversalTable;
+    globalThis.MarvelCombatHUD = MarvelCombatHUD;
+
+    // Make weapon system available globally for debugging
+    globalThis.marvelWeapons = game.marvel.WeaponSystem;
+    globalThis.marvelCombat = game.marvel.combatSystem;
+    
+    // Configure document classes
+    CONFIG.Item.documentClass = MarvelFaseripItem;
+    
+    // Register sheets
+    Actors.unregisterSheet("core", ActorSheet);
+    Items.unregisterSheet("core", ItemSheet);
+    
+    Items.registerSheet("marvel-faserip", MarvelAttackItemSheet, { 
+        types: ["attack"],
+        makeDefault: true,
+        label: "MARVEL.SheetAttack"
+    });
+
+    Actors.registerSheet("marvel-faserip", MarvelActorSheet, { 
+        makeDefault: true,
+        label: "MARVEL.SheetCharacter"
+    });
+
+    // HQ registration
+    Items.registerSheet("marvel-faserip", MarvelHeadquartersSheet, {
+        types: ["headquarters"],
+        makeDefault: true
+    });
+    
+    // ... rest of your initialization
+});
 
 // Define Combat Phases
 const COMBAT_PHASES = {
@@ -117,12 +217,40 @@ Hooks.once('init', async function() {
         rollItemMacro
     };
 
-    CONFIG.marvel = {
-        ranks: MARVEL_RANKS,
-        universalTableRanges: UNIVERSAL_TABLE_RANGES,
-        actionResults: ACTION_RESULTS,
-        combatTypes: COMBAT_TYPES,
-        combatEffects: COMBAT_EFFECTS
+    // Add selectable ranks for dropdown menus
+    CONFIG.marvel.selectableRanks = {
+        'Shift 0': "Shift 0",
+        'Feeble': "Feeble",
+        'Poor': "Poor",
+        'Typical': "Typical",
+        'Good': "Good",
+        'Excellent': "Excellent",
+        'Remarkable': "Remarkable",
+        'Incredible': "Incredible",
+        'Amazing': "Amazing",
+        'Monstrous': "Monstrous",
+        'Unearthly': "Unearthly",
+        'Shift X': "Shift X",
+        'Shift Y': "Shift Y",
+        'Shift Z': "Shift Z",
+        'Class 1000': "Class 1000",
+        'Class 3000': "Class 3000",
+        'Class 5000': "Class 5000",
+        'Beyond': "Beyond"
+    };
+
+    // Add resistance types configuration
+    CONFIG.marvel.resistanceTypes = {
+        physical: "Physical",
+        energy: "Energy", 
+        force: "Force",
+        heat: "Heat",
+        cold: "Cold",
+        electricity: "Electricity",
+        radiation: "Radiation",
+        toxins: "Toxins",
+        psychic: "Psychic",
+        magic: "Magic"
     };
 
     CONFIG.Combat.initiative = {
@@ -131,6 +259,15 @@ Hooks.once('init', async function() {
     };
 
     // Register system settings
+    // Around line 48 in init hook
+    game.settings.register("marvel-faserip", "karmaPools", {
+        name: "Karma Pools",
+        scope: "world",
+        config: false,
+        type: Object,
+        default: {}
+    });
+    
     game.settings.register("marvel-faserip", "combatPhase", {
         name: "Combat Phase",
         scope: "world",
@@ -163,7 +300,8 @@ Hooks.once('init', async function() {
         "systems/marvel-faserip/templates/dialogs/ability-roll.html",
         "systems/marvel-faserip/templates/dialogs/popularity-roll.html",
         "systems/marvel-faserip/templates/items/attack-item.html",
-        "systems/marvel-faserip/templates/dialogs/add-attack.html"
+        "systems/marvel-faserip/templates/dialogs/add-attack.html",
+        "systems/marvel-faserip/templates/dialogs/edit-equipment.html"
     ]);
 });
 
@@ -397,6 +535,23 @@ async function resolveActions(combat) {
         `
     });
 }
+
+// Add a hook to create the universal table button in the scene controls
+/* Hooks.on('getSceneControlButtons', (controls) => {
+    controls.push({
+        name: 'universal-table',
+        title: 'Universal Table',
+        icon: 'fas fa-table',
+        layer: 'controls',
+        tools: [{
+            name: 'show-table',
+            title: 'Show Universal Table',
+            icon: 'fas fa-dice-d20',
+            button: true,
+            onClick: () => game.marvel.universalTable.render(true)
+        }]
+    });
+}) */;
 
 // Handle Macro Creation
 Hooks.on("hotbarDrop", async (bar, rawData, slot) => {

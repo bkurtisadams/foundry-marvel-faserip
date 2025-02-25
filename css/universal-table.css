@@ -1,0 +1,190 @@
+/* Base Container */
+.universal-table {
+    padding: 5px;
+    background: #fff;
+    font-family: "Arial Narrow", Arial, sans-serif;
+    min-width: 800px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Global Table Styles */
+.universal-table table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    table-layout: fixed;
+}
+
+.universal-table td,
+.universal-table th {
+    border: 1px solid #000;
+    text-align: center;
+    padding: 1px;
+    height: 18px;
+}
+
+/* Combat Actions Table */
+.combat-actions-table {
+    margin-bottom: 2px;
+}
+
+.combat-actions-table th {
+    width: 32px;
+}
+
+.action-header {
+    vertical-align: top;
+    background-color: #FFFFFF;
+    padding: 1px;
+}
+
+.action-code {
+    font-size: 15px;
+    font-weight: bold;
+    line-height: 1;
+    margin: 1px 0;
+}
+
+.action-name {
+    font-size: 7px;
+    line-height: 1;
+    margin: 1px 0;
+    white-space: nowrap;
+}
+
+.action-ability {
+    font-size: 9px;
+    line-height: 1;
+    margin: 1px 0;
+}
+
+.combat-actions-table td {
+    font-size: 11px;
+    height: 22px;
+    vertical-align: middle;
+}
+
+/* Result Row Colors */
+.white-row td { background-color: #FFFFFF; }
+.green-row td { background-color: #00B050; }
+.yellow-row td { background-color: #FFFF00; }
+.red-row td { background-color: #FF0000; }
+
+/* Rank Headers Section */
+.rank-headers {
+    margin: 2px 0;
+    border-bottom: 2px solid #000;
+}
+
+.rank-cell {
+    vertical-align: top;
+    background-color: #FFFFFF;
+    width: 32px;
+    position: relative;
+}
+
+.rank-code {
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+    margin: 1px 0;
+}
+
+.rank-name {
+    font-size: 7px;
+    line-height: 1;
+    margin: 1px 0;
+}
+
+.rank-value {
+    font-size: 9px;
+    line-height: 1;
+    margin: 1px 0;
+}
+
+/* Rank Ranges Row */
+.rank-ranges {
+    font-size: 9px;
+}
+
+.rank-ranges td {
+    height: 16px;
+    border-top: none;
+}
+
+/* Results Table */
+.results-table {
+    margin-top: 2px;
+}
+
+.range-cell {
+    width: 32px;
+    font-size: 11px;
+    background-color: #EBEBEB;
+    color: #000000;
+    text-align: right;
+    padding-right: 3px;
+}
+
+.result-cell {
+    width: 32px;
+    height: 18px;
+}
+
+/* Special Borders for Rank Sections */
+.rank-cell[data-rank="Z"],
+.rank-cell[data-rank="1000"],
+.rank-cell[data-rank="3000"],
+.rank-cell[data-rank="5000"],
+.result-cell[data-rank="Z"],
+.result-cell[data-rank="1000"],
+.result-cell[data-rank="3000"],
+.result-cell[data-rank="5000"] {
+    border-left: 2px solid #000;
+}
+
+/* Results Color Classes */
+.result-cell.white { background-color: #FFFFFF; }
+.result-cell.green { background-color: #00B050; }
+.result-cell.yellow { background-color: #FFFF00; }
+.result-cell.red { background-color: #FF0000; }
+
+/* Beyond Rank Infinity Symbol */
+.rank-cell[data-rank="B"] .rank-value {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Color Cell Generation */
+.results-table tr:nth-child(-n+2) .result-cell { background-color: #FFFFFF; }
+.results-table tr:nth-child(n+3):nth-child(-n+6) .result-cell { background-color: #00B050; }
+.results-table tr:nth-child(n+7):nth-child(-n+18) .result-cell { background-color: #FFFF00; }
+.results-table tr:nth-child(n+19) .result-cell { background-color: #FF0000; }
+
+/* Special Column Borders */
+.rank-cell:nth-child(14),
+.rank-cell:nth-child(15),
+.rank-cell:nth-child(16),
+.rank-cell:nth-child(17),
+.result-cell:nth-child(14),
+.result-cell:nth-child(15),
+.result-cell:nth-child(16),
+.result-cell:nth-child(17) {
+    border-left: 2px solid #000;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 1200px) {
+    .universal-table {
+        transform-origin: top left;
+        transform: scale(0.85);
+    }
+}
+
+@media screen and (max-width: 900px) {
+    .universal-table {
+        transform: scale(0.7);
+    }
+}

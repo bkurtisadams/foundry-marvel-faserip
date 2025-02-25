@@ -1,0 +1,35 @@
+//templates/chat/combat-result.html
+
+<div class="marvel-combat-result">
+    <h3>{{actor.name}} - {{actionType}} Action</h3>
+    <div class="result-details">
+        <div>Using: {{result.ability}} ({{result.abilityScore.number}})</div>
+        <div>Roll: {{result.roll.total}}</div>
+        <div>Result: {{result.result}}</div>
+        {{#if result.damage}}
+        <div>Damage: {{result.damage}}</div>
+        {{/if}}
+    </div>
+</div>
+
+<style>
+.marvel-combat-result {
+    padding: 10px;
+}
+
+.marvel-combat-result .roll-details {
+    margin: 5px 0;
+}
+
+.marvel-combat-result .result {
+    font-weight: bold;
+    padding: 5px;
+    margin: 5px 0;
+    text-align: center;
+}
+
+.marvel-combat-result .result.white { background-color: #fff; color: #000; }
+.marvel-combat-result .result.green { background-color: #90EE90; color: #000; }
+.marvel-combat-result .result.yellow { background-color: #FFD700; color: #000; }
+.marvel-combat-result .result.red { background-color: #FF4444; color: #fff; }
+</style>

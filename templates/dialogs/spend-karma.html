@@ -1,0 +1,14 @@
+<form class="spend-karma-dialog">
+    <div class="form-group">
+        <label>Amount (max {{maxKarma}})</label>
+        <input type="number" name="amount" value="0" min="0" max="{{maxKarma}}"/>
+    </div>
+    <div class="form-group">
+        <label>Reason</label>
+        <select name="reason">
+            {{#each reasons}}
+            <option value="{{this.id}}">{{this.label}}</option>
+            {{/each}}
+        </select>
+    </div>
+</form>

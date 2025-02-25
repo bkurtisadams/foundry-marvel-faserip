@@ -1,11 +1,11 @@
 <form class="{{cssClass}} flexcol" autocomplete="off">
     <header class="sheet-header">
         <div class="header-flex-container">
-            <!-- Left Side -->
+            <!-- Left Side with Profile Image -->
             <div class="header-left">
                 <div class="header-top-row">
                     <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}"/>
-                    <img src="systems/marvel-faserip/assets/marvel-logo-bw.png" class="marvel-logo"/>
+                    <img src="systems/marvel-faserip/assets/marvel-logo-bw.png" class="marvel-logo" width="160" height="24"/>
                 </div>
                 <div class="field-group">
                     <label class="input-label">Hero's Name</label>
@@ -74,79 +74,202 @@
 
         <div class="powers-list">
     <section class="sheet-body">
+        <!-- In actor-sheet.html, replace the abilities-grid section (around line 150-300) with: -->
         <div class="abilities-grid">
+            <!-- In templates/actor/actor-sheet.html, find and replace the primary-abilities section -->
             <div class="primary-abilities">
-                <h2>Primary Abilities</h2>
                 <table>
                     <thead>
                         <tr>
                             <th></th>
-                            <th class="init-column">Init Roll</th>
-                            <th class="init-column">Init Rank #</th>
+                            <th>Initial Roll</th>
+                            <th>Initial Rank</th>
                             <th>Current Rank</th>
                             <th>Current Rank #</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {{#each actor.system.primaryAbilities as |ability key|}}
-                        <tr class="ability-row" data-ability="{{key}}">
-                            <td class="ability-label">{{key}}</td>
-                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.{{key}}.initialRoll" value="{{ability.initialRoll}}" data-ability="{{key}}" maxlength="3"/></td>
-                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.{{key}}.initialRank" value="{{ability.initialRank}}" data-ability="{{key}}"/></td>
+                        <!-- Fighting -->
+                        <tr class="ability-row" data-ability="fighting">
+                            <td class="ability-label">F</td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.fighting.initialRoll" value="{{actor.system.primaryAbilities.fighting.initialRoll}}" data-ability="fighting"/></td>
+                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.fighting.initialRank" value="{{actor.system.primaryAbilities.fighting.initialRank}}" data-ability="fighting"/></td>
                             <td>
-                                <select name="system.primaryAbilities.{{key}}.rank" class="rank-select" data-ability="{{key}}">
-                                    {{selectOptions @root.config.ranks selected=ability.rank blank=""}}
+                                <select name="system.primaryAbilities.fighting.rank" class="rank-select" data-ability="fighting" >
+                                    {{selectOptions @root.config.ranks selected=actor.system.primaryAbilities.fighting.rank}}
                                 </select>
                             </td>
-                            <td><input type="number" class="ability-number" name="system.primaryAbilities.{{key}}.number" value="{{ability.number}}" data-ability="{{key}}" /></td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.fighting.number" value="{{actor.system.primaryAbilities.fighting.number}}" data-ability="fighting"/></td>
                         </tr>
-                        {{/each}}
+                        <!-- Agility -->
+                        <tr class="ability-row" data-ability="agility">
+                            <td class="ability-label">A</td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.agility.initialRoll" value="{{actor.system.primaryAbilities.agility.initialRoll}}" data-ability="agility"/></td>
+                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.agility.initialRank" value="{{actor.system.primaryAbilities.agility.initialRank}}" data-ability="agility"/></td>
+                            <td>
+                                <select name="system.primaryAbilities.agility.rank" class="rank-select" data-ability="agility">
+                                    {{selectOptions @root.config.ranks selected=actor.system.primaryAbilities.agility.rank}}
+                                </select>
+                            </td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.agility.number" value="{{actor.system.primaryAbilities.agility.number}}" data-ability="agility"/></td>
+                        </tr>
+                        <!-- Strength -->
+                        <tr class="ability-row" data-ability="strength">
+                            <td class="ability-label">S</td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.strength.initialRoll" value="{{actor.system.primaryAbilities.strength.initialRoll}}" data-ability="strength"/></td>
+                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.strength.initialRank" value="{{actor.system.primaryAbilities.strength.initialRank}}" data-ability="strength"/></td>
+                            <td>
+                                <select name="system.primaryAbilities.strength.rank" class="rank-select" data-ability="strength">
+                                    {{selectOptions @root.config.ranks selected=actor.system.primaryAbilities.strength.rank}}
+                                </select>
+                            </td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.strength.number" value="{{actor.system.primaryAbilities.strength.number}}" data-ability="strength"/></td>
+                        </tr>
+                        <!-- Endurance -->
+                        <tr class="ability-row" data-ability="endurance">
+                            <td class="ability-label">E</td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.endurance.initialRoll" value="{{actor.system.primaryAbilities.endurance.initialRoll}}" data-ability="endurance"/></td>
+                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.endurance.initialRank" value="{{actor.system.primaryAbilities.endurance.initialRank}}" data-ability="endurance"/></td>
+                            <td>
+                                <select name="system.primaryAbilities.endurance.rank" class="rank-select" data-ability="endurance">
+                                    {{selectOptions @root.config.ranks selected=actor.system.primaryAbilities.endurance.rank}}
+                                </select>
+                            </td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.endurance.number" value="{{actor.system.primaryAbilities.endurance.number}}" data-ability="endurance"/></td>
+                        </tr>
+                        <!-- Reason -->
+                        <tr class="ability-row" data-ability="reason">
+                            <td class="ability-label">R</td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.reason.initialRoll" value="{{actor.system.primaryAbilities.reason.initialRoll}}" data-ability="reason"/></td>
+                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.reason.initialRank" value="{{actor.system.primaryAbilities.reason.initialRank}}" data-ability="reason"/></td>
+                            <td>
+                                <select name="system.primaryAbilities.reason.rank" class="rank-select" data-ability="reason">
+                                    {{selectOptions @root.config.ranks selected=actor.system.primaryAbilities.reason.rank}}
+                                </select>
+                            </td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.reason.number" value="{{actor.system.primaryAbilities.reason.number}}" data-ability="reason"/></td>
+                        </tr>
+                        <!-- Intuition -->
+                        <tr class="ability-row" data-ability="intuition">
+                            <td class="ability-label">I</td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.intuition.initialRoll" value="{{actor.system.primaryAbilities.intuition.initialRoll}}" data-ability="intuition"/></td>
+                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.intuition.initialRank" value="{{actor.system.primaryAbilities.intuition.initialRank}}" data-ability="intuition"/></td>
+                            <td>
+                                <select name="system.primaryAbilities.intuition.rank" class="rank-select" data-ability="intuition">
+                                    {{selectOptions @root.config.ranks selected=actor.system.primaryAbilities.intuition.rank}}
+                                </select>
+                            </td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.intuition.number" value="{{actor.system.primaryAbilities.intuition.number}}" data-ability="intuition"/></td>
+                        </tr>
+                        <!-- Psyche -->
+                        <tr class="ability-row" data-ability="psyche">
+                            <td class="ability-label">P</td>
+                            <td><input type="text" class="initial-roll-input" name="system.primaryAbilities.psyche.initialRoll" value="{{actor.system.primaryAbilities.psyche.initialRoll}}" data-ability="psyche"/></td>
+                            <td><input type="text" class="initial-rank-input" name="system.primaryAbilities.psyche.initialRank" value="{{actor.system.primaryAbilities.psyche.initialRank}}" data-ability="psyche"/></td>
+                            <td>
+                                <select name="system.primaryAbilities.psyche.rank" class="rank-select" data-ability="psyche">
+                                    {{selectOptions @root.config.ranks selected=actor.system.primaryAbilities.psyche.rank}}
+                                </select>
+                            </td>
+                            <td><input type="number" class="ability-number" name="system.primaryAbilities.psyche.number" value="{{actor.system.primaryAbilities.psyche.number}}" data-ability="psyche"/></td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
 
             <div class="secondary-abilities">
-                <h2>Secondary Abilities</h2>
-                <div class="secondary-grid">
-                    <!-- make sure of bindings -->
-                <div class="ability-block">
-                    <label>Health (F+A+S+E)</label>
-                    <div class="value-pair">
-                        <input type="number" name="system.secondaryAbilities.health.value" value="{{actor.system.secondaryAbilities.health.value}}"/>
-                        <span>/</span>
-                        <input type="number" name="system.secondaryAbilities.health.max" value="{{actor.system.secondaryAbilities.health.max}}" readonly/>
-                    </div>
-                </div>
-
-                <div class="ability-block">
-                    <label class="clickable-karma">Karma (R+I+P)</label>
-                    <div class="value-pair">
-                        <input type="number" name="system.secondaryAbilities.karma.value" value="{{actor.system.secondaryAbilities.karma.value}}"/>
-                        <span>/</span>
-                        <input type="number" name="system.secondaryAbilities.karma.max" value="{{actor.system.secondaryAbilities.karma.max}}" readonly/>
-                    </div>
-                </div>
-
-                    <div class="ability-block">
-                        <label class="clickable-resources">Resources</label>
-                        <input type="number" name="system.secondaryAbilities.resources.number" value="{{actor.system.secondaryAbilities.resources.number}}"/>
-                    </div>
-
-                    <div class="popularity-block">
-                        <div class="popularity-labels">
-                            <label class="clickable-popularity" data-popularity-type="hero">Hero Popularity</label>
-                            <label class="clickable-popularity" data-popularity-type="secret">Secret ID Popularity</label>
-                        </div>
-                        <div class="popularity-inputs">
-                            <input type="number" name="system.secondaryAbilities.popularity.hero" value="{{actor.system.secondaryAbilities.popularity.hero}}"/>
-                            <input type="number" name="system.secondaryAbilities.popularity.secret" value="{{actor.system.secondaryAbilities.popularity.secret}}"/>
-                        </div>                    </div>
-                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Health</th>
+                            <th>Karma</th>
+                            <th class="clickable-resources" title="Click to roll Resources FEAT">Resources<i class="fas fa-dice-d20 fa-sm" style="margin-left: 4px;"></i></th>
+                            <th>Popularity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <!-- <td>F + A + S + E = {{actor.system.secondaryAbilities.health.value}}</td>
+                            <td>R + I + P = {{actor.system.secondaryAbilities.karma.value}}</td> -->
+                            <td>F + A + S + E</td>
+                            <td>R + I + P</td>
+                            <td>{{actor.system.secondaryAbilities.resources.rank}}</td>
+                            <td>{{actor.system.secondaryAbilities.popularity.rank}}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="value-max-container">
+                                    <input type="number" name="system.secondaryAbilities.health.value" value="{{actor.system.secondaryAbilities.health.value}}" style="width: 45%"/>
+                                    <span class="value-max-divider">/</span>
+                                    <input type="number" value="{{actor.system.secondaryAbilities.health.max}}" disabled style="width: 45%"/>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="value-max-container">
+                                    <input type="number" name="system.secondaryAbilities.karma.value" value="{{actor.system.secondaryAbilities.karma.value}}" style="width: 45%"/>
+                                    <span class="value-max-divider">/</span>
+                                    <input type="number" value="{{actor.system.secondaryAbilities.karma.max}}" disabled style="width: 45%"/>
+                                </div>
+                            </td>
+                            <td>
+                                <input type="number" name="system.secondaryAbilities.resources.number" value="{{actor.system.secondaryAbilities.resources.number}}"/>
+                            </td>
+                            <td>
+                                <div class="popularity-values">
+                                    <span class="clickable-popularity" data-popularity-type="hero">{{actor.system.secondaryAbilities.popularity.hero}}</span>
+                                    {{#if (eq actor.system.biography.identity "secret")}}
+                                    /
+                                    <span class="clickable-popularity" data-popularity-type="secret">{{actor.system.secondaryAbilities.popularity.secret}}</span>
+                                    {{/if}}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <div class="resistances-section">
+                                    <!-- <h4>Resistances</h4> -->
+                                    <button type="button" class="add-resistance add-ability-button">+ Add Resistance</button>
+                                    <div class="resistances-list">
+                                        {{#each actor.system.resistances.list as |resistance idx|}}
+                                        <div class="resistance-row">
+                                            <select name="system.resistances.list.{{idx}}.type" class="resistance-type">
+                                                {{#select resistance.type}}
+                                                <option value="">Select Type</option>
+                                                <option value="physical">Physical</option>
+                                                <option value="energy">Energy</option>
+                                                <option value="force">Force</option>
+                                                <option value="heat">Heat</option>
+                                                <option value="cold">Cold</option>
+                                                <option value="electricity">Electricity</option>
+                                                <option value="radiation">Radiation</option>
+                                                <option value="toxins">Toxins</option>
+                                                <option value="psychic">Psychic</option>
+                                                <option value="magic">Magic</option>
+                                                {{/select}}
+                                            </select>
+                                            <select name="system.resistances.list.{{idx}}.rank" class="rank-select">
+                                                {{selectOptions @root.config.ranks selected=resistance.rank blank=""}}
+                                            </select>
+                                            <input type="number" 
+                                                    class="resistance-number" 
+                                                    name="system.resistances.list.{{idx}}.number" 
+                                                    value="{{resistance.number}}"/>
+                                            <button type="button" class="item-delete" data-type="resistances" data-id="{{idx}}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        {{/each}}
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
         <!-- resistances section -->
-        <div class="resistances-section">
+        <!-- <div class="resistances-section">
         <h2>Resistances</h2>
         <button type="button" class="add-resistance add-ability-button">+ Add Resistance</button>
         <div class="resistances-list">
@@ -181,13 +304,14 @@
             {{/each}}
         </div>
         </div>
-
+ -->
 <!-- Navigation Bar -->
 <nav class="nav-categories" role="tablist">
     <a class="nav-item {{#if tabs.special}}active{{/if}}" data-tab="special">Special Ability</a>
     <a class="nav-item {{#if tabs.stunts}}active{{/if}}" data-tab="stunts">Stunts</a>
     <a class="nav-item {{#if tabs.attacks}}active{{/if}}" data-tab="attacks">Attacks</a><a class="nav-item" data-tab="equipment">Equipment</a>
-    <a class="nav-item" data-tab="headquarters">Headquarters</a>
+    <!-- <a class="nav-item" data-tab="headquarters">Headquarters</a> -->
+    <a class="nav-item {{#if tabs.headquarters}}active{{/if}}" data-tab="headquarters">Headquarters</a>
     <a class="nav-item" data-tab="vehicles">Vehicles</a>
 </nav>
 
@@ -301,18 +425,158 @@
     </div>
 
     <!-- Equipment Tab -->
-    <div class="tab-panel" data-tab="equipment">
-        <button type="button" class="add-equipment add-ability-button">+ Add Equipment</button>
-        <div class="equipment-list">
-            <!-- Equipment list content will go here -->
+<div class="tab-panel {{#if tabs.equipment}}active{{/if}}" data-tab="equipment" {{#unless tabs.equipment}}style="display: none;"{{/unless}}>
+    <div class="equipment-section">
+        <div class="equipment-header">
+            <!-- Equipment Type Filters -->
+            <div class="equipment-filters">
+                <button type="button" class="filter-btn active" data-filter="all">All Equipment</button>
+                <button type="button" class="filter-btn" data-filter="weapon">Weapons</button>
+                <button type="button" class="filter-btn" data-filter="armor">Armor</button>
+                <button type="button" class="filter-btn" data-filter="gear">Gear</button>
+            </div>
+            
+            <!-- Add Equipment Controls -->
+            <div class="add-equipment-group">
+                <button type="button" class="add-equipment add-ability-button" data-type="weapon">
+                    <i class="fas fa-sword"></i> Add Weapon
+                </button>
+                <button type="button" class="add-equipment add-ability-button" data-type="armor">
+                    <i class="fas fa-shield"></i> Add Armor
+                </button>
+                <button type="button" class="add-equipment add-ability-button" data-type="gear">
+                    <i class="fas fa-backpack"></i> Add Gear
+                </button>
+            </div>
+        </div>
+
+        <div class="equipment-container">
+            {{#each equipment as |item|}}
+            <div class="equipment-row item" data-item-id="{{item._id}}" draggable="true">
+                <img src="{{item.img}}" width="24" height="24"/>
+                <div class="equipment-name item-name">{{item.name}}</div>
+                <div class="item-details">
+                    {{#if (eq item.system.subtype "weapon")}}
+                        {{#if item.system.type}}<span class="detail-tag">{{item.system.type}}</span>{{/if}}
+                        {{#if item.system.damage}}<span class="detail-tag">Damage: {{item.system.damage}}</span>{{/if}}
+                        {{#if item.system.range}}<span class="detail-tag">Range: {{item.system.range}}</span>{{/if}}
+                        {{#if item.system.shots}}<span class="detail-tag">Shots: {{item.system.shots}}/{{item.system.maxShots}}</span>{{/if}}
+                    {{/if}}
+                </div>
+                <div class="item-controls">
+                    <a class="item-control item-edit" title="Edit Item">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    {{#if (eq item.system.subtype "weapon")}}
+                    <button type="button" class="roll-equipment" title="Use Weapon">
+                        <i class="fas fa-dice-d20"></i>
+                    </button>
+                    {{#if (eq item.system.type "S")}}
+                    <div class="ammo-display">
+                        {{item.system.shots}}/{{item.system.maxShots}}
+                        {{#if (eq item.system.shots 0)}}
+                        <button type="button" class="reload-weapon" title="Reload Weapon">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        {{/if}}
+                    </div>
+                    {{/if}}
+                    {{/if}}
+                    <a class="item-control item-delete" title="Delete Item">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </div>
+            </div>
+            {{/each}}
         </div>
     </div>
-
+</div>
+    
     <!-- Headquarters Tab -->
-    <div class="tab-panel" data-tab="headquarters">
-        <button type="button" class="add-headquarters add-ability-button">+ Add Headquarters Feature</button>
-        <div class="headquarters-list">
-            <!-- Headquarters list content will go here -->
+    <div class="tab-panel" data-tab="headquarters" {{#if tabs.headquarters}}style="display: block;"{{else}}style="display: none;"{{/if}}>
+        <div class="headquarters-simple">
+            <!-- Top Info Row -->
+            <div class="hq-top-info">
+                <table class="hq-info-table">
+                    <tr>
+                        <th>Status</th>
+                        <th>HQ Name</th>
+                        <th>Location</th>
+                        <th>Cost</th>
+                        <th>Size</th>
+                        <th>Material</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select name="system.headquarters.ownership" class="hq-ownership-select">
+                                {{#select actor.system.headquarters.ownership}}
+                                <option value="">None</option>
+                                <option value="owner">Owner</option>
+                                <option value="renter">Renter</option>
+                                {{/select}}
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" name="system.headquarters.name" value="{{actor.system.headquarters.name}}"/>
+                        </td>
+                        <td>
+                            <input type="text" name="system.headquarters.location" value="{{actor.system.headquarters.location}}"/>
+                        </td>
+                        <td class="hq-cost">{{actor.system.headquarters.cost}}</td>
+                        <td class="hq-size">{{actor.system.headquarters.size}}</td>
+                        <td class="hq-material">{{actor.system.headquarters.material}}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- HQ Types Section -->
+            <div class="hq-types-section">
+                <select name="system.headquarters.type" class="hq-type-select">
+                    {{#select actor.system.headquarters.type}}
+                    <option value="">Select Headquarters Type</option>
+                    <optgroup label="Residences">
+                        <option value="1br_apartment">1 BR Apartment</option>
+                        <option value="2br_apartment">2 BR Apartment</option>
+                        <option value="3br_apartment">3 BR Apartment</option>
+                        <option value="cottage">Cottage (2 rooms)</option>
+                        <option value="small_house">Small House (4 rooms)</option>
+                        <option value="medium_house">Medium House (8 rooms)</option>
+                        <option value="large_house">Large House (12 rooms)</option>
+                        <option value="small_manor">Small Manor (18 rooms)</option>
+                        <option value="large_manor">Large Manor (24 rooms)</option>
+                        <option value="mansion">Mansion (30+ rooms)</option>
+                    </optgroup>
+                    <optgroup label="Commercial">
+                        <option value="office">Office (3 rooms)</option>
+                        <option value="storefront">Storefront (4 rooms)</option>
+                        <option value="office_suite">Office Suite (6 rooms)</option>
+                        <option value="office_floor">Office Floor (12 rooms)</option>
+                        <option value="two_office_floors">2 Office Floors (24 rooms)</option>
+                        <option value="brownstone">Brownstone</option>
+                    </optgroup>
+                    <optgroup label="Buildings">
+                        <option value="office_building_4">Office Building (4 floors)</option>
+                        <option value="office_building_8">Office Building (8 floors)</option>
+                        <option value="office_building_12">Office Building (12 floors)</option>
+                        <option value="office_building_20">Office Building (20 floors)</option>
+                        <option value="office_building_30">Office Building (30+ floors)</option>
+                    </optgroup>
+                    <optgroup label="Industrial">
+                        <option value="small_warehouse">Small Warehouse</option>
+                        <option value="medium_warehouse">Medium Warehouse</option>
+                        <option value="large_warehouse">Large Warehouse</option>
+                        <option value="small_factory">Small Factory</option>
+                        <option value="medium_factory">Medium Factory</option>
+                        <option value="large_factory">Large Factory</option>
+                    </optgroup>
+                    {{/select}}
+                </select>
+            </div>
+
+            <!-- Description -->
+            <div class="hq-description">
+                <textarea name="system.headquarters.description" rows="2" placeholder="Description">{{actor.system.headquarters.description}}</textarea>
+            </div>
         </div>
     </div>
 
@@ -344,13 +608,17 @@
             <div class="karma-section">
                 <div class="karma-box">
                     <h2>Advancement Fund</h2>
-                    <input type="number" name="system.karmaTracking.advancementFund" value="{{actor.system.karmaTracking.advancementFund}}"/>
+                    <input type="number" name="system.karmaTracking.advancementFund" value="{{actor.system.karmaTracking.advancementFund}}" data-dtype="Number"/>
                     
                     <h2>Karma Pool</h2>
-                    <input type="number" name="system.karmaTracking.karmaPool" value="{{actor.system.karmaTracking.karmaPool}}"/>
+                    <input type="number" name="system.karmaTracking.karmaPool" value="{{actor.system.karmaTracking.karmaPool}}" data-dtype="Number"/>
                     
-                    <div class="karma-history-button" title="View Karma History">
-                        <i class="fas fa-history"></i>
+                    <h2>Lifetime Total</h2>
+                    <input type="number" name="system.karmaTracking.lifetimeTotal" value="{{actor.system.karmaTracking.lifetimeTotal}}" disabled/>
+                    
+                    <!-- Add karma history section here -->
+                    <div class="karma-history-section">
+                        <button type="button" class="karma-history-button">View Karma History</button>
                     </div>
                 </div>
             </div>

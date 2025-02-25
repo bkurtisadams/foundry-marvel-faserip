@@ -14,9 +14,17 @@
       "url": ""
     }
   ],
-  "esmodules": ["module/marvel-faserip.js"],
-  
-  "styles": ["css/marvel-faserip.css"],
+  "esmodules": [
+    "module/marvel-faserip.js",
+    "module/weapons/weapon-system.js",
+    "module/combat/FaseripCombatSystem.js"
+],
+  "styles": [
+    "css/marvel-faserip.css",
+    "css/weapon-sheet.css",
+    "css/combat.css",
+    "css/universal-table.css"
+  ],
   "languages": [
     {
       "lang": "en",
@@ -28,8 +36,30 @@
   "gridUnits": "areas",
   "primaryTokenAttribute": "secondaryAbilities.health",
   "secondaryTokenAttribute": "secondaryAbilities.karma",
-  "url": "",
-  "manifest": "",
-  "download": "",
-  "license": "LICENSE.txt"
+  "license": "LICENSE.txt",
+ 
+  "documentTypes": {
+    "Item": ["attack", "power", "equipment", "weapon"]
+  },
+ 
+  "relationships": {
+    "requires": []
+  },
+ 
+  "socket": true,
+  "initiative": "1d10",
+ 
+  "templatePaths": [
+    "templates/actor/actor-sheet.html",
+    "templates/items/attack-item.html",
+    "templates/items/power-item.html",
+    "templates/items/equipment-item.html",
+    "templates/items/item-sheet.html",
+    "templates/dialogs/add-equipment.html",
+    "templates/dialogs/add-weapon.html",
+    "templates/dialogs/add-headquarters.html",
+    "module/combat/templates/combat-attack.html",
+    "module/combat/templates/universal-table.html",
+     "module/combat/templates/combat-hud.html"
+  ]
 }

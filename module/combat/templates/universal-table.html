@@ -1,0 +1,283 @@
+{{!-- combat/templates/universal-table.html --}}
+<form class="{{cssClass}} universal-table" autocomplete="off">
+    {{!-- Combat Actions Table --}}
+    <div class="combat-actions-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Blunt<br>Attacks</div>
+                            <div class="action-code">BA</div>
+                            <div class="action-ability">Fighting</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Edged<br>Attacks</div>
+                            <div class="action-code">EA</div>
+                            <div class="action-ability">Fighting</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Shooting<br>Attacks</div>
+                            <div class="action-code">Sh</div>
+                            <div class="action-ability">Agility</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Throwing<br>Edged</div>
+                            <div class="action-code">TE</div>
+                            <div class="action-ability">Agility</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Throwing<br>Blunt</div>
+                            <div class="action-code">TB</div>
+                            <div class="action-ability">Agility</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Energy</div>
+                            <div class="action-code">En</div>
+                            <div class="action-ability">Agility</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Force</div>
+                            <div class="action-code">Fo</div>
+                            <div class="action-ability">Agility</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Grap-<br>pling</div>
+                            <div class="action-code">Gp</div>
+                            <div class="action-ability">Strength</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Grab-<br>bing</div>
+                            <div class="action-code">Gb</div>
+                            <div class="action-ability">Strength</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Escap-<br>ing</div>
+                            <div class="action-code">Es</div>
+                            <div class="action-ability">Strength</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Charg-<br>ing</div>
+                            <div class="action-code">Ch</div>
+                            <div class="action-ability">Endurance</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Dodging</div>
+                            <div class="action-code">Do</div>
+                            <div class="action-ability">Agility</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Evad-<br>ing</div>
+                            <div class="action-code">Ev</div>
+                            <div class="action-ability">Fighting</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Blocking</div>
+                            <div class="action-code">Bl</div>
+                            <div class="action-ability">Strength</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Catching</div>
+                            <div class="action-code">Ca</div>
+                            <div class="action-ability">Agility</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Stun?</div>
+                            <div class="action-code">St</div>
+                            <div class="action-ability">Endurance</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Slam?</div>
+                            <div class="action-code">Sl</div>
+                            <div class="action-ability">Endurance</div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="action-header">
+                            <div class="action-name">Kill?</div>
+                            <div class="action-code">Ki</div>
+                            <div class="action-ability">Endurance</div>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="white-row">
+                    <td>Miss</td><td>Miss</td><td>Miss</td><td>Miss</td><td>Miss</td><td>Miss</td><td>Miss</td>
+                    <td>Miss</td><td>Miss</td><td>Miss</td><td>Miss</td><td>None</td><td>Autohit</td><td>-6 CS</td>
+                    <td>Autohit</td><td>1-10</td><td>Gr. Slam</td><td>En.Loss</td>
+                </tr>
+                <tr class="green-row">
+                    <td>Hit</td><td>Hit</td><td>Hit</td><td>Hit</td><td>Hit</td><td>Hit</td><td>Hit</td>
+                    <td>Miss</td><td>Take</td><td>Miss</td><td>Hit</td><td>-2 CS</td><td>Evasion</td><td>-4 CS</td>
+                    <td>Miss</td><td>1</td><td>1 area</td><td>E/S</td>
+                </tr>
+                <tr class="yellow-row">
+                    <td>Slam</td><td>Stun</td><td>Bullseye</td><td>Stun</td><td>Hit</td><td>Bullseye</td><td>Bullseye</td>
+                    <td>Partial</td><td>Grab</td><td>Escape</td><td>Slam</td><td>-4 CS</td><td>+1 CS</td><td>-2 CS</td>
+                    <td>Damage</td><td>No</td><td>Stagger</td><td>No</td>
+                </tr>
+                <tr class="red-row">
+                    <td>Stun</td><td>Kill</td><td>Kill</td><td>Kill</td><td>Stun</td><td>Kill</td><td>Stun</td>
+                    <td>Hold</td><td>Break</td><td>Reverse</td><td>Stun</td><td>-6 CS</td><td>+2 CS</td><td>+1 CS</td>
+                    <td>Catch</td><td>No</td><td>No</td><td>No</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    {{!-- Rank Headers --}}
+    <div class="rank-headers">
+        <table>
+            <tr>
+                <th class="rank-cell">
+                    <div class="rank-code">0</div>
+                    <div class="rank-name">Shift</div>
+                    <div class="rank-value">0</div>
+                </th>
+                <th class="rank-cell">
+                    <div class="rank-code">Fe</div>
+                    <div class="rank-name">Feeble</div>
+                    <div class="rank-value">2</div>
+                </th>
+                <th class="rank-cell">
+                    <div class="rank-code">Pr</div>
+                    <div class="rank-name">Poor</div>
+                    <div class="rank-value">4</div>
+                </th>
+                <th class="rank-cell">
+                    <div class="rank-code">Ty</div>
+                    <div class="rank-name">Typical</div>
+                    <div class="rank-value">6</div>
+                </th>
+                <th class="rank-cell">
+                    <div class="rank-code">Gd</div>
+                    <div class="rank-name">Good</div>
+                    <div class="rank-value">10</div>
+                </th>
+                <th class="rank-cell">
+                    <div class="rank-code">Ex</div>
+                    <div class="rank-name">Excellent</div>
+                    <div class="rank-value">20</div>
+                </th>
+                <th class="rank-cell">
+                    <div class="rank-code">Rm</div>
+                    <div class="rank-name">Remarkable</div>
+                    <div class="rank-value">30</div>
+                </th>
+                <th class="rank-cell">
+                    <div class="rank-code">In</div>
+                    <div class="rank-name">Incredible</div>
+                    <div class="rank-value">40</div>
+                </th>
+                <th class="rank-cell">
+                    <div class="rank-code">Am</div>
+                    <div class="rank-name">Amazing</div>
+                    <div class="rank-value">50</div>
+                </th>
+                <th class="rank-cell">
+                    <div class="rank-code">Mn</div>
+                    <div class="rank-name">Monstrous</div>
+                    <div class="rank-value">75</div>
+                </th>
+                <th class="rank-cell">
+                    <div class="rank-code">Un</div>
+                    <div class="rank-name">Unearthly</div>
+                    <div class="rank-value">100</div>
+                </th>
+                <th class="rank-cell">
+                    <div class="rank-code">X</div>
+                    <div class="rank-name">Shift-X</div>
+                    <div class="rank-value">150</div>
+                </th>
+                <th class="rank-cell">
+                    <div class="rank-code">Y</div>
+                    <div class="rank-name">Shift-Y</div>
+                    <div class="rank-value">200</div>
+                </th>
+                <th class="rank-cell" data-rank="Z">
+                    <div class="rank-code">Z</div>
+                    <div class="rank-name">Shift-Z</div>
+                    <div class="rank-value">500</div>
+                </th>
+                <th class="rank-cell" data-rank="1000">
+                    <div class="rank-code">1000</div>
+                    <div class="rank-name">Class</div>
+                    <div class="rank-value">1000</div>
+                </th>
+                <th class="rank-cell" data-rank="3000">
+                    <div class="rank-code">3000</div>
+                    <div class="rank-name">Class</div>
+                    <div class="rank-value">3000</div>
+                </th>
+                <th class="rank-cell" data-rank="5000">
+                    <div class="rank-code">5000</div>
+                    <div class="rank-name">Class</div>
+                    <div class="rank-value">5000</div>
+                </th>
+                <th class="rank-cell" data-rank="B">
+                    <div class="rank-code">B</div>
+                    <div class="rank-name">Beyond</div>
+                    <div class="rank-value">∞</div>
+                </th>
+            </tr>
+            <tr class="rank-ranges">
+                <td>0</td><td>1-2</td><td>3-4</td><td>5-7</td><td>8-15</td><td>16-25</td><td>26-36</td>
+                <td>37-45</td><td>46-62</td><td>63-87</td><td>88-125</td><td>126-175</td><td>176-350</td>
+                <td>351+</td><td></td><td></td><td></td><td></td>
+            </tr>
+        </table>
+    </div>
+
+    {{!-- Results Table --}}
+    <div class="results-table">
+        <table>
+            <tbody>
+                {{#each [
+                    "01", "02-03", "04-06", "07-10", "11-15", "16-20", "21-25", "26-30", "31-35", "36-40",
+                    "41-45", "46-50", "51-55", "56-60", "61-65", "66-70", "71-75", "76-80", "81-85", "86-90",
+                    "91-94", "95-97", "98-99", "100"
+                ]}}
+                <tr>
+                    <td class="range-cell">{{this}}</td>
+                    {{#each (range 0 17)}}
+                    <td class="result-cell"></td>
+                    {{/each}}
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</form>

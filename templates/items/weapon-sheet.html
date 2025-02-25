@@ -1,0 +1,192 @@
+<!-- templates/items/weapon-sheet.html -->
+<form class="{{cssClass}} flexcol" autocomplete="off">
+    <header class="sheet-header">
+        <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}"/>
+        <div class="header-fields">
+            <h1 class="charname">
+                <input name="name" type="text" value="{{item.name}}" placeholder="Weapon Name"/>
+            </h1>
+        </div>
+    </header>
+
+    {{!-- Sheet Tab Navigation --}}
+    <nav class="sheet-tabs tabs" data-group="primary">
+        <a class="item" data-tab="description">Description</a>
+        <a class="item" data-tab="attributes">Attributes</a>
+        <a class="item" data-tab="ammunition">Ammunition</a>
+    </nav>
+
+    {{!-- Sheet Body --}}
+    <section class="sheet-body">
+        {{!-- Description Tab --}}
+        <div class="tab" data-group="primary" data-tab="description">
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="system.description">{{system.description}}</textarea>
+            </div>
+            <div class="form-group">
+                <label>Special Notes</label>
+                <textarea name="system.notes">{{system.notes}}</textarea>
+            </div>
+        </div>
+
+        {{!-- Attributes Tab --}}
+        <div class="tab" data-group="primary" data-tab="attributes">
+            <div class="grid grid-2col">
+                <div class="form-group">
+                    <label>Weapon Type</label>
+                    <select name="system.type">
+                        {{#select system.type}}
+                        <option value="S">Shooting</option>
+                        <option value="F">Force</option>
+                        <option value="E">Energy</option>
+                        <option value="EA">Edged Attack</option>
+                        <option value="BA">Blunt Attack</option>
+                        {{/select}}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Range</label>
+                    <select name="system.range">
+                        {{#select system.range}}
+                        {{#each config.ranks as |label rank|}}
+                        <option value="{{rank}}">{{label}}</option>
+                        {{/each}}
+                        {{/select}}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Damage</label>
+                    <input type="number" name="system.damage" value="{{system.damage}}" data-dtype="Number"/>
+                </div>
+
+                <div class="form-group">
+                    <label>Material Strength</label>
+                    <select name="system.material">
+                        {{#select system.material}}
+                        {{#each config.ranks as |label rank|}}
+                        <option value="{{rank}}">{{label}}</option>
+                        {{/each}}
+                        {{/select}}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Rate of Fire</label>
+                    <input type="number" name="system.rate" value="{{system.rate}}" data-dtype="Number"/>
+                </div>
+
+                <div class="form-group">
+                    <label>Maximum Shots</label>
+                    <input type="number" name="system.maxShots" value="{{system.maxShots}}" data-dtype="Number"/>
+                </div>
+
+                <div class="form-group">
+                    <label>Current Shots</label>
+                    <input type="number" name="system.shots" value="{{system.shots}}" data-dtype="Number"/>
+                </div>
+
+                <div class="form-group">
+                    <label>Price Rank</label>
+                    <select name="system.price">
+                        {{#select system.price}}
+                        {{#each config.ranks as |label rank|}}
+                        <option value="{{rank}}">{{label}}</option>
+                        {{/each}}
+                        {{/select}}
+                    </select>
+                </div>
+            </div>
+
+            {{!-- Handling Characteristics --}}
+            <div class="form-group">
+                <label>Handling</label>
+                <div class="grid grid-3col">
+                    <label class="checkbox">
+                        <input type="checkbox" name="system.handling.oneHanded" {{checked system.handling.oneHanded}}/>
+                        One-Handed
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" name="system.handling.twoHanded" {{checked system.handling.twoHanded}}/>
+                        Two-Handed
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" name="system.handling.bursts" {{checked system.handling.bursts}}/>
+                        Bursts
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" name="system.handling.scatters" {{checked system.handling.scatters}}/>
+                        Scatters
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" name="system.handling.stationary" {{checked system.handling.stationary}}/>
+                        Stationary
+                    </label>
+                </div>
+            </div>
+
+            {{!-- Legal Status --}}
+            <div class="form-group">
+                <label>Legal Status</label>
+                <select name="system.legality">
+                    {{#select system.legality}}
+                    <option value="legal">Legal</option>
+                    <option value="restricted">Restricted</option>
+                    <option value="military">Military</option>
+                    <option value="illegal">Illegal</option>
+                    {{/select}}
+                </select>
+            </div>
+        </div>
+
+        {{!-- Ammunition Tab --}}
+        <div class="tab" data-group="primary" data-tab="ammunition">
+            <div class="form-group">
+                <label>Ammunition Type</label>
+                <div class="grid grid-2col">
+                    <select name="system.currentAmmo">
+                        {{#select system.currentAmmo}}
+                        {{#each config.ammoTypes as |ammo id|}}
+                        <option value="{{id}}">{{ammo.name}}</option>
+                        {{/each}}
+                        {{/select}}
+                    </select>
+                    <button type="button" class="reload-weapon">
+                        <i class="fas fa-sync-alt"></i> Reload
+                    </button>
+                </div>
+            </div>
+
+            {{#if system.powerPack}}
+            <div class="form-group">
+                <label>Power Pack</label>
+                <div class="grid grid-2col">
+                    <div class="form-group">
+                        <label>Current Charge</label>
+                        <input type="number" name="system.powerPackCharge" value="{{system.powerPackCharge}}" data-dtype="Number"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Maximum Charge</label>
+                        <input type="number" name="system.powerPackMaxCharge" value="{{system.powerPackMaxCharge}}" data-dtype="Number"/>
+                    </div>
+                </div>
+            </div>
+            {{/if}}
+
+            <div class="form-group">
+                <label>Compatible Ammunition Types</label>
+                <div class="ammo-compatibility grid grid-3col">
+                    {{#each config.ammoTypes as |ammo id|}}
+                    <label class="checkbox">
+                        <input type="checkbox" name="system.compatibleAmmo.{{id}}" 
+                               {{checked (lookup ../system.compatibleAmmo id)}}/>
+                        {{ammo.name}}
+                    </label>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+    </section>
+</form>

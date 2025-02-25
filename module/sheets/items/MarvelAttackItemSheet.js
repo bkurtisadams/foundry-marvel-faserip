@@ -11,6 +11,17 @@ export class MarvelAttackItemSheet extends ItemSheet {
     }
 
     /** @override */
+    activateListeners(html) {
+        super.activateListeners(html);
+
+        // Add roll handler
+        html.find('.roll-attack').click(async ev => {
+            ev.preventDefault();
+            return await this.item.roll();
+        });
+    }
+    
+    /** @override */
     async getData() {
         const context = await super.getData();
 
@@ -22,7 +33,8 @@ export class MarvelAttackItemSheet extends ItemSheet {
                 label: "Fighting",
                 attacks: {
                     BA: "Blunt Attack (BA)",
-                    EA: "Edged Attack (EA)"
+                    EA: "Edged Attack (EA)",
+                    Gr: "Grappling (Gr)"  // Changed from Gp to Gr to match the combat system
                 }
             },
             agility: {
@@ -39,7 +51,6 @@ export class MarvelAttackItemSheet extends ItemSheet {
             strength: {
                 label: "Strength",
                 attacks: {
-                    Gp: "Grappling (Gp)",
                     Gb: "Grabbing (Gb)",
                     Bl: "Blocking (Bl)"
                 }
@@ -55,7 +66,7 @@ export class MarvelAttackItemSheet extends ItemSheet {
                     Ki: "Kill? (Ki)"
                 }
             }
-        };
+        };;
 
         return context;
     }

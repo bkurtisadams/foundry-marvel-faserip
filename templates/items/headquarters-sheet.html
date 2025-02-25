@@ -1,0 +1,122 @@
+# File: templates/items/headquarters-sheet.html
+
+<form class="{{cssClass}} headquarters-sheet" autocomplete="off">
+    <header class="sheet-header">
+        <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}"/>
+        <div class="header-fields">
+            <h1 class="charname"><input name="name" type="text" value="{{item.name}}" placeholder="HQ Name"/></h1>
+        </div>
+    </header>
+
+    <nav class="sheet-tabs tabs" data-group="primary">
+        <a class="item" data-tab="basic">Basic Info</a>
+        <a class="item" data-tab="rooms">Room Packages</a>
+        <a class="item" data-tab="security">Security & Defense</a>
+    </nav>
+
+    <section class="sheet-body">
+        {{!-- Basic Info Tab --}}
+        <div class="tab-content" data-tab="basic">
+            <div class="form-group">
+                <label>Type</label>
+                <select name="system.type" class="hq-type-select">
+                    {{#select system.type}}
+                    <option value="">Choose Type</option>
+                    {{#each config.HQ_TYPES as |hq key|}}
+                    <option value="{{key}}">{{hq.name}} (Rent: {{hq.cost}})</option>
+                    {{/each}}
+                    {{/select}}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Size</label>
+                <input type="text" name="system.size" value="{{system.size}}" disabled/>
+            </div>
+
+            <div class="form-group">
+                <label>Material Strength</label>
+                <input type="text" name="system.materialStrength" value="{{system.materialStrength}}" disabled/>
+            </div>
+
+            <div class="cost-summary">
+                <div class="form-group">
+                    <label>Monthly Rent</label>
+                    <input type="text" name="system.cost.rent" value="{{system.cost.rent}}" disabled/>
+                </div>
+                <div class="form-group">
+                    <label>Purchase Price</label>
+                    <input type="text" name="system.cost.purchase" value="{{system.cost.purchase}}" disabled/>
+                </div>
+            </div>
+        </div>
+
+        {{!-- Room Packages Tab --}}
+        <div class="tab-content" data-tab="rooms">
+            <div class="room-packages">
+                {{#each config.ROOM_PACKAGES as |package key|}}
+                <div class="package-item">
+                    <input type="checkbox" 
+                           name="system.rooms.{{key}}.installed"
+                           data-room="{{key}}"
+                           {{checked (lookup ../system.rooms key 'installed')}}>
+                    <label>{{package.name}} ({{package.cost}}, {{package.size}} areas)</label>
+                    <div class="package-description">{{package.description}}</div>
+                    
+                    {{#if (lookup ../system.rooms key 'installed')}}
+                    <div class="package-upgrades">
+                        {{#each package.upgrades as |upgrade upgradeKey|}}
+                        <div class="upgrade-option">
+                            <input type="checkbox"
+                                   name="system.rooms.{{key}}.upgrades.{{upgradeKey}}"
+                                   {{checked (lookup ../upgrades upgradeKey)}}>
+                            <label>{{upgrade.name}} ({{upgrade.cost}})</label>
+                            <div class="upgrade-description">{{upgrade.description}}</div>
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{/if}}
+                </div>
+                {{/each}}
+            </div>
+        </div>
+
+        {{!-- Security Tab --}}
+        <div class="tab-content" data-tab="security">
+            <div class="form-group">
+                <label>Security System</label>
+                <select name="system.security.type">
+                    {{#select system.security.type}}
+                    {{#each config.SECURITY_SYSTEMS as |security key|}}
+                    <option value="{{key}}">{{security.name}} ({{security.cost}})</option>
+                    {{/each}}
+                    {{/select}}
+                </select>
+                {{#with (lookup config.SECURITY_SYSTEMS system.security.type) as |current|}}
+                <div class="system-description">{{current.description}}</div>
+                {{/with}}
+            </div>
+
+            <div class="form-group">
+                <label>Defense System</label>
+                <select name="system.defense.type">
+                    {{#select system.defense.type}}
+                    {{#each config.DEFENSE_SYSTEMS as |defense key|}}
+                    <option value="{{key}}">{{defense.name}} ({{defense.cost}})</option>
+                    {{/each}}
+                    {{/select}}
+                </select>
+                {{#with (lookup config.DEFENSE_SYSTEMS system.defense.type) as |current|}}
+                <div class="system-description">{{current.description}}</div>
+                {{/with}}
+            </div>
+        </div>
+    </section>
+
+    <footer class="sheet-footer">
+        <div class="resource-tracking">
+            <span>Areas Used: {{roomsUsed}} / {{maxRooms}}</span>
+            <span>Monthly Maintenance: {{system.monthlyMaintenance}}</span>
+        </div>
+    </footer>
+</form>

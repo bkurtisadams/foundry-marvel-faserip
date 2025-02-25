@@ -1,0 +1,81 @@
+<div class="headquarters-section">
+    <div class="hq-header">
+      <h2>{{name}}</h2>
+      <div class="hq-stats">
+          <span>Type: {{system.type}}</span>
+          <span>Size: {{system.size}}</span>
+          <span>Material Strength: {{system.materialStrength}}</span>
+      </div>
+  </div>
+  
+    <div class="room-packages">
+      <h3>Room Packages</h3>
+      <div class="packages-grid">
+        {{#each config.ROOM_PACKAGES as |package key|}}
+        <div class="package-item">
+          <label>
+            <input type="checkbox" 
+                   name="system.headquarters.rooms.{{key}}.installed" 
+                   {{checked (lookup ../actor.system.headquarters.rooms key "installed")}}>
+            {{package.name}} ({{package.cost}}, {{package.size}} areas)
+          </label>
+          {{#if (lookup ../actor.system.headquarters.rooms key "installed")}}
+          <div class="package-upgrades">
+            {{#each package.upgrades as |upgrade upgradeKey|}}
+            <label>
+              <input type="checkbox" 
+                     name="system.headquarters.rooms.{{key}}.upgrades.{{upgradeKey}}.installed"
+                     {{checked (lookup upgrade "installed")}}>
+              {{upgrade.name}} ({{upgrade.cost}})
+            </label>
+            {{/each}}
+          </div>
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  
+    <div class="security-section">
+      <h3>Security Systems</h3>
+      <select name="system.headquarters.security.type">
+        {{#select actor.system.headquarters.security.type}}
+        <option value="">Select Security Level</option>
+        {{#each config.SECURITY_PACKAGES as |security key|}}
+        <option value="{{key}}">{{security.name}} ({{security.cost}})</option>
+        {{/each}}
+        {{/select}}
+      </select>
+    </div>
+  
+    <div class="defense-section">
+      <h3>Defense Systems</h3>
+      <select name="system.headquarters.defense.type">
+        {{#select actor.system.headquarters.defense.type}}
+        <option value="">Select Defense Level</option>
+        <option value="standard">Standard Defenses (Excellent)</option>
+        <option value="enhanced">Enhanced Defenses (Remarkable)</option>
+        <option value="maximum">Maximum Defenses (Incredible)</option>
+        {{/select}}
+      </select>
+    </div>
+  
+    <div class="hq-summary">
+      {{#with actor.system.headquarters}}
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span>Space Used:</span>
+          <span>{{roomsUsed}} / {{maxRooms}} areas</span>
+        </div>
+        <div class="summary-item">
+          <span>Monthly Cost:</span>
+          <span>{{cost}}</span>
+        </div>
+        <div class="summary-item">
+          <span>Purchase Cost:</span>
+          <span>{{purchaseCost}}</span>
+        </div>
+      </div>
+      {{/with}}
+    </div>
+  </div>

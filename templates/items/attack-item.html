@@ -3,7 +3,6 @@
         <label>Attack Name</label>
         <input type="text" name="attackName" value="{{item.name}}" placeholder="e.g., Punch, Kick, Energy Blast"/>
     </div>
-
     <div class="form-group">
         <label>Ability</label>
         <select name="ability" id="abilitySelect">
@@ -12,7 +11,6 @@
             {{/each}}
         </select>
     </div>
-
     <div class="form-group">
         <label>Attack Type</label>
         <select name="attackType">
@@ -25,19 +23,23 @@
             {{/each}}
         </select>
     </div>
-
     <div class="form-group">
         <label>Weapon Damage</label>
         <input type="number" name="weaponDamage" value="{{item.system.weaponDamage}}"/>
     </div>
-
     <div class="form-group">
         <label>Range (areas)</label>
         <input type="number" name="range" value="{{item.system.range}}"/>
     </div>
-
     <div class="form-group">
         <label>Column Shift</label>
         <input type="number" name="columnShift" value="{{item.system.columnShift}}"/>
+    </div>
+    
+    <!-- Add roll button group at the bottom -->
+    <div class="form-group button-group">
+        <button type="button" class="roll-attack">
+            <i class="fas fa-dice-d20"></i> Roll Attack
+        </button>
     </div>
 </form>

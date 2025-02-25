@@ -75,10 +75,19 @@
             "secret": 0
           }
         },
-        "karmaTracking": {
+          "karmaTracking": {
           "karmaPool": 0,
           "advancementFund": 0,
-          "history": []
+          "lifetimeTotal": 0,
+          "history": {
+              "type": "Array",
+              "default": [],
+              "schema": {
+                  "date": "",
+                  "amount": 0,
+                  "description": ""
+              }
+          }
         },
         "resistances": {
           "list": []
@@ -94,7 +103,17 @@
             "status": "untried",
             "description": ""
           }
-        }
+        },
+        "headquarters": {
+          "name": "",
+          "type": "",
+          "location": "",
+          "description": "",
+          "ownership": "",
+          "cost": "",
+          "size": "",
+          "material": ""
+      }
       },
       "contacts": {
         "contacts": {
@@ -144,12 +163,17 @@
       "reliability": ""
     },
     "equipment": {
-      "templates": ["base"],
-      "rank": "",
-      "number": 0,
-      "type": "",
-      "durability": "",
-      "material": ""
+    "templates": ["base"],
+    "type": "",
+    "range": "",
+    "damage": 0,
+    "rate": 1,
+    "shots": 0,
+    "material": "",
+    "price": "",
+    "special": "",
+    "ammunition": "",
+    "description": ""
     },
     "attack": {
       "templates": ["base"],
@@ -166,6 +190,28 @@
       "attempts": 0,
       "status": "untried",
       "description": ""
+    },
+    "headquarters": {
+      "templates": ["base"],
+      "type": "",
+      "size": "",
+      "cost": {
+        "rent": "",
+        "purchase": ""
+      },
+      "materialStrength": "",
+      "rooms": [],
+      "security": {
+        "type": "",
+        "cost": ""
+      },
+      "defense": {
+        "type": "",
+        "cost": ""
+      },
+      "roomsUsed": 0,
+      "maxRooms": 0,
+      "monthlyMaintenance": 0
     }
   }
 }

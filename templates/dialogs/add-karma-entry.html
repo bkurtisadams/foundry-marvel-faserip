@@ -1,14 +1,14 @@
-<!-- templates/dialogs/add-karma-entry.html -->
-<form class="karma-entry-form">
+<form>
+    <div class="form-group">
+        <label>Date</label>
+        <input type="text" name="date" value="{{entry.date}}" required/>
+    </div>
     <div class="form-group">
         <label>Amount</label>
-        <div class="input-hint">(positive for karma earned, negative for karma spent)</div>
-        <!-- Add step="any" and modify type -->
-        <input type="number" name="amount" step="any" value="{{entry.amount}}" required/>
+        <input type="number" name="amount" value="{{entry.amount}}" required/>
     </div>
     <div class="form-group">
         <label>Description</label>
-        <div class="input-hint">(why karma was earned or spent)</div>
-        <input type="text" name="description" value="{{entry.description}}" required placeholder="e.g., Defeated villain"/>
+        <input type="text" name="description" value="{{entry.description}}" required/>
     </div>
 </form>
