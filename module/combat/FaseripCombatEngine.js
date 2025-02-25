@@ -165,40 +165,41 @@ export class FaseripCombatEngine {
  * @param {number} amount - Amount of karma to spend
  * @param {string} reason - Reason for spending karma
  */
-async _spendKarma(actor, amount, reason) {
-    if (!actor || amount <= 0) return;
-    
-    // Get current karma values
-    const currentKarma = actor.system.secondaryAbilities.karma.value;
-    const currentKarmaPool = actor.system.karmaTracking?.karmaPool || 0;
-    
-    console.log(`Current karma: ${currentKarma}, karma pool: ${currentKarmaPool}, will be reduced by: ${amount}`);
-    
-    // Update both the karma value and karma pool
-    await actor.update({
-        "system.secondaryAbilities.karma.value": Math.max(0, currentKarma - amount),
-        "system.karmaTracking.karmaPool": Math.max(0, currentKarmaPool - amount)
-    });
-    
-    // Add to karma history - check if history exists first
-    const currentHistory = actor.system.karmaTracking?.history || [];
-    
-    const newEntry = {
-        date: new Date().toLocaleString(),
-        amount: -amount,
-        description: `Used ${amount} karma on ${reason}`
-    };
-    
-    // Update karma history if it exists
-    if (actor.system.karmaTracking) {
+    async _spendKarma(actor, amount, reason) {
+        if (!actor || amount <= 0) return;
+        
+        // Get current karma values
+        const currentKarmaPool = actor.system.karmaTracking?.karmaPool || 0;
+        
+        console.log(`Current karma pool: ${currentKarmaPool}, will be reduced by: ${amount}`);
+        
+        // Create new history entry
+        const newEntry = {
+            date: new Date().toLocaleString(),
+            amount: -amount,
+            description: `Used ${amount} karma on ${reason}`
+        };
+        
+        // Get current history
+        const history = duplicate(actor.system.karmaTracking?.history || []);
+        
+        // Add new entry
+        history.push(newEntry);
+        
+        // Calculate new total
+        const newTotal = history.reduce((total, entry) => {
+            return total + (Number(entry.amount) || 0);
+        }, 0);
+        
+        // Update actor
         await actor.update({
-            "system.karmaTracking.history": [...currentHistory, newEntry]
+            "system.karmaTracking.history": history,
+            "system.karmaTracking.karmaPool": newTotal,
+            "system.karmaTracking.lifetimeTotal": newTotal
         });
-        console.log("Added karma history entry:", newEntry);
-    } else {
-        console.warn("Could not find karma history structure for actor:", actor.name);
+        
+        console.log("Updated karma pool and added history entry:", newEntry);
     }
-}
 
     /**
      * Create an error result object

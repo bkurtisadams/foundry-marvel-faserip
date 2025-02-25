@@ -16,9 +16,10 @@
             <div class="header-actions">Actions</div>
         </div>
         
+        <!-- In karma-history.html -->
         <div class="karma-entries">
-            {{#each karmaHistory as |entry|}}
-            <div class="karma-entry">
+            {{#each karmaHistory as |entry index|}}
+            <div class="karma-entry" data-index="{{index}}">
                 <div class="date">{{entry.date}}</div>
                 <div class="amount {{#if (lt entry.amount 0)}}negative{{else}}positive{{/if}}">
                     {{#if (gt entry.amount 0)}}+{{/if}}{{entry.amount}}

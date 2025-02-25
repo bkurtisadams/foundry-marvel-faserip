@@ -13,6 +13,7 @@ import { FaseripCombatSystem } from "./combat/FaseripCombatSystem.js";
 import { FaseripUniversalTable } from "./combat/FaseripUniversalTable.js";
 import { MarvelCombatHUD } from "./combat/MarvelCombatHUD.js";
 import { FaseripCombatEngine } from "./combat/FaseripCombatEngine.js";
+import { KarmaHistorySheet } from "./dialogs/karma-history.js";
 
 import { 
     MARVEL_RANKS,
@@ -34,7 +35,6 @@ import {
 
 Hooks.once('init', async function() {
     console.log('marvel-faserip | Initializing Marvel FASERIP System');
-
     // Initialize CONFIG.marvel first
     CONFIG.marvel = {
         combatHUD: null,  // Start with null
@@ -58,51 +58,50 @@ Hooks.once('init', async function() {
         featTypes: FEAT_TYPES,
         getAvailableActions
     };
-
     // Add status effects
     CONFIG.statusEffects.push(...STATUS_EFFECTS);
-    
+   
     // Initialize game.marvel namespace
     game.marvel = {
         MarvelCombatHUD,
         WeaponSystem: new WeaponSystem(),
         combatSystem: new FaseripCombatSystem(),
         combatEngine: new FaseripCombatEngine(),
-        FaseripUniversalTable
+        FaseripUniversalTable,
+        KarmaHistorySheet  // Add the KarmaHistorySheet class
     };
-
+    
     // Register sheet application classes
     globalThis.FaseripUniversalTable = FaseripUniversalTable;
     globalThis.MarvelCombatHUD = MarvelCombatHUD;
-
+    globalThis.KarmaHistorySheet = KarmaHistorySheet;  // Make it available globally
+    
     // Make weapon system available globally for debugging
     globalThis.marvelWeapons = game.marvel.WeaponSystem;
     globalThis.marvelCombat = game.marvel.combatSystem;
-    
+   
     // Configure document classes
     CONFIG.Item.documentClass = MarvelFaseripItem;
-    
+   
     // Register sheets
     Actors.unregisterSheet("core", ActorSheet);
     Items.unregisterSheet("core", ItemSheet);
-    
-    Items.registerSheet("marvel-faserip", MarvelAttackItemSheet, { 
+   
+    Items.registerSheet("marvel-faserip", MarvelAttackItemSheet, {
         types: ["attack"],
         makeDefault: true,
         label: "MARVEL.SheetAttack"
     });
-
-    Actors.registerSheet("marvel-faserip", MarvelActorSheet, { 
+    Actors.registerSheet("marvel-faserip", MarvelActorSheet, {
         makeDefault: true,
         label: "MARVEL.SheetCharacter"
     });
-
     // HQ registration
     Items.registerSheet("marvel-faserip", MarvelHeadquartersSheet, {
         types: ["headquarters"],
         makeDefault: true
     });
-    
+   
     // ... rest of your initialization
 });
 

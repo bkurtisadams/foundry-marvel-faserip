@@ -989,15 +989,15 @@ export class MarvelActorSheet extends ActorSheet {
 
     async _onKarmaHistoryClick(event) {
         event.preventDefault();
-       
+        
         // Initialize properties
         this._karmaHistory = this.actor.system.karmaTracking.history || [];
         this._filteredHistory = [...this._karmaHistory];
         this._currentSort = { field: 'date', direction: 'desc' };
-
+        
         // Calculate total karma
-        const karmaTotal = this._karmaHistory.reduce((sum, entry) => sum + entry.amount, 0);
-       
+        const karmaTotal = this._recalculateKarmaTotal();
+        
         const content = await renderTemplate(
             "systems/marvel-faserip/templates/dialogs/karma-history.html",
             {
@@ -1015,10 +1015,10 @@ export class MarvelActorSheet extends ActorSheet {
                     label: "Close"
                 }
             },
-           
+            
             render: (html) => {
                 const dialog = this;
-               
+                
                 // Add event listeners
                 html.find('.karma-entries').on('click', '.edit-entry', async (ev) => {
                     ev.preventDefault();
@@ -1057,7 +1057,9 @@ export class MarvelActorSheet extends ActorSheet {
     
                     if (confirm) {
                         await this.actor.update({
-                            "system.karmaTracking.history": []
+                            "system.karmaTracking.history": [],
+                            "system.karmaTracking.karmaPool": 0,
+                            "system.karmaTracking.lifetimeTotal": 0
                         });
                         ui.notifications.info("All karma history entries have been cleared.");
                     }
@@ -1075,6 +1077,25 @@ export class MarvelActorSheet extends ActorSheet {
     
         dialog.render(true);
     }
+
+    // Add this helper function to recalculate karma totals
+    _recalculateKarmaTotal() {
+        const history = this.actor.system.karmaTracking.history || [];
+        
+        // Calculate total from history
+        const karmaTotal = history.reduce((total, entry) => {
+            return total + (Number(entry.amount) || 0);
+        }, 0);
+        
+        // Update the actor's karma pool and lifetime total
+        this.actor.update({
+            "system.karmaTracking.karmaPool": karmaTotal,
+            "system.karmaTracking.lifetimeTotal": karmaTotal
+        });
+        
+        return karmaTotal;
+    }
+
     
     async _onAddKarmaEntry(event) {
         event.preventDefault();
@@ -1116,6 +1137,8 @@ export class MarvelActorSheet extends ActorSheet {
                             "system.karmaTracking.history": [...currentHistory, newEntry]
                         });
                         
+                        // Recalculate the totals
+                        this._recalculateKarmaTotal();
                         // Reopen karma history with new data
                         this._onKarmaHistoryClick(new Event('click'));
                     }
@@ -1130,30 +1153,21 @@ export class MarvelActorSheet extends ActorSheet {
     }
     
     async _onDeleteKarmaEntry(event, index) {
-        // Currently keeps karma history open during confirmation
-        // Should:
-        // 1. Close karma history
-        // 2. Show confirmation
-        // 3. After delete, reopen karma history
+        // Get current history
+        const history = duplicate(this.actor.system.karmaTracking.history || []);
         
-        // Suggested fix:
-        $('.karma-history').remove();
+        // Remove the entry
+        history.splice(index, 1);
         
-        const confirmDelete = await Dialog.confirm({
-            title: "Delete Karma Entry",
-            content: "Are you sure you want to delete this karma entry?",
-            yes: () => true,
-            no: () => false,
-            defaultYes: false
+        // Update the actor
+        await this.actor.update({
+            "system.karmaTracking.history": history
         });
-    
-        if (confirmDelete) {
-            const history = duplicate(this.actor.system.karmaTracking.history);
-            history.splice(index, 1);
-            await this.actor.update({"system.karmaTracking.history": history});
-        }
         
-        // Always reopen karma history
+        // Recalculate the totals
+        this._recalculateKarmaTotal();
+        
+        // Reopen the karma history dialog to reflect changes
         this._onKarmaHistoryClick(new Event('click'));
     }
     
@@ -1195,6 +1209,7 @@ export class MarvelActorSheet extends ActorSheet {
                             });
                         }
     
+                        this._recalculateKarmaTotal();
                         // Reopen karma history dialog
                         this._onKarmaHistoryClick(new Event('click'));
                     }

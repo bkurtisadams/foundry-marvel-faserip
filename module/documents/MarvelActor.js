@@ -86,6 +86,35 @@ export class MarvelActor extends Actor {
             };
         }
 
+        // Ensure proper karma tracking structure exists
+        if (!this.system.karmaTracking) {
+            this.system.karmaTracking = {
+                advancementFund: 0,
+                karmaPool: 0,
+                lifetimeTotal: 0,
+                history: []
+            };
+        } else {
+            // Make sure history array exists
+            if (!this.system.karmaTracking.history) {
+                this.system.karmaTracking.history = [];
+            }
+            // Convert history to array if it's not already
+            else if (!Array.isArray(this.system.karmaTracking.history)) {
+                this.system.karmaTracking.history = [];
+            }
+            
+            // Ensure values are numbers
+            this.system.karmaTracking.advancementFund = parseInt(this.system.karmaTracking.advancementFund) || 0;
+            this.system.karmaTracking.karmaPool = parseInt(this.system.karmaTracking.karmaPool) || 0;
+            
+            // Calculate lifetime total from history
+            const historyTotal = this.system.karmaTracking.history.reduce(
+                (total, entry) => total + (Number(entry.amount) || 0), 0
+            );
+            this.system.karmaTracking.lifetimeTotal = historyTotal;
+        }
+
         /* if (!this.system.karmaTracking) {
             this.system.karmaTracking = {
                 karmaPool: 0,
@@ -99,7 +128,7 @@ export class MarvelActor extends Actor {
                 }
             };
         } */
-            if (!this.system.karmaTracking) {
+/*             if (!this.system.karmaTracking) {
                 this.system.karmaTracking = {
                     advancementFund: 0,
                     karmaPool: 0,
@@ -110,7 +139,8 @@ export class MarvelActor extends Actor {
                 this.system.karmaTracking.advancementFund = parseInt(this.system.karmaTracking.advancementFund) || 0;
                 this.system.karmaTracking.karmaPool = parseInt(this.system.karmaTracking.karmaPool) || 0;
                 this.system.karmaTracking.lifetimeTotal = this.system.karmaTracking.advancementFund + this.system.karmaTracking.karmaPool;
-            }    }
+            } */    
+        }
 
     /** Initialize hero-specific template data */
     _initializeHeroTemplate() {
