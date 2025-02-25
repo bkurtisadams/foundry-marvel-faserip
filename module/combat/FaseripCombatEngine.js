@@ -69,7 +69,14 @@ export class FaseripCombatEngine {
     
             // Roll and get result
             const rankName = this._getRankFromValue(baseChance);
-            const roll = await (new Roll("1d100")).evaluate({async: true});
+            console.log(`Rolling 1d100 for rank ${rankName} (${baseChance})`);
+
+            // Ensure dice are always shown:
+            const roll = new Roll("1d100");
+            await roll.evaluate(); // Correct syntax for Foundry v12
+            if (game.dice3d) {
+                await game.dice3d.showForRoll(roll, game.user, true);
+            }
             
             // Apply Karma to the roll total
             let finalRollTotal = roll.total;
@@ -85,10 +92,16 @@ export class FaseripCombatEngine {
             const result = this._getColorResult(finalRollTotal, rankName);
             console.log(`Roll result: ${roll.total}, with karma: ${finalRollTotal}, color: ${result}`);
     
-            // In resolveAction, modify the section that handles wrestling actions
             // Handle wrestling moves specially
             if (["Gp", "Gb", "Es"].includes(normalizedActionType)) {
-                return await this._handleWrestlingResult(actor, target, normalizedActionType, result);
+                return await this._handleWrestlingResult(
+                    actor, 
+                    target, 
+                    normalizedActionType, 
+                    result,
+                    roll,
+                    finalRollTotal
+                );
             }
     
             // Calculate damage
@@ -100,7 +113,16 @@ export class FaseripCombatEngine {
             console.log("Combat effect:", effect);
             
             // Format result for display
-            const formattedText = this._formatCombatResult(actor, target, actionType, result, damage, effect);
+            const formattedText = this._formatCombatResult(
+                actor, 
+                target, 
+                normalizedActionType, // Use normalized action type
+                result, 
+                damage, 
+                effect,
+                roll,
+                finalRollTotal
+            );
     
             // APPLY DAMAGE TO TARGET
             if (damage && damage.final > 0) {
@@ -215,38 +237,110 @@ export class FaseripCombatEngine {
     _applyColumnShift(baseValue, shift) {
         if (shift === 0) return baseValue;
         
+        // Debug the input values
+        console.log(`DEBUG: _applyColumnShift called with baseValue: ${baseValue}, shift: ${shift}`);
+        
+        // Make sure baseValue is a number
+        baseValue = Number(baseValue);
+        if (isNaN(baseValue)) {
+            console.error(`Invalid baseValue: ${baseValue}`);
+            return 0; // Return a safe default
+        }
+        
         // Get rank names in order
         const ranks = Object.keys(CONFIG.marvel.selectableRanks);
+        console.log(`DEBUG: Available ranks: ${ranks.join(', ')}`);
         
         // Find current rank
         const currentRank = this._getRankFromValue(baseValue);
         const currentIndex = ranks.indexOf(currentRank);
         
-        if (currentIndex === -1) return baseValue; // Shouldn't happen
+        console.log(`DEBUG: Current rank: ${currentRank}, index: ${currentIndex}`);
+        
+        if (currentIndex === -1) {
+            console.error(`Rank not found: ${currentRank}`);
+            return baseValue; // Return original value
+        }
         
         // Calculate new rank index with shift
         const newIndex = Math.max(0, Math.min(ranks.length - 1, currentIndex + shift));
         const newRank = ranks[newIndex];
         
+        console.log(`DEBUG: New rank after shift: ${newRank}, index: ${newIndex}`);
+        
         // Get middle value of new rank range
         const range = CONFIG.marvel.rankValues[newRank];
-        if (!range) return baseValue;
+        if (!range) {
+            console.error(`No range found for rank: ${newRank}`);
+            return baseValue;
+        }
         
-        return Math.floor((range.min + range.max) / 2);
+        // Calculate the middle value of the range
+        const newValue = Math.floor((range.min + range.max) / 2);
+        console.log(`DEBUG: New value after shift: ${newValue} (range: ${range.min}-${range.max})`);
+        
+        return newValue;
     }
     
-    /**
-     * Get color result from roll total and target rank
-     */
-    _getColorResult(rollTotal, targetRank) {
-        const ranges = CONFIG.marvel.universalTableRanges[targetRank];
-        if (!ranges) return "white"; // Default to miss
-        
-        if (rollTotal <= ranges.white) return "white";
-        if (rollTotal <= ranges.green) return "green";
-        if (rollTotal <= ranges.yellow) return "yellow";
+ /**
+ * Get color result from roll total and target rank
+ */
+ _getColorResult(rollTotal, targetRank) {
+    // Detailed debugging
+    console.log("DEBUG: _getColorResult called with:", { rollTotal, targetRank });
+    console.log("DEBUG: CONFIG.marvel:", CONFIG.marvel);
+    console.log("DEBUG: Available ranks in universalTableRanges:", 
+        CONFIG.marvel.universalTableRanges ? Object.keys(CONFIG.marvel.universalTableRanges) : "Not available");
+    
+    // Check if the target rank exists exactly as provided
+    const exactRankExists = CONFIG.marvel.universalTableRanges && CONFIG.marvel.universalTableRanges[targetRank];
+    console.log(`DEBUG: Exact rank "${targetRank}" exists:`, exactRankExists ? "Yes" : "No");
+    
+    // Try to find a close match if exact doesn't exist
+    let matchedRank = targetRank;
+    if (!exactRankExists && CONFIG.marvel.universalTableRanges) {
+        matchedRank = Object.keys(CONFIG.marvel.universalTableRanges).find(
+            rank => rank.toLowerCase() === targetRank.toLowerCase()
+        );
+        console.log(`DEBUG: Found case-insensitive match:`, matchedRank || "None");
+    }
+    
+    // Get ranges for the matched rank
+    const ranges = CONFIG.marvel.universalTableRanges[matchedRank];
+    
+    if (!ranges) {
+        console.error(`DEBUG: No ranges found for rank: ${targetRank}`, {
+            availableRanks: CONFIG.marvel.universalTableRanges ? 
+                            Object.keys(CONFIG.marvel.universalTableRanges) : "None",
+            targetRank,
+            matchedRank
+        });
+        return "white"; // Default to miss
+    }
+    
+    console.log(`DEBUG: Using ranges for ${matchedRank}:`, ranges);
+    
+    // Check each color range
+    if (rollTotal >= ranges.white[0] && rollTotal <= ranges.white[1]) {
+        console.log(`DEBUG: Roll ${rollTotal} is WHITE in range ${ranges.white[0]}-${ranges.white[1]}`);
+        return "white";
+    }
+    if (rollTotal >= ranges.green[0] && rollTotal <= ranges.green[1]) {
+        console.log(`DEBUG: Roll ${rollTotal} is GREEN in range ${ranges.green[0]}-${ranges.green[1]}`);
+        return "green";
+    }
+    if (rollTotal >= ranges.yellow[0] && rollTotal <= ranges.yellow[1]) {
+        console.log(`DEBUG: Roll ${rollTotal} is YELLOW in range ${ranges.yellow[0]}-${ranges.yellow[1]}`);
+        return "yellow";
+    }
+    if (rollTotal >= ranges.red[0] && rollTotal <= ranges.red[1]) {
+        console.log(`DEBUG: Roll ${rollTotal} is RED in range ${ranges.red[0]}-${ranges.red[1]}`);
         return "red";
     }
+    
+    console.warn(`DEBUG: Roll ${rollTotal} didn't match any range for ${matchedRank}, defaulting to white`);
+    return "white"; // Default if somehow no match is found
+}
 
 /**
  * Calculate damage for an attack - FIXED VERSION
@@ -339,17 +433,17 @@ async _calculateDamage(actor, target, actionType, result, options) {
     /**
      * Handle wrestling result
      */
-    async _handleWrestlingResult(attacker, target, attackType, color) {
+    async _handleWrestlingResult(attacker, target, attackType, color, roll, adjustedRoll) {
         let result;
         
-        switch(attackType) {
-            case "Gp": // Grappling
+        switch(attackType.toLowerCase()) {
+            case "gp": // Grappling
                 result = await this._handleGrapplingResult(attacker, target, color);
                 break;
-            case "Gb": // Grabbing
+            case "gb": // Grabbing
                 result = await this._handleGrabbingResult(attacker, target, color);
                 break;
-            case "Es": // Escaping
+            case "es": // Escaping
                 result = await this._handleEscapeResult(attacker, target, color);
                 break;
             default:
@@ -357,7 +451,7 @@ async _calculateDamage(actor, target, actionType, result, options) {
         }
         
         // Apply damage if it's a hold with damage
-        if (attackType === "Gp" && color === "red" && result.finalDamage > 0) {
+        if (attackType.toLowerCase() === "gp" && color === "red" && result.finalDamage > 0) {
             console.log(`Applying ${result.finalDamage} damage to ${target.name} from wrestling hold`);
             try {
                 await target.applyDamage(result.finalDamage);
@@ -366,42 +460,39 @@ async _calculateDamage(actor, target, actionType, result, options) {
             }
         }
         
-        // Format damage text
-        let damageText = '';
-        if (result.damage && result.damage > 0) {
-            damageText = `
-                <div class="detail-row"><span class="detail-label">Base Damage:</span> ${result.damage}</div>
-                <div class="detail-row"><span class="detail-label">Resistance:</span> ${result.resistance || 0} (${result.resistanceType || 'physical'})</div>
-                <div class="detail-row"><span class="detail-label">Final Damage:</span> ${result.finalDamage || 0}</div>
-            `;
-        }
+        // Use the same formatting as regular combat
+        const effectObj = {
+            type: result.effect,
+            description: result.description
+        };
         
-        // Format action text
-        let actionText = '';
-        if (result.holdAction === "other") {
-            actionText = `<div class="detail-row"><span class="detail-label">Additional Action:</span> Character may perform one additional action at -2CS.</div>`;
-        }
+        const damageObj = result.damage ? {
+            base: result.damage,
+            resistance: result.resistance || 0,
+            final: result.finalDamage || 0,
+            resistanceType: result.resistanceType || 'physical'
+        } : null;
         
-        // Format wrestling result for display
-        const formattedText = `
-            <div class="marvel-combat">
-                <h3>${attacker.name} attacks ${target.name}</h3>
-                <div class="attack-details">
-                    <div class="detail-row"><span class="detail-label">Attack Type:</span> ${attackType}</div>
-                    <div class="detail-row"><span class="detail-label">Result:</span> <span class="result-${color}">${color.toUpperCase()}</span></div>
-                    <div class="detail-row"><span class="detail-label">Effect:</span> ${result.effect}</div>
-                    ${result.description ? `
-                        <div class="detail-row"><span class="detail-label">Description:</span> ${result.description}</div>
-                    ` : ''}
-                    ${damageText}
-                    ${actionText}
-                </div>
-            </div>
-        `;
+        // Format wrestling result using the main formatter
+        const formattedText = this._formatCombatResult(
+            attacker,
+            target,
+            attackType,
+            color,
+            damageObj,
+            effectObj,
+            roll,
+            adjustedRoll
+        );
         
         // Apply hold effects if needed
         if (result.effect === "Hold" || result.effect === "Partial") {
             await this._applyWrestlingEffect(target, result);
+        }
+        
+        // Add any additional action information for holds
+        if (result.holdAction === "other") {
+            // We could modify the formatted text here to add the additional action info
         }
         
         return {
@@ -808,35 +899,53 @@ _getCombatEffect(attackType, color) {
     }
 
     /**
-     * Format combat result for chat display
-     */
-    _formatCombatResult(actor, target, actionType, result, damage, effect) {
-        const actionName = CONFIG.marvel.actionResults[actionType]?.name || actionType;
-        
-        if (result === "white") {
-            return `
-                <div class="marvel-damage">
-                    <h3>${actor.name} misses ${target.name}!</h3>
-                    <div class="attack-details">
-                        <div class="detail-row"><span class="detail-label">Attack Type:</span> ${actionName}</div>
-                        <div class="detail-row"><span class="detail-label">Result:</span> <span class="result-white">MISS</span></div>
-                    </div>
-                </div>`;
-        }
-
-        return `
-            <div class="marvel-damage">
-                <h3>${actor.name} attacks ${target.name}</h3>
-                <div class="attack-details">
-                    <div class="detail-row"><span class="detail-label">Attack Type:</span> ${actionName}</div>
-                    <div class="detail-row"><span class="detail-label">Result:</span> <span class="result-${result}">${result.toUpperCase()}</span></div>
-                    ${effect ? `<div class="detail-row"><span class="detail-label">Effect:</span> ${effect.type || 'None'}</div>` : ''}
-                </div>
-                <div class="damage-details">
-                    <div class="detail-row"><span class="detail-label">Base Damage:</span> ${damage?.base || 0}</div>
-                    <div class="detail-row"><span class="detail-label">Resistance:</span> ${damage?.resistance || 0} (${damage?.resistanceType || 'None'})</div>
-                    <div class="detail-row"><span class="detail-label">Final Damage:</span> ${damage?.final || 0}</div>
-                </div>
-            </div>`;
+ * Format combat result for chat display
+ * @param {Actor} actor - Attacking actor
+ * @param {Actor} target - Target actor
+ * @param {string} actionType - Type of action (BA, EA, SH, etc.)
+ * @param {string} result - Color result (white, green, yellow, red)
+ * @param {Object} damage - Damage calculation result
+ * @param {Object} effect - Combat effect
+ * @param {Roll} roll - The d100 roll object
+ * @param {number} adjustedRoll - Roll total after karma adjustments
+ * @returns {string} Formatted HTML for chat message
+ */
+_formatCombatResult(actor, target, actionType, result, damage, effect, roll, adjustedRoll) {
+    // Get proper action name
+    const actionName = CONFIG.marvel.actionResults[actionType]?.name || actionType;
+    
+    // Calculate karma used if any
+    const rollTotal = roll?.total || 0;
+    const karmaUsed = (adjustedRoll && adjustedRoll > rollTotal) ? adjustedRoll - rollTotal : 0;
+    
+    // Start building the chat card
+    let html = `
+    <div class="faserip-roll">
+        <h3>${actor.name} attacks ${target.name}</h3>
+        <div>Attack Type: ${actionName}</div>
+        <div style="font-weight: bold;">Roll: ${rollTotal}${karmaUsed > 0 ? ` + Karma: ${karmaUsed} = ${adjustedRoll}` : ``}</div>
+        <div class="roll-result" style="background-color: ${result}; color: ${result === 'yellow' || result === 'white' ? 'black' : 'white'}; padding: 5px; text-align: center; font-weight: bold; border: 1px solid black; margin-top: 3px;">
+            ${effect.type || (result === 'white' ? 'Miss' : 'Hit')} (${result.toUpperCase()})
+        </div>`;
+    
+    // Add effect description if available
+    if (effect.description) {
+        html += `<div>${effect.description}</div>`;
     }
+    
+    // Add damage information if applicable and not a miss
+    if (result !== "white" && damage) {
+        html += `
+        <div style="margin-top: 3px;">
+            <div>Base Damage: ${damage.base || 0}</div>
+            <div>Resistance: ${damage.resistance || 0} (${damage.resistanceType || 'None'})</div>
+            <div>Final Damage: ${damage.final || 0}</div>
+        </div>`;
+    }
+    
+    // Close the div
+    html += `</div>`;
+    
+    return html;
+}
 }
