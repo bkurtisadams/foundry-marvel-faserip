@@ -936,42 +936,53 @@ _getCombatEffect(attackType, color) {
  * @param {number} adjustedRoll - Roll total after karma adjustments
  * @returns {string} Formatted HTML for chat message
  */
-_formatCombatResult(actor, target, actionType, result, damage, effect, roll, adjustedRoll) {
-    // Get proper action name
-    const actionName = CONFIG.marvel.actionResults[actionType]?.name || actionType;
-    
-    // Calculate karma used if any
-    const rollTotal = roll?.total || 0;
-    const karmaUsed = (adjustedRoll && adjustedRoll > rollTotal) ? adjustedRoll - rollTotal : 0;
-    
-    // Start building the chat card
-    let html = `
-    <div class="faserip-roll">
-        <h3>${actor.name} attacks ${target.name}</h3>
-        <div>Attack Type: ${actionName}</div>
-        <div style="font-weight: bold;">Roll: ${rollTotal}${karmaUsed > 0 ? ` + Karma: ${karmaUsed} = ${adjustedRoll}` : ``}</div>
-        <div class="roll-result" style="background-color: ${result}; color: ${result === 'yellow' || result === 'white' ? 'black' : 'white'}; padding: 5px; text-align: center; font-weight: bold; border: 1px solid black; margin-top: 3px;">
-            ${effect.type || (result === 'white' ? 'Miss' : 'Hit')} (${result.toUpperCase()})
-        </div>`;
-    
-    // Add effect description if available
-    if (effect.description) {
-        html += `<div>${effect.description}</div>`;
+    _formatCombatResult(actor, target, actionType, result, damage, effect, roll, adjustedRoll) {
+        // Get proper action name
+        const actionName = CONFIG.marvel.actionResults[actionType]?.name || actionType;
+        
+        // Calculate karma used if any
+        const rollTotal = roll?.total || 0;
+        const karmaUsed = (adjustedRoll && adjustedRoll > rollTotal) ? adjustedRoll - rollTotal : 0;
+        
+        // Get column shift information (passed in via options.columnShift)
+        const columnShift = effect.columnShift || 0;
+        const columnShiftText = columnShift !== 0 ? 
+            `<div style="color: #0077cc; font-weight: bold;">Column Shift: ${columnShift > 0 ? '+' : ''}${columnShift}</div>` : '';
+        
+        // Format karma text with blue color if used
+        const karmaText = karmaUsed > 0 ? 
+            `<div style="color: #0077cc; font-weight: bold;">Karma Spent: ${karmaUsed}</div>` : '';
+        
+        // Start building the chat card
+        let html = `
+        <div class="faserip-roll">
+            <h3>${actor.name} attacks ${target.name}</h3>
+            <div>Attack Type: ${actionName}</div>
+            ${columnShiftText}
+            ${karmaText}
+            <div style="font-weight: bold;">Roll: ${rollTotal}${karmaUsed > 0 ? ` + <span style="color: #0077cc;">${karmaUsed}</span> = ${adjustedRoll}` : ``}</div>
+            <div class="roll-result" style="background-color: ${result}; color: ${result === 'yellow' || result === 'white' ? 'black' : 'white'}; padding: 5px; text-align: center; font-weight: bold; border: 1px solid black; margin-top: 3px;">
+                ${effect.type || (result === 'white' ? 'Miss' : 'Hit')} (${result.toUpperCase()})
+            </div>`;
+        
+        // Add effect description if available
+        if (effect.description) {
+            html += `<div>${effect.description}</div>`;
+        }
+        
+        // Add damage information if applicable and not a miss
+        if (result !== "white" && damage) {
+            html += `
+            <div style="margin-top: 3px;">
+                <div>Base Damage: ${damage.base || 0}</div>
+                <div>Resistance: ${damage.resistance || 0} (${damage.resistanceType || 'None'})</div>
+                <div>Final Damage: ${damage.final || 0}</div>
+            </div>`;
+        }
+        
+        // Close the div
+        html += `</div>`;
+        
+        return html;
     }
-    
-    // Add damage information if applicable and not a miss
-    if (result !== "white" && damage) {
-        html += `
-        <div style="margin-top: 3px;">
-            <div>Base Damage: ${damage.base || 0}</div>
-            <div>Resistance: ${damage.resistance || 0} (${damage.resistanceType || 'None'})</div>
-            <div>Final Damage: ${damage.final || 0}</div>
-        </div>`;
-    }
-    
-    // Close the div
-    html += `</div>`;
-    
-    return html;
-}
 }
