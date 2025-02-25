@@ -85,9 +85,10 @@ export class FaseripCombatEngine {
             const result = this._getColorResult(finalRollTotal, rankName);
             console.log(`Roll result: ${roll.total}, with karma: ${finalRollTotal}, color: ${result}`);
     
+            // In resolveAction, modify the section that handles wrestling actions
             // Handle wrestling moves specially
-            if (["GP", "GB", "ES"].includes(actionType)) {
-                return await this._handleWrestlingResult(actor, target, actionType, result);
+            if (["Gp", "Gb", "Es"].includes(normalizedActionType)) {
+                return await this._handleWrestlingResult(actor, target, normalizedActionType, result);
             }
     
             // Calculate damage
@@ -102,7 +103,7 @@ export class FaseripCombatEngine {
             const formattedText = this._formatCombatResult(actor, target, actionType, result, damage, effect);
     
             // APPLY DAMAGE TO TARGET
-            if (damage.final > 0) {
+            if (damage && damage.final > 0) {
                 console.log(`Applying ${damage.final} damage to ${target.name}`);
                 try {
                     await target.applyDamage(damage.final);
@@ -342,46 +343,67 @@ async _calculateDamage(actor, target, actionType, result, options) {
         let result;
         
         switch(attackType) {
-            case "GP": // Grappling
+            case "Gp": // Grappling
                 result = await this._handleGrapplingResult(attacker, target, color);
                 break;
-            case "GB": // Grabbing
+            case "Gb": // Grabbing
                 result = await this._handleGrabbingResult(attacker, target, color);
                 break;
-            case "ES": // Escaping
+            case "Es": // Escaping
                 result = await this._handleEscapeResult(attacker, target, color);
                 break;
             default:
                 result = { effect: "None", description: "Invalid wrestling action type" };
         }
-
+        
+        // Apply damage if it's a hold with damage
+        if (attackType === "Gp" && color === "red" && result.finalDamage > 0) {
+            console.log(`Applying ${result.finalDamage} damage to ${target.name} from wrestling hold`);
+            try {
+                await target.applyDamage(result.finalDamage);
+            } catch (error) {
+                console.error("Error applying wrestling damage:", error);
+            }
+        }
+        
+        // Format damage text
+        let damageText = '';
+        if (result.damage && result.damage > 0) {
+            damageText = `
+                <div class="detail-row"><span class="detail-label">Base Damage:</span> ${result.damage}</div>
+                <div class="detail-row"><span class="detail-label">Resistance:</span> ${result.resistance || 0} (${result.resistanceType || 'physical'})</div>
+                <div class="detail-row"><span class="detail-label">Final Damage:</span> ${result.finalDamage || 0}</div>
+            `;
+        }
+        
+        // Format action text
+        let actionText = '';
+        if (result.holdAction === "other") {
+            actionText = `<div class="detail-row"><span class="detail-label">Additional Action:</span> Character may perform one additional action at -2CS.</div>`;
+        }
+        
         // Format wrestling result for display
         const formattedText = `
             <div class="marvel-combat">
-                <h3>${attacker.name}'s Wrestling Attack</h3>
-                <div class="wrestling-details">
-                    <div class="detail-row">
-                        <span class="detail-label">Effect:</span> ${result.effect}
-                    </div>
+                <h3>${attacker.name} attacks ${target.name}</h3>
+                <div class="attack-details">
+                    <div class="detail-row"><span class="detail-label">Attack Type:</span> ${attackType}</div>
+                    <div class="detail-row"><span class="detail-label">Result:</span> <span class="result-${color}">${color.toUpperCase()}</span></div>
+                    <div class="detail-row"><span class="detail-label">Effect:</span> ${result.effect}</div>
                     ${result.description ? `
-                        <div class="detail-row">
-                            <span class="detail-label">Result:</span> ${result.description}
-                        </div>
+                        <div class="detail-row"><span class="detail-label">Description:</span> ${result.description}</div>
                     ` : ''}
-                    ${result.damage ? `
-                        <div class="detail-row">
-                            <span class="detail-label">Damage:</span> ${result.damage}
-                        </div>
-                    ` : ''}
+                    ${damageText}
+                    ${actionText}
                 </div>
             </div>
         `;
-
+        
         // Apply hold effects if needed
         if (result.effect === "Hold" || result.effect === "Partial") {
             await this._applyWrestlingEffect(target, result);
         }
-
+        
         return {
             ...result,
             formattedText
@@ -397,19 +419,32 @@ async _calculateDamage(actor, target, actionType, result, options) {
             case "green":
                 return {
                     effect: "Miss",
-                    description: "The grappling attempt fails"
+                    description: "The grappling attempt fails",
+                    damage: 0
                 };
             case "yellow":
                 return {
                     effect: "Partial",
-                    description: "Target is partially held and suffers -2CS to actions"
+                    description: "Target is partially held and suffers -2CS to actions",
+                    damage: 0
                 };
             case "red":
+                // For a red result (Hold), show the options dialog to select damage
                 const holdOptions = await this._handleHoldOptions(attacker, target);
+                
+                // Calculate final damage after resistance
+                const baseStrength = attacker.system.primaryAbilities.strength.number;
+                const selectedDamage = holdOptions.holdDamage;
+                const resistance = await this._getApplicableResistance(target, "Gp");
+                const finalDamage = Math.max(0, selectedDamage - resistance);
+                
                 return {
                     effect: "Hold",
-                    damage: holdOptions.holdDamage,
                     description: "Target is fully held",
+                    damage: selectedDamage,
+                    resistance: resistance,
+                    resistanceType: "physical",
+                    finalDamage: finalDamage,
                     holdAction: holdOptions.holdAction
                 };
         }
@@ -426,9 +461,16 @@ async _calculateDamage(actor, target, actionType, result, options) {
                     description: "The grabbing attempt fails completely"
                 };
             case "green":
+                // Take requires strength check
+                const attackerStrength = attacker.system.primaryAbilities.strength.number;
+                const targetStrength = target.system.primaryAbilities.strength.number;
+                const canTake = attackerStrength >= targetStrength;
+                
                 return {
-                    effect: "Take",
-                    description: "Attempt to take item if Strength sufficient"
+                    effect: canTake ? "Take" : "Miss",
+                    description: canTake ? 
+                        "Successfully take item - Strength sufficient" : 
+                        "Failed to take item - insufficient Strength"
                 };
             case "yellow":
                 return {
@@ -452,17 +494,17 @@ async _calculateDamage(actor, target, actionType, result, options) {
             case "green":
                 return {
                     effect: "Miss",
-                    description: "Failed to escape"
+                    description: "Failed to escape, still held"
                 };
             case "yellow":
                 return {
                     effect: "Escape",
-                    description: "Break free and can move half speed"
+                    description: "Break free and can move at half speed"
                 };
             case "red":
                 return {
                     effect: "Reverse",
-                    description: "Break free and can counter-attack or move"
+                    description: "Break free and can counter-attack or move at half speed"
                 };
         }
     }
@@ -476,26 +518,26 @@ async _calculateDamage(actor, target, actionType, result, options) {
         const content = `
             <form>
                 <div class="form-group">
-                    <label>Hold Options:</label>
+                    <label>Apply Damage:</label>
                     <div class="form-fields">
                         <input type="number" name="holdDamage" min="0" max="${maxDamage}" value="0">
-                        <p class="notes">Enter damage (0-${maxDamage})</p>
+                        <span class="notes">Maximum: ${maxDamage}</span>
                     </div>
+                    <p class="notes">With a full hold, you can apply up to your Strength value in damage.</p>
                 </div>
                 <div class="form-group">
                     <label>Additional Action:</label>
                     <select name="holdAction">
                         <option value="none">None - Just maintain hold</option>
-                        <option value="damage">Apply selected damage</option>
                         <option value="other">Perform another action at -2CS</option>
                     </select>
                 </div>
             </form>
         `;
-
+        
         return new Promise((resolve) => {
             new Dialog({
-                title: "Hold Actions",
+                title: "Hold Options",
                 content: content,
                 buttons: {
                     apply: {
@@ -526,7 +568,7 @@ async _calculateDamage(actor, target, actionType, result, options) {
                 e.delete();
             }
         });
-
+    
         // Apply new effect
         const effectData = {
             label: result.effect === "Hold" ? "Held" : "Partially Held",
@@ -534,21 +576,35 @@ async _calculateDamage(actor, target, actionType, result, options) {
             duration: { rounds: 1 },
             flags: { marvel: { wrestlingEffect: true }}
         };
-
+    
         if (result.effect === "Partial") {
-            effectData.changes = [{
-                key: "system.columnShift",
-                mode: 2,
-                value: -2
-            }];
+            effectData.changes = [
+                {
+                    key: "system.columnShift",
+                    mode: 2,
+                    value: -2
+                },
+                {
+                    key: "system.cannotMove",
+                    mode: 5,
+                    value: true // This will need to be conditional based on Strength comparison
+                }
+            ];
         } else if (result.effect === "Hold") {
-            effectData.changes = [{
-                key: "system.held",
-                mode: 5,
-                value: true
-            }];
+            effectData.changes = [
+                {
+                    key: "system.held",
+                    mode: 5,
+                    value: true
+                },
+                {
+                    key: "system.cannotAct",
+                    mode: 5,
+                    value: true
+                }
+            ];
         }
-
+    
         await target.createEmbeddedDocuments("ActiveEffect", [effectData]);
     }
 
