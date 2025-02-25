@@ -19,17 +19,17 @@
         <!-- In karma-history.html -->
         <div class="karma-entries">
             {{#each karmaHistory as |entry index|}}
-            <div class="karma-entry" data-index="{{index}}">
-                <div class="date">{{entry.date}}</div>
-                <div class="amount {{#if (lt entry.amount 0)}}negative{{else}}positive{{/if}}">
+            <div class="karma-entry">
+                <div class="entry-date">{{entry.date}}</div>
+                <div class="entry-amount {{#if (lt entry.amount 0)}}negative{{else}}positive{{/if}}">
                     {{#if (gt entry.amount 0)}}+{{/if}}{{entry.amount}}
                 </div>
-                <div class="description">{{entry.description}}</div>
+                <div class="entry-description">{{entry.description}}</div>
                 <div class="entry-actions">
-                    <button type="button" class="edit-entry" title="Edit Entry">
+                    <button type="button" class="edit-entry" data-index="{{index}}" title="Edit Entry">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button type="button" class="delete-entry" title="Delete Entry">
+                    <button type="button" class="delete-entry" data-index="{{index}}" title="Delete Entry">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>

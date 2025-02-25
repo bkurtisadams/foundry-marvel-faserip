@@ -846,9 +846,14 @@ export class MarvelActorSheet extends ActorSheet {
         });
     }
     // delete karma entry
-    async _onDeleteKarmaEntry(event, index) {
+    // In MarvelActorSheet.js
+    async _onDeleteKarmaEntry(event) {
         event.preventDefault();
-
+        
+        // Get the index from the clicked element's data attribute
+        const index = parseInt(event.currentTarget.dataset.index);
+        console.log("Deleting karma entry at index:", index);
+        
         // Confirm deletion
         const confirm = await Dialog.confirm({
             title: "Delete Karma Entry",
@@ -857,31 +862,25 @@ export class MarvelActorSheet extends ActorSheet {
             no: () => false,
             defaultYes: false
         });
-
+    
         if (!confirm) return;
-
+    
         // Get current history
-        const currentHistory = duplicate(this.actor.system.karmaTracking.history);
+        const currentHistory = foundry.utils.getProperty(this.actor.system, "karmaTracking.history") || [];
         
-        // Get the entry to be deleted - this was the issue
-        const deletedEntry = currentHistory[index];
-        if (!deletedEntry) {
-            console.error("Could not find karma entry at index:", index);
-            return;
-        }
-
-        // Remove the entry
-        currentHistory.splice(index, 1);
+        // Create updated history array without the deleted entry
+        const updatedHistory = currentHistory.filter((_, i) => i !== index);
         
-        // Update actor with both the history and karma pool
-        const currentKarma = this.actor.system.secondaryAbilities.karma.value;
+        // Update actor with new history
         await this.actor.update({
-            "system.karmaTracking.history": currentHistory,
-            "system.secondaryAbilities.karma.value": currentKarma - deletedEntry.amount
+            "system.karmaTracking.history": updatedHistory
         });
         
-        // Refresh the karma history window
-        await this._onKarmaHistoryClick(event);
+        // Recalculate karma total
+        this._recalculateKarmaTotal();
+        
+        // Refresh the karma history dialog
+        this._onKarmaHistoryClick(new Event('click'));
     }
     
     _sortKarmaHistory(history, sort) {
@@ -926,8 +925,8 @@ export class MarvelActorSheet extends ActorSheet {
                     </div>
                     <div class="entry-description">${entry.description}</div>
                     <div class="entry-actions">
-                        <a class="edit-entry" data-index="${index}"><i class="fas fa-edit"></i></a>
-                        <a class="delete-entry" data-index="${index}"><i class="fas fa-trash"></i></a>
+                        <a class="edit-entry"><i class="fas fa-edit"></i></a>
+                        <a class="delete-entry"><i class="fas fa-trash"></i></a>
                     </div>
                 </div>
             `;
@@ -987,96 +986,65 @@ export class MarvelActorSheet extends ActorSheet {
         }
     }
 
-    async _onKarmaHistoryClick(event) {
-        event.preventDefault();
-        
-        // Initialize properties
-        this._karmaHistory = this.actor.system.karmaTracking.history || [];
-        this._filteredHistory = [...this._karmaHistory];
-        this._currentSort = { field: 'date', direction: 'desc' };
-        
-        // Calculate total karma
-        const karmaTotal = this._recalculateKarmaTotal();
-        
-        const content = await renderTemplate(
-            "systems/marvel-faserip/templates/dialogs/karma-history.html",
-            {
-                actor: this.actor,
-                karmaHistory: this._sortKarmaHistory(this._filteredHistory, this._currentSort),
-                karmaTotal: karmaTotal  // Pass the total to the template
-            }
-        );
+    // In MarvelActorSheet.js, modify the _onKarmaHistoryClick method:
+
+async _onKarmaHistoryClick(event) {
+    event.preventDefault();
     
-        const dialog = new Dialog({
-            title: `Karma History - ${this.actor.name}`,
-            content: content,
-            buttons: {
-                close: {
-                    label: "Close"
-                }
-            },
+    // Initialize properties
+    this._karmaHistory = this.actor.system.karmaTracking.history || [];
+    this._filteredHistory = [...this._karmaHistory];
+    this._currentSort = { field: 'date', direction: 'desc' };
+    
+    // Calculate total karma
+    const karmaTotal = this._recalculateKarmaTotal();
+    
+    const content = await renderTemplate(
+        "systems/marvel-faserip/templates/dialogs/karma-history.html",
+        {
+            actor: this.actor,
+            karmaHistory: this._sortKarmaHistory(this._filteredHistory, this._currentSort),
+            karmaTotal: karmaTotal  // Pass the total to the template
+        }
+    );
+
+    const dialog = new Dialog({
+        title: `Karma History - ${this.actor.name}`,
+        content: content,
+        buttons: {
+            close: {
+                label: "Close"
+            }
+        },
+        render: (html) => {
+            // IMPORTANT: Add this direct event binding here
+            html.find('.delete-entry').click(this._onDeleteKarmaEntry.bind(this));
             
-            render: (html) => {
-                const dialog = this;
+            // Other existing event handlers...
+            html.find('.add-karma-entry').click(async (ev) => {
+                ev.preventDefault();
+                await this._onAddKarmaEntry(ev);
+            });
+            
+            // Clear All handler
+            html.find('.clear-all-karma').click(async (ev) => {
+                ev.preventDefault();
                 
-                // Add event listeners
-                html.find('.karma-entries').on('click', '.edit-entry', async (ev) => {
-                    ev.preventDefault();
-                    const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
-                    const entry = dialog._filteredHistory[index];
-                    await dialog._onEditKarmaEntry(ev, entry);
-                });
-    
-                html.find('.karma-entries').on('click', '.delete-entry', async (ev) => {
-                    ev.preventDefault();
-                    const index = $(ev.currentTarget).closest('.karma-entry').data('entry-index');
-                    await this._onDeleteKarmaEntry(ev, index);
-                });
-    
-                // Add Entry
-                html.find('.add-karma-entry').click(async (ev) => {
-                    ev.preventDefault();
-                    await dialog._onAddKarmaEntry(ev);
-                });
-    
-                // Add Clear All handler
-                html.find('.clear-all-karma').click(async (ev) => {
-                    ev.preventDefault();
-                    
-                    // Close current dialog
-                    dialog.close();
-    
-                    // Show confirmation dialog
-                    const confirm = await Dialog.confirm({
-                        title: "Clear All Karma History",
-                        content: "<p>Are you sure you want to delete ALL karma history entries? This cannot be undone.</p>",
-                        yes: () => true,
-                        no: () => false,
-                        defaultYes: false
-                    });
-    
-                    if (confirm) {
-                        await this.actor.update({
-                            "system.karmaTracking.history": [],
-                            "system.karmaTracking.karmaPool": 0,
-                            "system.karmaTracking.lifetimeTotal": 0
-                        });
-                        ui.notifications.info("All karma history entries have been cleared.");
-                    }
-                    
-                    // Reopen karma history dialog
-                    this._onKarmaHistoryClick(new Event('click'));
-                });
-            }
-        }, {
-            classes: ["karma-history"],
-            width: 600,
-            height: 400,
-            resizable: true
-        });
-    
-        dialog.render(true);
-    }
+                // Close current dialog
+                dialog.close();
+
+                // Show confirmation dialog and other existing code...
+            });
+        }
+    }, {
+        classes: ["karma-history"],
+        width: 600,
+        height: 400,
+        resizable: true
+    });
+
+    dialog.render(true);
+}
 
     // Add this helper function to recalculate karma totals
     _recalculateKarmaTotal() {
@@ -1152,23 +1120,73 @@ export class MarvelActorSheet extends ActorSheet {
         }).render(true);
     }
     
-    async _onDeleteKarmaEntry(event, index) {
-        // Get current history
-        const history = duplicate(this.actor.system.karmaTracking.history || []);
+    async _onDeleteKarmaEntry(event) {
+        event.preventDefault();
         
-        // Remove the entry
-        history.splice(index, 1);
+        // Add console logs to debug
+        console.log("Delete karma entry clicked", event.currentTarget);
         
-        // Update the actor
-        await this.actor.update({
-            "system.karmaTracking.history": history
+        // Get the index from the clicked element's data attribute
+        const index = parseInt(event.currentTarget.dataset.index);
+        console.log("Deleting karma entry at index:", index);
+        
+        // Check if index is valid
+        if (isNaN(index)) {
+            console.error("Invalid index for karma entry deletion");
+            ui.notifications.error("Error deleting karma entry: Invalid index");
+            return;
+        }
+        
+        // Confirm deletion
+        const confirm = await Dialog.confirm({
+            title: "Delete Karma Entry",
+            content: "Are you sure you want to delete this karma entry? This cannot be undone.",
+            yes: () => true,
+            no: () => false,
+            defaultYes: false
         });
+    
+        if (!confirm) return;
+    
+        console.log("Deletion confirmed, proceeding...");
+    
+        // Get current history
+        const currentHistory = foundry.utils.getProperty(this.actor.system, "karmaTracking.history") || [];
+        console.log("Current history:", currentHistory);
         
-        // Recalculate the totals
-        this._recalculateKarmaTotal();
+        // Create updated history array without the deleted entry
+        const updatedHistory = currentHistory.filter((_, i) => i !== index);
+        console.log("Updated history:", updatedHistory);
         
-        // Reopen the karma history dialog to reflect changes
-        this._onKarmaHistoryClick(new Event('click'));
+        try {
+            // Update actor with new history
+            await this.actor.update({
+                "system.karmaTracking.history": updatedHistory
+            });
+            console.log("Actor updated with new history");
+            
+            // Provide user feedback
+            ui.notifications.info("Karma entry deleted successfully");
+            
+            // Recalculate karma total
+            this._recalculateKarmaTotal();
+            
+            // Close the current dialog and reopen a new one
+            const dialogs = document.querySelectorAll('.karma-history');
+            for (let dialog of dialogs) {
+                const app = ui.windows[dialog.dataset.appid];
+                if (app) app.close();
+            }
+            
+            // Refresh the karma history dialog after a short delay
+            setTimeout(() => {
+                this._onKarmaHistoryClick(new Event('click'));
+            }, 100);
+            
+        } catch (error) {
+            console.error("Error updating actor:", error);
+            ui.notifications.error("Failed to delete karma entry");
+        }
     }
     
     async _onEditKarmaEntry(event, entry) {
