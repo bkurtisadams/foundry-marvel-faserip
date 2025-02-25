@@ -275,9 +275,23 @@ export class FaseripCombatEngine {
             return baseValue;
         }
         
+        // Check if we have range as an array or as min/max properties
+        let minVal, maxVal;
+        if (range.range && Array.isArray(range.range)) {
+            // If using the format from MARVEL_RANKS
+            [minVal, maxVal] = range.range;
+        } else if (range.min !== undefined && range.max !== undefined) {
+            // If using min/max properties
+            minVal = range.min;
+            maxVal = range.max;
+        } else {
+            console.error(`Invalid range format for rank: ${newRank}`, range);
+            return baseValue;
+        }
+        
         // Calculate the middle value of the range
-        const newValue = Math.floor((range.min + range.max) / 2);
-        console.log(`DEBUG: New value after shift: ${newValue} (range: ${range.min}-${range.max})`);
+        const newValue = Math.floor((minVal + maxVal) / 2);
+        console.log(`DEBUG: New value after shift: ${newValue} (range: ${minVal}-${maxVal})`);
         
         return newValue;
     }
