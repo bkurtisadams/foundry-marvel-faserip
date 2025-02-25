@@ -219,15 +219,27 @@ export class FaseripCombatEngine {
      * Get the rank name from a numeric value
      */
     _getRankFromValue(value) {
-        const rankValues = CONFIG.marvel.rankValues;
+        console.log(`DEBUG: _getRankFromValue called with value: ${value}`);
         
-        for (const [rankName, range] of Object.entries(rankValues)) {
-            if (value >= range.min && value <= range.max) {
+        // Get the MARVEL_RANKS which has range information
+        const marvelRanks = CONFIG.marvel.ranks;
+        console.log("DEBUG: Available ranks in marvel.ranks:", marvelRanks);
+        
+        // Find the matching rank based on value
+        for (const [rankName, rankData] of Object.entries(marvelRanks)) {
+            console.log(`DEBUG: Checking rank ${rankName} with data:`, rankData);
+            
+            // Check if value is within range
+            if (rankData.range && 
+                value >= rankData.range[0] && 
+                value <= rankData.range[1]) {
+                console.log(`DEBUG: Found matching rank: ${rankName}`);
                 return rankName;
             }
         }
         
         // Default to Shift 0 if no match
+        console.log(`DEBUG: No matching rank found for value ${value}, defaulting to Shift 0`);
         return "Shift 0";
     }
 
