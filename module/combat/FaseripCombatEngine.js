@@ -44,13 +44,14 @@ export class FaseripCombatEngine {
                 key => key.toLowerCase() === actionType.toLowerCase()
             );
             
+            // Add additional logging and error handling
             if (!normalizedActionType) {
-                console.error(`Invalid action type: ${actionType}`);
+                console.error(`Invalid action type: ${actionType}. Valid types: ${Object.keys(CONFIG.marvel.actionResults).join(', ')}`);
                 return this._createErrorResult(`Invalid action type: ${actionType}`);
             }
             
-            // Use the correctly cased key
-            const actionDefinition = CONFIG.marvel.actionResults[normalizedActionType];
+            // Use the correctly cased key consistently
+            actionType = normalizedActionType;
 
     
             // Get ability scores and calculate base chance
