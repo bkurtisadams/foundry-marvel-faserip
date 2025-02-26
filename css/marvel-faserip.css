@@ -968,68 +968,8 @@
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.sortable:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-  
-  /* Karma Controls */
-  /* .karma-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 10px 0;
-    gap: 10px;
-  }
-  
-  .karma-filters {
-    display: flex;
-    gap: 10px;
-    flex: 1;
-  }
-  
-  .karma-type-filter {
-    width: 120px;
-    height: 24px;
-    border: 1px solid #782e22;
-    border-radius: 3px;
-    background: white;
-  }
-  
-  .karma-search {
-    flex: 1;
-    height: 24px;
-    border: 1px solid #782e22;
-    border-radius: 3px;
-    padding: 0 8px;
-    background: white;
-  }
-  
-  .controls-buttons {
-    display: flex;
-    gap: 4px;
-  }
-  
-  .add-entry,
-  .export-button {
-    height: 24px;
-    padding: 0;
-    background: #782e22;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-  }
-  
-  .add-entry:hover,
-  .export-button:hover {
-    background: #9e3c2d;
-  } */
-  
-  /* Karma List Structure */
+
+/* Karma List Structure */
   .karma-list {
     flex: 1;
     display: flex;
@@ -1054,6 +994,31 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   }
   
+  .karma-history .karma-entries {
+    max-height: 300px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    padding-right: 5px;
+}
+
+.karma-history .karma-entries::-webkit-scrollbar {
+    width: 8px;
+}
+
+.karma-history .karma-entries::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.karma-history .karma-entries::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.karma-history .karma-entries::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
   .header-date,
   .header-amount,
   .header-description {
