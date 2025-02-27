@@ -53,12 +53,23 @@ export class MarvelActorSheet extends ActorSheet {
         }
     
         // Equipment organization
-        context.equipmentTypes = MarvelActorSheet.equipmentTypes;
-        context.equipmentByType = {};
-        for (let type in MarvelActorSheet.equipmentTypes) {
-            context.equipmentByType[type] = context.items.filter(i => i.type === type);
-        }
+        // Get equipment items
+        context.equipment = context.items.filter(item => item.type === "equipment");
+
+        // Categorize by subtype
+        context.equipmentByType = {
+            weapon: context.equipment.filter(item => item.system.subtype === "weapon"),
+            armor: context.equipment.filter(item => item.system.subtype === "armor"),
+            gear: context.equipment.filter(item => item.system.subtype === "gear" || !item.system.subtype)
+        };
+
+        // Legacy code support - ensure these arrays exist even if empty
+        context.weapons = context.equipmentByType.weapon || [];
         
+        // Add this temporary debug code to your getData() method
+        console.log("All items:", context.items);
+        console.log("Equipment items:", context.equipment);
+
         // Initialize primary abilities if not set
         if (!system.primaryAbilities) {
             system.primaryAbilities = {

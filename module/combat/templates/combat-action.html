@@ -1,32 +1,41 @@
-//templates/dialogs/combat-action.html
-
+<!-- systems/marvel-faserip/module/combat/templates/combat-action.html -->
 <form class="marvel-combat-dialog">
     <div class="form-group">
         <label>Action Type:</label>
         <div class="action-name">{{actionType}} ({{config.actionResults.[actionType].name}})</div>
     </div>
-
     <div class="form-group">
         <label>Using Ability:</label>
         <div class="ability-name">{{config.actionResults.[actionType].ability}}</div>
     </div>
-
     <div class="form-group">
         <label>Column Shift:</label>
         <input type="number" name="columnShift" value="0">
     </div>
-
     {{#if actor.system.secondaryAbilities.karma.value}}
     <div class="form-group">
         <label>Karma Points (Max: {{actor.system.secondaryAbilities.karma.value}}):</label>
         <input type="number" name="karmaPoints" value="0" max="{{actor.system.secondaryAbilities.karma.value}}">
     </div>
     {{/if}}
-
-    {{#if (eq actionType "EA")}}
+    
+    {{#if weapons.length}}
     <div class="form-group">
-        <label>Weapon Damage:</label>
+        <label>Select Weapon:</label>
+        <select name="weaponSelect">
+            <option value="none">None (Use Ability Only)</option>
+            {{#each weapons as |weapon|}}
+            <option value="{{weapon.id}}">{{weapon.name}} (Damage: {{weapon.damage}})</option>
+            {{/each}}
+        </select>
+    </div>
+    {{/if}}
+    
+    {{#if (or (eq actionType "EA") (eq actionType "SH") (eq actionType "EN") (eq actionType "FO") (eq actionType "TE") (eq actionType "TB"))}}
+    <div class="form-group">
+        <label>Manual Weapon Damage:</label>
         <input type="number" name="weaponDamage" value="0">
+        <p class="notes">Override weapon damage or add additional damage</p>
     </div>
     {{/if}}
 </form>

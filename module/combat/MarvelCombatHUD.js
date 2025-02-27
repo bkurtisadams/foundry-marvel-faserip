@@ -141,6 +141,8 @@ export class MarvelCombatHUD extends Application {
         const button = event.currentTarget;
         const actionType = button.dataset.action;
     
+        console.log(`Action clicked: ${actionType}`);
+        
         const token = canvas.tokens.controlled[0];
         if (!token) {
             ui.notifications.warn("Please select a token first");
@@ -154,8 +156,11 @@ export class MarvelCombatHUD extends Application {
         }
     
         try {
+            console.log(`Actor: ${token.actor.name}, Target: ${Array.from(targets)[0].actor.name}`);
             const dialogOptions = await this._showActionDialog(actionType, token.actor);
             if (!dialogOptions) return;
+            
+            console.log(`Dialog options:`, dialogOptions);
     
             // Delegate to combat engine for resolution
             const result = await this.engine.resolveAction(
@@ -177,18 +182,22 @@ export class MarvelCombatHUD extends Application {
     }
 
     /**
-     * Show action dialog
-     */
+ * Show action dialog with weapon selection
+ */
     async _showActionDialog(actionType, actor) {
+        // Get available weapons for this action type from the combat engine
+        const availableWeapons = this.engine.getAvailableWeapons(actor, actionType);
+        
         const template = "systems/marvel-faserip/module/combat/templates/combat-action.html";
         const dialogData = {
             actor,
             actionType,
-            config: CONFIG.marvel
+            config: CONFIG.marvel,
+            weapons: availableWeapons // Pass weapons to the template
         };
-
+    
         const content = await renderTemplate(template, dialogData);
-
+    
         return new Promise((resolve) => {
             new Dialog({
                 title: `${actionType} Action`,
@@ -198,10 +207,34 @@ export class MarvelCombatHUD extends Application {
                         label: "Roll",
                         callback: (html) => {
                             const form = html.find("form")[0];
+                            const selectedWeaponId = form.weaponSelect?.value;
+                            
+                            // Find the selected weapon data
+                            let weaponData = {};
+                            if (selectedWeaponId && selectedWeaponId !== "none") {
+                                const selectedWeapon = availableWeapons.find(w => w.id === selectedWeaponId);
+                                if (selectedWeapon) {
+                                    weaponData = {
+                                        id: selectedWeapon.id,
+                                        name: selectedWeapon.name,
+                                        weaponDamage: selectedWeapon.damage,
+                                        range: selectedWeapon.range,
+                                        special: selectedWeapon.special
+                                    };
+                                }
+                            }
+                            
+                            // Get manual weapon damage if entered (overrides selected weapon)
+                            const manualDamage = parseInt(form.weaponDamage?.value) || 0;
+                            
                             resolve({
                                 columnShift: parseInt(form.columnShift?.value) || 0,
                                 karmaPoints: parseInt(form.karmaPoints?.value) || 0,
-                                weaponDamage: parseInt(form.weaponDamage?.value) || 0
+                                weaponDamage: manualDamage > 0 ? manualDamage : (weaponData.weaponDamage || 0),
+                                range: weaponData.range || 0,
+                                weaponName: weaponData.name || '',
+                                weaponId: weaponData.id || '',
+                                special: weaponData.special || ''
                             });
                         }
                     },

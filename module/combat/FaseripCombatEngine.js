@@ -380,6 +380,7 @@ export class FaseripCombatEngine {
  */
  // In FaseripCombatEngine.js, modify the _calculateDamage method to handle all action types:
 
+ // Update this part in the _calculateDamage method - around line 403
 async _calculateDamage(actor, target, actionType, result, options) {
     // Return zero damage for misses
     if (result === "white") {
@@ -387,13 +388,18 @@ async _calculateDamage(actor, target, actionType, result, options) {
             base: 0,
             resistance: 0,
             final: 0,
-            resistanceType: this._getAttackResistanceType(actionType)
+            resistanceType: this._getAttackResistanceType(actionType),
+            weaponName: options.weaponName || null
         };
     }
     
     let baseDamage = 0;
+    let damageSource = "ability"; // Track the source of damage for display
     const strengthValue = actor.system.primaryAbilities.strength.number;
-    console.log(`${actor.name}'s strength value: ${strengthValue}`);
+    
+    // Log weapon options for debugging
+    console.log(`Damage calculation for ${actionType} with options:`, options);
+    console.log(`Weapon damage: ${options.weaponDamage}, Weapon name: ${options.weaponName}`);
     
     // Normalize action type to uppercase
     actionType = actionType.toUpperCase();
@@ -404,26 +410,34 @@ async _calculateDamage(actor, target, actionType, result, options) {
         case "TB": // Throwing Blunt
         case "CH": // Charging
             baseDamage = strengthValue;
+            damageSource = "strength";
             console.log(`Base damage for ${actionType} set to strength: ${baseDamage}`);
             break;
         case "EA": // Edged Attack
         case "TE": // Throwing Edged
-            baseDamage = Math.max(
-                strengthValue,
-                options.weaponDamage || 0
-            );
-            console.log(`Base damage for ${actionType} set to max of strength (${strengthValue}) or weapon (${options.weaponDamage || 0}): ${baseDamage}`);
+            // If we have a weapon and its damage is greater than strength, use weapon damage
+            if (options.weaponDamage && options.weaponDamage > strengthValue) {
+                baseDamage = options.weaponDamage;
+                damageSource = "weapon";
+                console.log(`Using weapon damage (${baseDamage}) for ${actionType} as it exceeds strength (${strengthValue})`);
+            } else {
+                baseDamage = strengthValue;
+                damageSource = "strength";
+                console.log(`Using strength (${baseDamage}) for ${actionType} as it exceeds weapon damage`);
+            }
             break;
         case "SH": // Shooting
         case "EN": // Energy
         case "FO": // Force
             baseDamage = options.weaponDamage || 0;
+            damageSource = "weapon";
             console.log(`Base damage for ${actionType} set to weapon damage: ${baseDamage}`);
             break;
         case "GP": // Grappling
             // Grappling only does damage on a full hold
             if (result === "red") {
                 baseDamage = strengthValue;
+                damageSource = "strength";
                 console.log(`Grappling full hold damage: ${baseDamage}`);
             } else {
                 baseDamage = 0;
@@ -439,6 +453,7 @@ async _calculateDamage(actor, target, actionType, result, options) {
         default:
             console.log(`Unknown attack type ${actionType}, defaulting to strength damage`);
             baseDamage = strengthValue;
+            damageSource = "strength";
     }
     
     // Get and apply resistance
@@ -453,9 +468,12 @@ async _calculateDamage(actor, target, actionType, result, options) {
         base: baseDamage,
         resistance: resistance,
         final: finalDamage,
-        resistanceType: resistanceType
+        resistanceType: resistanceType,
+        weaponName: options.weaponName || null,
+        damageSource: damageSource // Add this to track what was used
     };
 }
+
 
     /**
      * Handle wrestling result
@@ -937,53 +955,273 @@ _getCombatEffect(attackType, color) {
  * @param {number} adjustedRoll - Roll total after karma adjustments
  * @returns {string} Formatted HTML for chat message
  */
-    _formatCombatResult(actor, target, actionType, result, damage, effect, roll, adjustedRoll) {
-        // Get proper action name
-        const actionName = CONFIG.marvel.actionResults[actionType]?.name || actionType;
-        
-        // Calculate karma used if any
-        const rollTotal = roll?.total || 0;
-        const karmaUsed = (adjustedRoll && adjustedRoll > rollTotal) ? adjustedRoll - rollTotal : 0;
-        
-        // Calculate column shift (if available in options)
-        const columnShift = effect.columnShift || 0;
-        const columnShiftText = columnShift !== 0 ? 
-            `<div style="color: #0077cc; font-weight: bold;">Column Shift: ${columnShift > 0 ? '+' : ''}${columnShift}</div>` : '';
-        
-        // Format karma text with blue color if used
-        const karmaText = karmaUsed > 0 ? 
-            `<div style="color: #0077cc; font-weight: bold;">Karma Spent: ${karmaUsed}</div>` : '';
-        
-        // Start building the chat card
-        let html = `
-        <div class="faserip-roll">
-            <h3>${actor.name} attacks ${target.name}</h3>
-            <div>Attack Type: ${actionName}</div>
-            ${columnShiftText}
-            ${karmaText}
-            <div style="font-weight: bold;">Roll: ${rollTotal}${karmaUsed > 0 ? ` + <span style="color: #0077cc;">${karmaUsed}</span> = ${adjustedRoll}` : ``}</div>
-            <div class="roll-result" style="background-color: ${result}; color: ${result === 'yellow' || result === 'white' ? 'black' : 'white'}; padding: 5px; text-align: center; font-weight: bold; border: 1px solid black; margin-top: 3px;">
-                ${effect.type || (result === 'white' ? 'Miss' : 'Hit')} (${result.toUpperCase()})
-            </div>`;
-        
-        // Add effect description if available
-        if (effect.description) {
-            html += `<div>${effect.description}</div>`;
-        }
-        
-        // Add damage information if applicable and not a miss
-        if (result !== "white" && damage) {
-            html += `
-            <div style="margin-top: 3px;">
-                <div>Base Damage: ${damage.base || 0}</div>
-                <div>Resistance: ${damage.resistance || 0} (${damage.resistanceType || 'None'})</div>
-                <div>Final Damage: ${damage.final || 0}</div>
-            </div>`;
-        }
-        
-        // Close the div
-        html += `</div>`;
-        
-        return html;
+    // Update this in _formatCombatResult around line 844
+_formatCombatResult(actor, target, actionType, result, damage, effect, roll, adjustedRoll) {
+    // Get proper action name
+    const actionName = CONFIG.marvel.actionResults[actionType]?.name || actionType;
+    
+    // Calculate karma used if any
+    const rollTotal = roll?.total || 0;
+    const karmaUsed = (adjustedRoll && adjustedRoll > rollTotal) ? adjustedRoll - rollTotal : 0;
+    
+    // Calculate column shift (if available in options)
+    const columnShift = effect.columnShift || 0;
+    const columnShiftText = columnShift !== 0 ? 
+        `<div style="color: #0077cc; font-weight: bold;">Column Shift: ${columnShift > 0 ? '+' : ''}${columnShift}</div>` : '';
+    
+    // Format karma text with blue color if used
+    const karmaText = karmaUsed > 0 ? 
+        `<div style="color: #0077cc; font-weight: bold;">Karma Spent: ${karmaUsed}</div>` : '';
+    
+    // Add weapon info if available with more detail
+    let weaponText = '';
+    if (damage?.weaponName) {
+        weaponText = `<div>Weapon: <strong>${damage.weaponName}</strong></div>`;
     }
+    
+    // Add damage source information
+    let damageSourceText = '';
+    if (damage && damage.damageSource) {
+        const sourceName = damage.damageSource === 'weapon' ? 
+            'Weapon' : (damage.damageSource === 'strength' ? 'Strength' : 'Ability');
+        damageSourceText = `<div>Damage Source: <strong>${sourceName}</strong></div>`;
+    }
+    
+    // Start building the chat card
+    let html = `
+    <div class="faserip-roll">
+        <h3>${actor.name} attacks ${target.name}</h3>
+        <div>Attack Type: ${actionName}</div>
+        ${weaponText}
+        ${damageSourceText}
+        ${columnShiftText}
+        ${karmaText}
+        <div style="font-weight: bold;">Roll: ${rollTotal}${karmaUsed > 0 ? ` + <span style="color: #0077cc;">${karmaUsed}</span> = ${adjustedRoll}` : ``}</div>
+        <div class="roll-result" style="background-color: ${result}; color: ${result === 'yellow' || result === 'white' ? 'black' : 'white'}; padding: 5px; text-align: center; font-weight: bold; border: 1px solid black; margin-top: 3px;">
+            ${effect.type || (result === 'white' ? 'Miss' : 'Hit')} (${result.toUpperCase()})
+        </div>`;
+    
+    // Add effect description if available
+    if (effect.description) {
+        html += `<div>${effect.description}</div>`;
+    }
+    
+    // Add damage information if applicable and not a miss
+    if (result !== "white" && damage) {
+        html += `
+        <div style="margin-top: 3px;">
+            <div>Base Damage: ${damage.base || 0}</div>
+            <div>Resistance: ${damage.resistance || 0} (${damage.resistanceType || 'None'})</div>
+            <div>Final Damage: ${damage.final || 0}</div>
+        </div>`;
+    }
+    
+    // Close the div
+    html += `</div>`;
+    
+    return html;
+}
+
+/**
+ * Get available weapons from an actor's equipment items
+ * @param {Actor} actor - The actor to check for weapons
+ * @param {string} actionType - The type of action being performed
+ * @returns {Array} List of usable weapons for the action type
+ */
+// Enhance this method in FaseripCombatEngine.js
+getAvailableWeapons(actor, actionType) {
+    if (!actor || !actor.items) {
+        console.log("No actor or items available");
+        return [];
+    }
+   
+    // Convert actionType to uppercase for comparison
+    actionType = actionType.toUpperCase();
+    console.log(`Looking for weapons compatible with ${actionType}`);
+    
+    // Map action types to compatible equipment types (expanded for better matching)
+    const actionToEquipmentMap = {
+        'BA': ['melee', 'blunt', 'staff', 'club', 'hammer', 'mace', 'baton'],
+        'EA': ['melee', 'edged', 'sword', 'knife', 'blade', 'dagger', 'axe', 'claw'],
+        'SH': ['ranged', 'firearm', 'gun', 'bow', 'pistol', 'rifle', 'shotgun', 'projectile'],
+        'TE': ['throwing', 'edged', 'knife', 'star', 'shuriken', 'dagger', 'axe'],
+        'TB': ['throwing', 'blunt', 'hammer', 'boomerang', 'baton', 'shield'],
+        'EN': ['energy', 'beam', 'laser', 'radiation', 'plasma', 'heat', 'cold', 'electric'],
+        'FO': ['force', 'repulsor', 'gravity', 'telekinesis', 'push', 'pull', 'sonic'],
+        'CH': ['melee', 'blunt', 'edged', 'spear', 'lance', 'charge', 'ram', 'shield']
+    };
+    
+    // Get compatible equipment types for this action
+    const compatibleTypes = actionToEquipmentMap[actionType] || [];
+    if (!compatibleTypes.length) {
+        console.log(`No compatible equipment types defined for ${actionType}`);
+        return [];
+    }
+    
+    console.log(`Looking for equipment with types: ${compatibleTypes.join(', ')}`);
+    
+    // Filter actor's items for equipment of compatible types
+    const weapons = actor.items.filter(item => {
+        // Check for equipment type
+        if (item.type !== 'equipment') {
+            return false;
+        }
+        
+        // Check if it's actually a weapon subtype
+        if (item.system?.subtype !== 'weapon') {
+            console.log(`${item.name} is equipment but not a weapon subtype`);
+            return false;
+        }
+       
+        // Log the equipment item for debugging
+        console.log(`Checking equipment weapon: ${item.name}`, item);
+       
+        // Check if type is defined
+        if (!item.system || !item.system.type) {
+            console.log(`${item.name} has no type defined`);
+            
+            // Special case for shooting weapons based on name
+            if (actionType === 'SH' && 
+                (item.name.toLowerCase().includes('gun') || 
+                 item.name.toLowerCase().includes('pistol') ||
+                 item.name.toLowerCase().includes('rifle') ||
+                 item.name.toLowerCase().includes('machine'))) {
+                console.log(`${item.name} compatible with SH based on name`);
+                return true;
+            }
+            
+            return false;
+        }
+       
+        // Improved type matching - check individual words in type
+        const weaponType = item.system.type.toLowerCase();
+        const typeWords = weaponType.split(/[\s,;\/]+/); // Split on spaces, commas, semicolons, slashes
+       
+        // Check if any word in the weapon type matches any compatible type
+        const isCompatible = typeWords.some(word =>
+            compatibleTypes.some(type => word === type.toLowerCase())
+        );
+       
+        // Alternatively check if any compatible type is contained within the weapon type
+        const isPartialMatch = !isCompatible && compatibleTypes.some(type =>
+            weaponType.includes(type.toLowerCase())
+        );
+        
+        // Check name as a fallback
+        const nameMatch = !isCompatible && !isPartialMatch && compatibleTypes.some(type => 
+            item.name.toLowerCase().includes(type.toLowerCase())
+        );
+       
+        const matchResult = isCompatible || isPartialMatch || nameMatch;
+        console.log(`${item.name} (${weaponType}) compatible: ${matchResult} (exact: ${isCompatible}, partial: ${isPartialMatch}, name: ${nameMatch})`);
+        return matchResult;
+    });
+    
+    // Debug logging
+    if (weapons.length === 0) {
+        console.log("No weapons found. Checking all equipment items:");
+        actor.items.filter(i => i.type === 'equipment').forEach(item => {
+            console.log(`Equipment: ${item.name}, subtype: ${item.system?.subtype}, type: ${item.system?.type}`);
+        });
+    }
+    
+    console.log(`Found ${weapons.length} compatible weapons for ${actionType}`);
+   
+    // Map to a simpler format for the dialog
+    return weapons.map(weapon => ({
+        id: weapon.id,
+        name: weapon.name,
+        damage: weapon.system.damage || 0,
+        range: weapon.system.range || '',
+        special: weapon.system.special || '',
+        type: weapon.system.type || ''
+    }));
+}
+
+// Update the _showActionDialog method in MarvelCombatHUD.js
+// This is a simplified version that adds weapon selection without changing too much
+
+async _showActionDialog(actionType, actor) {
+    // Get available weapons for this action type
+    const availableWeapons = this.engine.getAvailableWeapons(actor, actionType);
+    console.log(`Found ${availableWeapons.length} weapons for ${actionType}:`, availableWeapons);
+    
+    const template = "systems/marvel-faserip/module/combat/templates/combat-action.html";
+    const dialogData = {
+        actor,
+        actionType,
+        config: CONFIG.marvel,
+        weapons: availableWeapons
+    };
+
+    const content = await renderTemplate(template, dialogData);
+
+    return new Promise((resolve) => {
+        new Dialog({
+            title: `${actionType} Action`,
+            content,
+            buttons: {
+                roll: {
+                    label: "Roll",
+                    callback: (html) => {
+                        const form = html.find("form")[0];
+                        const selectedWeaponId = form.weaponSelect?.value;
+                        
+                        // Find the selected weapon data
+                        let weaponData = {};
+                        if (selectedWeaponId && selectedWeaponId !== "none") {
+                            const selectedWeapon = availableWeapons.find(w => w.id === selectedWeaponId);
+                            if (selectedWeapon) {
+                                weaponData = {
+                                    id: selectedWeapon.id,
+                                    name: selectedWeapon.name,
+                                    weaponDamage: selectedWeapon.damage,
+                                    range: selectedWeapon.range,
+                                    special: selectedWeapon.special
+                                };
+                                console.log(`Selected weapon: ${selectedWeapon.name} with damage ${selectedWeapon.damage}`);
+                            }
+                        }
+                        
+                        // Get manual weapon damage if entered
+                        const manualDamage = parseInt(form.weaponDamage?.value) || 0;
+                        
+                        // Resolve with all our data
+                        resolve({
+                            columnShift: parseInt(form.columnShift?.value) || 0,
+                            karmaPoints: parseInt(form.karmaPoints?.value) || 0,
+                            weaponDamage: manualDamage > 0 ? manualDamage : (weaponData.weaponDamage || 0),
+                            range: weaponData.range || 0,
+                            weaponName: weaponData.name || '',
+                            weaponId: weaponData.id || '',
+                            special: weaponData.special || ''
+                        });
+                    }
+                },
+                cancel: {
+                    label: "Cancel",
+                    callback: () => resolve(null)
+                }
+            },
+            default: "roll"
+        }).render(true);
+    });
+}
+
+// Minimal update to the combat-action.html template - just add this snippet
+// to your existing template before the closing </form> tag:
+
+/*
+{{#if weapons.length}}
+<div class="form-group">
+    <label>Select Weapon:</label>
+    <select name="weaponSelect">
+        <option value="none">None (Use Ability Only)</option>
+        {{#each weapons as |weapon|}}
+        <option value="{{weapon.id}}">{{weapon.name}} (Damage: {{weapon.damage}})</option>
+        {{/each}}
+    </select>
+</div>
+{{/if}}
+*/
 }
