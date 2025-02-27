@@ -55,20 +55,51 @@ export class MarvelActorSheet extends ActorSheet {
         // Equipment organization
         // Get equipment items
         context.equipment = context.items.filter(item => item.type === "equipment");
+        console.log("Found equipment items:", context.equipment);
 
-        // Categorize by subtype
+        // Create empty arrays for equipment categories
+        context.weapons = context.equipment.filter(item => item.system?.subtype === "weapon");
+        context.armor = context.equipment.filter(item => item.system?.subtype === "armor");
+        context.gear = context.equipment.filter(item => 
+            item.system?.subtype === "gear" || 
+            !item.system?.subtype // Catch items with no subtype
+        );
+
+        // Also maintain the equipmentByType for compatibility
         context.equipmentByType = {
-            weapon: context.equipment.filter(item => item.system.subtype === "weapon"),
-            armor: context.equipment.filter(item => item.system.subtype === "armor"),
-            gear: context.equipment.filter(item => item.system.subtype === "gear" || !item.system.subtype)
+            weapon: context.weapons,
+            armor: context.armor,
+            gear: context.gear
         };
 
-        // Legacy code support - ensure these arrays exist even if empty
-        context.weapons = context.equipmentByType.weapon || [];
+        console.log("Categorized equipment:", {
+            weapons: context.weapons.length,
+            armor: context.armor.length,
+            gear: context.gear.length
+        });
+
+        // Add this debug line to see what's going in each category
+        console.log("Equipment by subtype:", {
+            weapon: context.equipmentByType.weapon,
+            armor: context.equipmentByType.armor,
+            gear: context.equipmentByType.gear
+        });
         
         // Add this temporary debug code to your getData() method
         console.log("All items:", context.items);
         console.log("Equipment items:", context.equipment);
+
+        // In getData() after getting items
+        console.log("Equipment item structure check:", context.items
+            .filter(i => i.type === "equipment")
+            .map(item => ({
+                id: item._id,
+                name: item.name,
+                type: item.type,
+                subtype: item.system?.subtype,
+                hasSystemProp: !!item.system
+            }))
+        );
 
         // Initialize primary abilities if not set
         if (!system.primaryAbilities) {
@@ -102,25 +133,33 @@ export class MarvelActorSheet extends ActorSheet {
             };
         }
     
+        // Equipment organization
         // Get equipment items
-        context.equipment = context.items.filter(item => 
-            ["weapon", "armor", "gear"].includes(item.type)
-        );
-        
-        // Get weapons specifically for weapon-related features
-        context.weapons = context.items.filter(item => item.type === "weapon");
-        
-        // Add equipment configuration
-        context.equipmentConfig = {
-            types: {
-                weapon: "Weapon",
-                armor: "Armor",
-                gear: "Gear"
-            },
-            weaponTypes: CONFIG.marvel.weaponTypes,
-            armorTypes: CONFIG.marvel.armorTypes,
-            materialTypes: CONFIG.marvel.materialTypes
+        context.equipment = context.items.filter(item => item.type === "equipment");
+
+        // In getData() after setting context.equipment
+        const itemsWithType = context.items.map(i => ({ id: i._id, name: i.name, type: i.type, subtype: i?.system?.subtype }));
+        console.log("Items with type:", itemsWithType);
+        console.log("Equipment filtered:", context.equipment);
+
+        // Categorize by subtype
+        context.equipmentByType = {
+            weapon: context.equipment.filter(item => item.system.subtype === "weapon"),
+            armor: context.equipment.filter(item => item.system.subtype === "armor"), 
+            gear: context.equipment.filter(item => item.system.subtype === "gear" || !item.system.subtype)
         };
+
+        // Make sure these are also set for legacy support
+        context.weapons = context.equipmentByType.weapon || [];
+        context.armor = context.equipmentByType.armor || [];
+        context.gear = context.equipmentByType.gear || [];
+
+        // Add debug logging to verify equipment data
+        console.log("Equipment data:", {
+            allEquipment: context.equipment,
+            byType: context.equipmentByType,
+            weapons: context.weapons
+        });
     
         // Get the active tab from flags or default to 'special'
         const activeTab = this.actor.getFlag('marvel-faserip', 'activeTab') || 'special';
@@ -289,12 +328,12 @@ export class MarvelActorSheet extends ActorSheet {
                                     const weapon = weaponSystem.weapons[weaponKey];
                                     
                                     equipmentData = {
-                                        name: weapon.name,
+                                        name: form.find('[name="equipmentName"]').val(),
                                         type: "equipment",
                                         img: "systems/marvel-faserip/assets/icons/weapons/generic-weapon.svg",
                                         system: {
                                             subtype: "weapon",
-                                            type: weapon.type,
+                                            type: form.find('[name="type"]').val(),
                                             range: weapon.range,
                                             damage: weapon.damage,
                                             rate: weapon.rate,
@@ -354,7 +393,13 @@ export class MarvelActorSheet extends ActorSheet {
     
                                 console.log("Equipment data prepared:", equipmentData);
                                 const created = await this.actor.createEmbeddedDocuments("Item", [equipmentData]);
-                                console.log("Equipment created:", created);
+                                // In _onAddEquipment method, after creating the equipment:
+                                console.log("Equipment data structure check:", {
+                                    name: equipmentData.name,
+                                    type: equipmentData.type,
+                                    subtype: equipmentData.system?.subtype,
+                                    systemProps: Object.keys(equipmentData.system || {})
+                                });
                                 
                                 ui.notifications.info(`Created equipment: ${equipmentData.name}`);
     
@@ -399,7 +444,12 @@ export class MarvelActorSheet extends ActorSheet {
                         else if (weaponType === "E" || weaponType === "F") shotsField.val(10);
                         else shotsField.val(0);
                     });
+                    // In _onAddEquipment method, after creating the item:
+                    console.log("Created equipment data:", equipmentData);
+                    console.log("  - Type:", equipmentData.type);
+                    console.log("  - Subtype:", equipmentData.system.subtype);
                 }
+                
             }).render(true);
             
         } catch (error) {

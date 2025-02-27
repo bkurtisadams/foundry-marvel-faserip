@@ -451,8 +451,11 @@
         </div>
 
         <div class="equipment-container">
+            <!-- Log the counts to help debug -->
+            {{log "Equipment counts:" (concat "All: " equipment.length " | Weapons: " weapons.length " | Armor: " armor.length " | Gear: " gear.length)}}
             {{#each equipment as |item|}}
-            <div class="equipment-row item" data-item-id="{{item._id}}" draggable="true">
+            <div class="equipment-row item" data-item-id="{{item._id}}" data-type="{{item.system.subtype}}" draggable="true">
+            <!-- <div class="equipment-row item" data-item-id="{{item._id}}" draggable="true"> -->
                 <img src="{{item.img}}" width="24" height="24"/>
                 <div class="equipment-name item-name">{{item.name}}</div>
                 <div class="item-details">
